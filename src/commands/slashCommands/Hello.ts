@@ -7,7 +7,6 @@ export const Hello: Command = {
     type: ApplicationCommandType.ChatInput,
     run: async (client: Client, interaction: CommandInteraction) => {
         const content = 'Hello there!';
-        console.log('TEST HelloCommand', interaction);
 
         await interaction.followUp({
             ephemeral: true,
