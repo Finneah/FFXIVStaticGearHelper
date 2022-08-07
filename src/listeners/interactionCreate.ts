@@ -16,7 +16,6 @@ const handleSlashCommand = async (
     const slashCommand = Commands.find(
         (c) => c.name === interaction.commandName
     );
-    console.log('TEST handleSlashCommand', slashCommand);
 
     if (!slashCommand) {
         interaction.followUp({content: 'An error has occurred'});

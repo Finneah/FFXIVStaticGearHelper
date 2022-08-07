@@ -1,4 +1,5 @@
 import {Command} from './Command';
-import {Hello} from './slashCommands/Hello';
 
-export const Commands: Command[] = [Hello];
+import {ShowEtroBisById} from './slashCommands/ShowEtroBisById/ShowEtroBisById';
+
+export const Commands: Command[] = [ShowEtroBisById];

@@ -6,7 +6,8 @@ export default (client: Client): void => {
         if (!client.user || !client.application) {
             return;
         }
+
+        //   registerGuildCommands('968410103999004732');
         await client.application.commands.set(Commands);
-        console.log(`${client.user.username} is online`);
     });
 };

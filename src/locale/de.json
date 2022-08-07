@@ -1,0 +1,18 @@
+{
+    "configCommand.description": "Richte den Bot zur Benutzung ein",
+    "userRoleOption.description": "Benutzer mit der gewählten Rolle sind Teil der Static. Ihr Bis wird in der Übersicht angezeigt.",
+    "error.general": "Ein Fehler ist aufgetreten, {{details}}",
+    "error.coruptInteraction": "Fehlerhafte Interaction",
+    "showBisById.description": "Zeigt das Etro BiS Gear für die gewähte Id",
+    "bisIdOption.description": "Die Id findest du im Etro Link https://etro.gg/gearset/ID",
+    "weapon": "Waffe",
+    "head": "Kopf",
+    "body": "Brust",
+    "hands": "Hände",
+    "legs": "Beine",
+    "feet": "Füße",
+    "ears": "Ohring",
+    "neck": "Hals",
+    "wrists": "Armband",
+    "finger": "Finger"
+}
