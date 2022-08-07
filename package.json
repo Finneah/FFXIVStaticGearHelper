@@ -7,13 +7,14 @@
     "license": "MIT",
     "scripts": {
         "start": "node build/main.js",
-        "start:dev": "run-s registerGuildCommands dev:main",
+        "start:old": "run-s registerGuildCommands dev:main",
+        "start:dev": "nodemon src/main.ts",
+        "build": "tsc",
+        "build:watch": "tsc -w",
+        "registerGuildCommands": "ts-node src/registerGuildCommands.ts",
         "lint": "eslint src --ext .ts",
         "format": "prettier --write src/**/*.ts",
-        "check-types": "tsc --noEmit",
-        "build:watch": "tsc -w",
-        "dev:main": "nodemon src/main.ts",
-        "registerGuildCommands": "ts-node src/registerGuildCommands.ts"
+        "check-types": "tsc --noEmit"
     },
     "dependencies": {
         "@discordjs/builders": "^1.1.0",
