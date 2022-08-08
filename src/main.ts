@@ -2,7 +2,7 @@ import {Client, ClientOptions, Partials} from 'discord.js';
 import {TOKEN} from './config';
 import guildCreate from './listeners/guildCreate';
 import interactionCreate from './listeners/interactionCreate';
-import messageCreate from './listeners/messageCreate';
+
 import ready from './listeners/ready';
 
 const options: ClientOptions = {
@@ -23,6 +23,5 @@ const client = new Client(options);
 ready(client);
 guildCreate(client);
 interactionCreate(client);
-messageCreate(client);
 
 client.login(TOKEN);
