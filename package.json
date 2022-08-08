@@ -6,10 +6,11 @@
     "author": "Finneah <finneah@icloud.com>",
     "license": "MIT",
     "scripts": {
-        "start": "node build/main.js",
+        "start": " run-s build start:prod",
         "build": "tsc",
         "start:devold": "run-s registerGuildCommands dev:main",
         "start:dev": "nodemon build/main.js",
+        "start:prod": "nodemon build/main.js",
         "lint": "eslint src --ext .ts",
         "format": "prettier --write src/**/*.ts",
         "check-types": "tsc --noEmit"
@@ -22,7 +23,6 @@
         "discord.js": "^14.1.2",
         "dotenv": "^16.0.1",
         "i18next": "^21.8.16",
-        "node-html-to-image": "^3.2.4",
         "sequelize": "^6.21.3",
         "sqlite3": "^5.0.11"
     },
