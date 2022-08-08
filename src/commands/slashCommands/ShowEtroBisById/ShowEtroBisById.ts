@@ -2,6 +2,7 @@ import {
     APIEmbed,
     ApplicationCommandOptionType,
     ApplicationCommandType,
+    CacheType,
     Client,
     CommandInteraction,
     EmbedBuilder,
@@ -9,26 +10,26 @@ import {
     EmbedField,
     resolveColor
 } from 'discord.js';
-import {t} from 'i18next';
-import {
-    getEquipmentAll,
-    GetEquipment,
-    getGearset
-} from '../../../helper/etroHandler';
+
+import {errorHandler} from '../../../handler/error/errorHandler';
+import {getEquipmentAll, getGearset} from '../../../handler/etro/etroHandler';
+
 import {getJobIconUrl} from '../../../helper/iconMapper';
 import {getRoleColorByJob} from '../../../helper/roleColorMapper/roleColorMapper';
+import {EquipType} from '../../../types/equip';
+import {GearsetType} from '../../../types/gearset';
 
 import {Command} from '../../Command';
 // https://github.com/en3sis/discord-guides/blob/main/examples/htmlToPng.js
 export const ShowEtroBisById: Command = {
-    name: 'show_bis',
-    description: t('showBisById.description'),
+    name: 'show_bis_by_id',
+    description: 'showBisById.description',
     type: ApplicationCommandType.ChatInput,
     options: [
         {
             name: 'id',
             type: ApplicationCommandOptionType.String,
-            description: t('bisIdOption.description'),
+            description: 'bisIdOption.description',
             required: true
         }
     ],
@@ -39,78 +40,69 @@ export const ShowEtroBisById: Command = {
             );
             if (idOption && idOption.value) {
                 const gearset = await getGearset(idOption.value.toString());
-                const jobIconPath = await getJobIconUrl(gearset.jobAbbrev);
-                const avatar = await interaction.user.avatarURL();
+                console.log('GEARSET', gearset);
 
-                const equipAll = await getEquipmentAll([
-                    gearset.weapon,
-                    gearset.offHand,
-                    gearset.head,
-                    gearset.body,
-                    gearset.hands,
-                    gearset.legs,
-                    gearset.feet,
-                    gearset.ears,
-                    gearset.neck,
-                    gearset.wrists,
-                    gearset.fingerL,
-                    gearset.fingerR
-                ]);
-                if (equipAll) {
-                    const equipmentFields = getEquipmentFields(
-                        equipAll as unknown as GetEquipment[]
-                    );
-                    const embedData: EmbedData | APIEmbed = {
-                        color: resolveColor(
-                            getRoleColorByJob(gearset.jobAbbrev)
-                        ),
-                        title: gearset.name,
-                        url: 'https://etro.gg/gearset/' + gearset.id,
-                        author: {
-                            name: interaction.user.username,
-                            icon_url: avatar ?? ''
-                        },
-                        // description: 'Some description here',
-                        thumbnail: {
-                            url: jobIconPath
-                        },
+                const equip = await getEquipmentAll(gearset);
 
-                        fields: [
-                            ...equipmentFields
+                console.log('EQUIP', equip);
 
-                            // {
-                            //     name: '\u200b',
-                            //     value: '\u200b',
-                            //     inline: false
-                            // },
-                        ]
-
-                        // footer: {
-                        //     text: 'Some footer text here',
-                        //     icon_url: 'https://xivapi.com/cj/1/whitemage.png'
-                        // }
-                    };
-                    const exampleEmbed = new EmbedBuilder(embedData);
-
-                    await interaction.followUp({
-                        ephemeral: true,
-
-                        embeds: [exampleEmbed]
-                    });
-                }
+                const embed = await getEmbedBis(interaction, gearset, equip);
+                await interaction.followUp({
+                    ephemeral: true,
+                    content: 'Test',
+                    embeds: embed ? [embed] : undefined
+                });
             }
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (error: any) {
-            console.log('ERROR', error);
 
-            return interaction.followUp(
-                t('error.general', {details: error.message})
-            );
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: Error | any) {
+            errorHandler('ShowEtroBisById', error, interaction);
         }
     }
 };
 
-const getEquipmentFields = (equipAll: GetEquipment[]) => {
+const getEmbedBis = async (
+    interaction: CommandInteraction<CacheType>,
+    gearset: GearsetType,
+    equip: EquipType[]
+) => {
+    const avatar = await interaction.user.avatarURL();
+    const jobIconPath = await getJobIconUrl(gearset.jobAbbrev);
+    const equipmentFields = getEquipmentFields(equip);
+    const embedData: EmbedData | APIEmbed = {
+        color: resolveColor(getRoleColorByJob(gearset.jobAbbrev)),
+        title: gearset.name,
+        url: 'https://etro.gg/gearset/' + gearset.id,
+        author: {
+            name: interaction.user.username,
+            icon_url: avatar ?? ''
+        },
+        // description: 'Some description here',
+        thumbnail: jobIconPath
+            ? {
+                  url: jobIconPath
+              }
+            : undefined,
+
+        fields: [
+            ...equipmentFields,
+
+            {
+                name: '\u200b',
+                value: '\u200b',
+                inline: false
+            }
+        ]
+
+        // footer: {
+        //     text: 'Some footer text here',
+        //     icon_url: 'https://xivapi.com/cj/1/whitemage.png'
+        // }
+    };
+    return new EmbedBuilder(embedData);
+};
+
+const getEquipmentFields = (equipAll: EquipType[]) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
 
     const fields: EmbedField[] = [
@@ -121,15 +113,13 @@ const getEquipmentFields = (equipAll: GetEquipment[]) => {
         // },
     ];
 
-    equipAll.forEach((e) => {
-        if (e.value && e.value.name) {
+    equipAll.forEach((data) => {
+        if (data && data.name) {
             fields.push(
                 {
                     name:
-                        getIconBySlotName(e.value.slotName) +
-                        ' ' +
-                        e.value.slotName,
-                    value: e.value.name,
+                        getIconBySlotName(data.slotName) + ' ' + data.slotName,
+                    value: data.name,
                     //  + ' \n Materia blabla \n Materia blabla',
                     inline: false
                 }

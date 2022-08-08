@@ -1,13 +1,19 @@
-import {getJobList} from './etroHandler';
+import {getJobList} from '../handler/etro/etroHandler';
 
-export const getJobIconUrl = async (jobAbbrev: string) => {
+export const getJobIconUrl = async (
+    jobAbbrev: string
+): Promise<string | null> => {
     const jobs = await getJobList();
     const url = 'https://xivapi.com/cj/1/';
     const job = jobs.find(
         (job: {abbrev: string; name: string}) => job.abbrev === jobAbbrev
     );
-
-    return url + job.name.toString().replaceAll(' ', '').toLowerCase() + '.png';
+    if (job) {
+        return (
+            url + job.name.toString().replaceAll(' ', '').toLowerCase() + '.png'
+        );
+    }
+    return null;
 };
 // https://xivapi.com/cj/1/whitemage.png
 const jobs = [
