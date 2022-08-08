@@ -1,24 +1,32 @@
 import axios from 'axios';
+import {CommandInteraction, CacheType} from 'discord.js';
 import {EquipType} from '../../types/equip';
 import {GearsetType} from '../../types/gearset';
 import {JobType} from '../../types/job';
 import {errorHandler} from '../error/errorHandler';
-import {GetEquipment, GetGearset, GetJobs} from './types';
+
 export const ETRO_API = 'https://etro.gg/api';
 
-export const getGearset = async (gearsetId: string): Promise<GearsetType> => {
+export const getGearset = async (
+    gearsetId: string,
+    interaction?: CommandInteraction<CacheType>
+): Promise<GearsetType> => {
     // https://etro.gg/api/gearsets/e78a29e3-1dcf-4e53-bbcf-234f33b2c831/
     const testId = 'e78a29e3-1dcf-4e53-bbcf-234f33b2c831';
-
+    // TODO Fehler beheben wenn link mitgegeben wird, response passt dann auch nicht
     return (
         axios
-            .get(ETRO_API + `/gearsets/${testId}/`)
+            .get(ETRO_API + `/gearsets/${gearsetId}/`)
             .then((response) => {
-                return response.data;
+                if (response.status === 200) {
+                    return response.data;
+                } else {
+                    return {success: false, data: ''};
+                }
             })
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .catch((error: any) => {
-                errorHandler('getGearset', error);
+                errorHandler('getGearset', error, interaction);
                 return {success: false, data: ''};
             })
     );

@@ -6,19 +6,18 @@ import {
 } from 'discord.js';
 
 import {GuildConfig} from '../../database/sequelize';
-import t from '../../locale/i18n';
 
 import {Command} from '../Command';
 
 export const ConfigureBotForGuild: Command = {
     name: 'config',
-    description: t('configCommand.description'),
+    description: 'configCommand.description',
     type: ApplicationCommandType.ChatInput,
     options: [
         {
             name: 'user_role',
             type: ApplicationCommandOptionType.String,
-            description: t('userRoleOption.description'),
+            description: 'userRoleOption.description',
             required: true
         }
     ],
@@ -32,7 +31,7 @@ export const ConfigureBotForGuild: Command = {
 
             if (!interaction.guildId) {
                 return interaction.followUp(
-                    t('error.general', {details: 'error.coruptInteraction'})
+                    'error.general error.coruptInteraction'
                 );
             }
             const settingsExist = await checkIfSettingsExists(
