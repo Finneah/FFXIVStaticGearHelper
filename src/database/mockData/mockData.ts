@@ -1,6 +1,6 @@
-import {GearsetType} from '../../../types/gearset';
+import {Gearset} from '../../types/gearset/gearset';
 
-export const mockGearset: GearsetType = {
+export const mockGearset: Gearset = {
     id: 'e78a29e3-1dcf-4e53-bbcf-234f33b2c831',
     jobAbbrev: 'WHM',
     name: 'Low Piety BiS',

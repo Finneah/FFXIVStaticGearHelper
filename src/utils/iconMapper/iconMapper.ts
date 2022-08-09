@@ -1,4 +1,4 @@
-import {getJobList} from '../handler/etro/etroHandler';
+import {getJobList} from '../../handler/etroHandler/etroHandler';
 
 export const getJobIconUrl = async (
     jobAbbrev: string

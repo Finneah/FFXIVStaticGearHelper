@@ -10,17 +10,12 @@ import {
     EmbedField,
     resolveColor
 } from 'discord.js';
+import {errorHandler, getGearset} from '../../handler';
+import {strings} from '../../locale/i18n';
+import {Equipment, Gearset} from '../../types';
+import {getJobIconUrl, getRoleColorByJob} from '../../utils';
 
-import {errorHandler} from '../../../handler/error/errorHandler';
-import {getEquipmentAll, getGearset} from '../../../handler/etro/etroHandler';
-
-import {getJobIconUrl} from '../../../helper/iconMapper';
-import {getRoleColorByJob} from '../../../helper/roleColorMapper/roleColorMapper';
-import {strings} from '../../../locale/i18n';
-import {EquipType} from '../../../types/equip';
-import {GearsetType} from '../../../types/gearset';
-
-import {Command} from '../../Command';
+import {Command} from '../Command';
 // https://github.com/en3sis/discord-guides/blob/main/examples/htmlToPng.js
 export const ShowEtroBisById: Command = {
     name: 'show_bis_by_id',
@@ -45,16 +40,9 @@ export const ShowEtroBisById: Command = {
                     idOption.value.toString(),
                     interaction
                 );
-                console.log(gearset);
 
                 if (gearset) {
-                    const equip = await getEquipmentAll(gearset);
-
-                    const embed = await getEmbedBis(
-                        interaction,
-                        gearset,
-                        equip
-                    );
+                    const embed = await getEmbedBis(interaction, gearset);
 
                     await interaction.followUp({
                         ephemeral: true,
@@ -73,12 +61,11 @@ export const ShowEtroBisById: Command = {
 
 const getEmbedBis = async (
     interaction: CommandInteraction<CacheType>,
-    gearset: GearsetType,
-    equip: EquipType[]
+    gearset: Gearset
 ) => {
     const avatar = await interaction.user.avatarURL();
     const jobIconPath = await getJobIconUrl(gearset.jobAbbrev);
-    const equipmentFields = getEquipmentFields(equip);
+    const equipmentFields = getEquipmentFields(gearset);
     const embedData: EmbedData | APIEmbed = {
         color: resolveColor(getRoleColorByJob(gearset.jobAbbrev)),
         title: gearset.name,
@@ -111,23 +98,72 @@ const getEmbedBis = async (
     return new EmbedBuilder(embedData);
 };
 
-const getEquipmentFields = (equipAll: EquipType[]) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-
+const getEquipmentFields = (gearset: Gearset) => {
     const fields: EmbedField[] = [];
-
-    equipAll.forEach((data) => {
-        if (data && data.name) {
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (gearset.weapon) {
+            if (gearset.offHand) {
+                fields.push(
+                    getFieldForEquip(gearset.weapon),
+                    getFieldForEquip(gearset.offHand),
+                    {
+                        name: '\u200b',
+                        value: '\u200b',
+                        inline: false
+                    }
+                );
+            } else {
+                fields.push(getFieldForEquip(gearset.weapon, false), {
+                    name: '\u200b',
+                    value: '\u200b',
+                    inline: false
+                });
+            }
+        }
+        if (
+            gearset.head &&
+            gearset.body &&
+            gearset.hands &&
+            gearset.legs &&
+            gearset.feet &&
+            gearset.ears &&
+            gearset.neck &&
+            gearset.wrists &&
+            gearset.fingerL &&
+            gearset.fingerR
+        ) {
             fields.push(
+                getFieldForEquip(gearset.head),
+                getFieldForEquip(gearset.body),
                 {
-                    // getIconBySlotName(data.slotName) + ' ' +
-                    name:
-                        getIconBySlotName(data.slotName) +
-                        ' ' +
-                        data.slotName.toUpperCase(),
-                    value: `${data.name} \n\n **Materia** \n CRT+36 CRT+36`,
+                    name: '\u200b',
+                    value: '\u200b',
                     inline: false
                 },
+                getFieldForEquip(gearset.hands),
+                getFieldForEquip(gearset.legs),
+                {
+                    name: '\u200b',
+                    value: '\u200b',
+                    inline: false
+                },
+                getFieldForEquip(gearset.feet),
+                getFieldForEquip(gearset.ears),
+                {
+                    name: '\u200b',
+                    value: '\u200b',
+                    inline: false
+                },
+                getFieldForEquip(gearset.neck),
+                getFieldForEquip(gearset.wrists),
+                {
+                    name: '\u200b',
+                    value: '\u200b',
+                    inline: false
+                },
+                getFieldForEquip(gearset.fingerL),
+                getFieldForEquip(gearset.fingerR),
                 {
                     name: '\u200b',
                     value: '\u200b',
@@ -135,16 +171,41 @@ const getEquipmentFields = (equipAll: EquipType[]) => {
                 }
             );
         }
-    });
 
-    return fields;
+        fields.push(getFieldForFood());
+
+        return fields;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+        errorHandler('getEquipmentFields', error);
+        return fields;
+    }
+};
+
+const getFieldForEquip = (equip: Equipment, inline = true): EmbedField => {
+    const field: EmbedField = {
+        // getIconBySlotName(data.slotName) + ' ' +
+        name: getIconBySlotName(equip.slotName) + ' ' + strings(equip.slotName),
+        value: `${equip.name} \n\n **Materia** \n CRT+36 CRT+36`,
+        inline: inline ?? false
+    };
+    return field;
+};
+
+const getFieldForFood = () => {
+    return {
+        // getIconBySlotName(data.slotName) + ' ' +
+        name: ':hamburger:' + strings('Food'),
+        value: `irgend ein food`,
+        inline: false
+    };
 };
 
 const getIconBySlotName = (slotName: string) => {
     switch (slotName) {
         case 'weapon':
             return ':dagger:';
-        case 'offhand':
+        case 'offHand':
             return ':shield:';
         case 'head':
             return ':military_helmet:';
@@ -168,12 +229,4 @@ const getIconBySlotName = (slotName: string) => {
         default:
             return '';
     }
-};
-
-const linkIsValid = (link: string | number | true): boolean => {
-    if (typeof link === 'string') {
-        const regex = /^https:\/\/etro.gg\/gearset\/.+$/gm;
-        return regex.exec(link) !== null ?? false;
-    }
-    return false;
 };

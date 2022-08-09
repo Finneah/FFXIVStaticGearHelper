@@ -44,7 +44,6 @@ export const ConfigureBotForGuild: Command = {
             if (error.name === 'SequelizeUniqueConstraintError') {
                 return interaction.followUp('That tag already exists.');
             }
-            console.log(error);
 
             return interaction.followUp(
                 'Something went wrong with adding a tag.'

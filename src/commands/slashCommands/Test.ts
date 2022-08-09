@@ -9,9 +9,9 @@ import {
     EmbedData
 } from 'discord.js';
 
-import {errorHandler} from '../../../handler/error/errorHandler';
+import {errorHandler} from '../../handler/errorHandler/errorHandler';
 
-import {Command} from '../../Command';
+import {Command} from '../Command';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const nodeHtmlToImage = require('node-html-to-image');
