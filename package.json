@@ -5,12 +5,13 @@
     "repository": "https://github.com/Finneah/FFXIVStaticGearHelper.git",
     "author": "Finneah <finneah@icloud.com>",
     "license": "MIT",
+    "engines": {
+        "node": "^16.15.0"
+    },
     "scripts": {
-        "start": " run-s build start:prod",
+        "start": "node build/main.js",
         "build": "tsc",
-        "start:devold": "run-s registerGuildCommands dev:main",
-        "start:dev": "nodemon build/main.js",
-        "start:prod": "nodemon build/main.js",
+        "start:dev": "nodemon src/main.js",
         "lint": "eslint src --ext .ts",
         "format": "prettier --write src/**/*.ts",
         "check-types": "tsc --noEmit"
