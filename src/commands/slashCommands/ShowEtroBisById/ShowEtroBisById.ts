@@ -39,35 +39,28 @@ export const ShowEtroBisById: Command = {
             const idOption = interaction.options.data.find(
                 (option) => option.name === 'id'
             );
+
             if (idOption && idOption.value) {
-                const isValid = linkIsValid(idOption.value);
+                const gearset = await getGearset(
+                    idOption.value.toString(),
+                    interaction
+                );
+                console.log(gearset);
 
-                if (!isValid) {
-                    await interaction.followUp(
-                        strings('error.general', {details: 'not valid'})
+                if (gearset) {
+                    const equip = await getEquipmentAll(gearset);
+
+                    const embed = await getEmbedBis(
+                        interaction,
+                        gearset,
+                        equip
                     );
-                } else {
-                    const gearset = await getGearset(
-                        idOption.value.toString(),
-                        interaction
-                    );
-                    console.log(gearset);
 
-                    if (gearset) {
-                        const equip = await getEquipmentAll(gearset);
+                    await interaction.followUp({
+                        ephemeral: true,
 
-                        const embed = await getEmbedBis(
-                            interaction,
-                            gearset,
-                            equip
-                        );
-
-                        await interaction.followUp({
-                            ephemeral: true,
-
-                            embeds: embed ? [embed] : undefined
-                        });
-                    }
+                        embeds: embed ? [embed] : undefined
+                    });
                 }
             }
 

@@ -6,12 +6,13 @@
     "author": "Finneah <finneah@icloud.com>",
     "license": "MIT",
     "engines": {
-        "node": "^16.15.0"
+        "node": "^16.15.0",
+        "yarn": "^1.22.18"
     },
     "scripts": {
         "start": "node build/main.js",
         "build": "tsc",
-        "start:dev": "nodemon src/main.js",
+        "start:dev": "nodemon src/main.ts",
         "lint": "eslint src --ext .ts",
         "format": "prettier --write src/**/*.ts",
         "check-types": "tsc --noEmit"
