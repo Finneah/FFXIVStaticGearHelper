@@ -12,7 +12,8 @@ import {
 } from 'discord.js';
 import {errorHandler, getGearset} from '../../handler';
 import {strings} from '../../locale/i18n';
-import {Equipment, Gearset} from '../../types';
+import {Equipment} from '../../types';
+import {Gearset, Materia, MateriaType} from '../../types/gearset/gearset';
 import {getJobIconUrl, getRoleColorByJob} from '../../utils';
 
 import {Command} from '../Command';
@@ -46,7 +47,7 @@ export const ShowEtroBisById: Command = {
 
                     await interaction.followUp({
                         ephemeral: true,
-
+                        // content: 'finished'
                         embeds: embed ? [embed] : undefined
                     });
                 }
@@ -105,8 +106,8 @@ const getEquipmentFields = (gearset: Gearset) => {
         if (gearset.weapon) {
             if (gearset.offHand) {
                 fields.push(
-                    getFieldForEquip(gearset.weapon),
-                    getFieldForEquip(gearset.offHand),
+                    getFieldForEquip(gearset.weapon, gearset.materia),
+                    getFieldForEquip(gearset.offHand, gearset.materia),
                     {
                         name: '\u200b',
                         value: '\u200b',
@@ -114,11 +115,14 @@ const getEquipmentFields = (gearset: Gearset) => {
                     }
                 );
             } else {
-                fields.push(getFieldForEquip(gearset.weapon, false), {
-                    name: '\u200b',
-                    value: '\u200b',
-                    inline: false
-                });
+                fields.push(
+                    getFieldForEquip(gearset.weapon, gearset.materia, false),
+                    {
+                        name: '\u200b',
+                        value: '\u200b',
+                        inline: false
+                    }
+                );
             }
         }
         if (
@@ -134,36 +138,36 @@ const getEquipmentFields = (gearset: Gearset) => {
             gearset.fingerR
         ) {
             fields.push(
-                getFieldForEquip(gearset.head),
-                getFieldForEquip(gearset.body),
+                getFieldForEquip(gearset.head, gearset.materia),
+                getFieldForEquip(gearset.body, gearset.materia),
                 {
                     name: '\u200b',
                     value: '\u200b',
                     inline: false
                 },
-                getFieldForEquip(gearset.hands),
-                getFieldForEquip(gearset.legs),
+                getFieldForEquip(gearset.hands, gearset.materia),
+                getFieldForEquip(gearset.legs, gearset.materia),
                 {
                     name: '\u200b',
                     value: '\u200b',
                     inline: false
                 },
-                getFieldForEquip(gearset.feet),
-                getFieldForEquip(gearset.ears),
+                getFieldForEquip(gearset.feet, gearset.materia),
+                getFieldForEquip(gearset.ears, gearset.materia),
                 {
                     name: '\u200b',
                     value: '\u200b',
                     inline: false
                 },
-                getFieldForEquip(gearset.neck),
-                getFieldForEquip(gearset.wrists),
+                getFieldForEquip(gearset.neck, gearset.materia),
+                getFieldForEquip(gearset.wrists, gearset.materia),
                 {
                     name: '\u200b',
                     value: '\u200b',
                     inline: false
                 },
-                getFieldForEquip(gearset.fingerL),
-                getFieldForEquip(gearset.fingerR),
+                getFieldForEquip(gearset.fingerL, gearset.materia, true, 'L'),
+                getFieldForEquip(gearset.fingerR, gearset.materia, true, 'R'),
                 {
                     name: '\u200b',
                     value: '\u200b',
@@ -182,11 +186,30 @@ const getEquipmentFields = (gearset: Gearset) => {
     }
 };
 
-const getFieldForEquip = (equip: Equipment, inline = true): EmbedField => {
+const getFieldForEquip = (
+    equip: Equipment,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    materia: any,
+    inline = true,
+    ringPrefix?: 'L' | 'R'
+): EmbedField => {
+    // console.log(materia);
+    const equipMateria: MateriaType =
+        ringPrefix && materia[equip.id + ringPrefix]
+            ? materia[equip.id + ringPrefix]
+            : materia[equip.id];
+    console.log(equip.name, 'EQUIPID', equip.id, 'MATERIA', equipMateria);
+    console.log();
+    let materiaString = '';
+    Object.values(equipMateria).forEach((m) => {
+        materiaString += m.type + '+' + m.value + '\n';
+    });
     const field: EmbedField = {
-        // getIconBySlotName(data.slotName) + ' ' +
         name: getIconBySlotName(equip.slotName) + ' ' + strings(equip.slotName),
-        value: `${equip.name} \n\n **Materia** \n CRT+36 CRT+36`,
+        value:
+            materiaString !== ''
+                ? `${equip.name} \n\n **Materia** \n ${materiaString}`
+                : `${equip.name}`,
         inline: inline ?? false
     };
     return field;
@@ -195,7 +218,7 @@ const getFieldForEquip = (equip: Equipment, inline = true): EmbedField => {
 const getFieldForFood = () => {
     return {
         // getIconBySlotName(data.slotName) + ' ' +
-        name: ':hamburger:' + strings('Food'),
+        name: ':hamburger:' + ' ' + strings('Food'),
         value: `irgend ein food`,
         inline: false
     };

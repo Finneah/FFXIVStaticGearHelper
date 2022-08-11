@@ -66,18 +66,18 @@ export const mockGearset: Gearset = {
             '2': 33931
         }
     },
-    weapon: 35253,
-    head: 35290,
-    body: 35291,
-    hands: 35217,
-    legs: 35218,
-    feet: 35294,
-    offHand: null,
-    ears: 35303,
-    neck: 35233,
-    wrists: 35313,
-    fingerL: 35318,
-    fingerR: 35243,
+    // weapon: 35253,
+    // head: 35290,
+    // body: 35291,
+    // hands: 35217,
+    // legs: 35218,
+    // feet: 35294,
+    // offHand: null,
+    // ears: 35303,
+    // neck: 35233,
+    // wrists: 35313,
+    // fingerL: 35318,
+    // fingerR: 35243,
     food: 545
 };
 

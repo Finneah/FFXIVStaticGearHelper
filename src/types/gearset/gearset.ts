@@ -1,12 +1,15 @@
-import {Equipment} from '../equip/equip';
-
+export type Materia = {
+    type: string;
+    name: string;
+    value: number;
+};
 export type MateriaType = {
-    '1': number;
-    '2': number;
-    '3'?: number;
-    '4'?: number;
-    '5'?: number;
-    '6'?: number;
+    '1': Materia;
+    '2': Materia;
+    '3'?: Materia;
+    '4'?: Materia;
+    '5'?: Materia;
+    '6'?: Materia;
 };
 
 export interface BaseGearset {
@@ -28,10 +31,13 @@ export interface EtroGearset extends BaseGearset {
     fingerL: number;
     fingerR: number;
     food: number;
-    materia: {[key: string]: MateriaType};
+    materia: {[key: string]: number};
 }
 
-export interface Gearset extends BaseGearset {
+export type Gearset = {
+    id: string;
+    jobAbbrev: string;
+    name: string;
     weapon?: Equipment;
     head?: Equipment;
     body?: Equipment;
@@ -46,4 +52,12 @@ export interface Gearset extends BaseGearset {
     fingerR?: Equipment;
     food: number;
     materia: {[key: string]: MateriaType};
-}
+};
+
+export type Equipment = {
+    id: number;
+    name: string;
+    materiaSlotCount: number;
+    slotName: string;
+    materia?: {index: string; id: string; name: string}[];
+};
