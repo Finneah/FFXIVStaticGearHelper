@@ -10,14 +10,17 @@ import {
     EmbedField,
     resolveColor
 } from 'discord.js';
-import {errorHandler, getGearset} from '../../handler';
+import {getGearset, errorHandler} from '../../handler';
 import {strings} from '../../locale/i18n';
-import {Equipment} from '../../types';
-import {Gearset, Materia, MateriaType} from '../../types/gearset/gearset';
+import {Gearset, Equipment, MateriaType, ErrorType} from '../../types';
 import {getJobIconUrl, getRoleColorByJob} from '../../utils';
 
 import {Command} from '../Command';
-// https://github.com/en3sis/discord-guides/blob/main/examples/htmlToPng.js
+
+// it is used
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type Error = ErrorType;
+
 export const ShowEtroBisById: Command = {
     name: 'show_bis_by_id',
     description: strings('showBisById.description'),
@@ -37,32 +40,27 @@ export const ShowEtroBisById: Command = {
             );
 
             if (idOption && idOption.value) {
-                const gearset = await getGearset(
-                    idOption.value.toString(),
-                    interaction
-                );
+                const gearset = await getGearset(idOption.value.toString());
 
                 if (gearset) {
-                    const embed = await getEmbedBis(interaction, gearset);
+                    const embed = await getEmbedBis(gearset, interaction);
 
                     await interaction.followUp({
                         ephemeral: true,
-                        // content: 'finished'
+                        // content: 'finished',
                         embeds: embed ? [embed] : undefined
                     });
                 }
             }
-
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (error: Error | any) {
+        } catch (error: Error) {
             errorHandler('ShowEtroBisById', error, interaction);
         }
     }
 };
 
 const getEmbedBis = async (
-    interaction: CommandInteraction<CacheType>,
-    gearset: Gearset
+    gearset: Gearset,
+    interaction: CommandInteraction<CacheType>
 ) => {
     const avatar = await interaction.user.avatarURL();
     const jobIconPath = await getJobIconUrl(gearset.jobAbbrev);
@@ -89,12 +87,11 @@ const getEmbedBis = async (
                 inline: false
             },
             ...equipmentFields
-        ]
-
-        // footer: {
-        //     text: 'Some footer text here',
-        //     icon_url: 'https://xivapi.com/cj/1/whitemage.png'
-        // }
+        ],
+        footer: {
+            text: `${gearset.food.name}`,
+            icon_url: 'https://etro.gg/s/icons' + gearset.food.iconPath
+        }
     };
     return new EmbedBuilder(embedData);
 };
@@ -102,9 +99,8 @@ const getEmbedBis = async (
 const getEquipmentFields = (gearset: Gearset) => {
     const fields: EmbedField[] = [];
     try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (gearset.weapon) {
-            if (gearset.offHand) {
+            if (gearset.offHand && typeof gearset.offHand === 'object') {
                 fields.push(
                     getFieldForEquip(gearset.weapon, gearset.materia),
                     getFieldForEquip(gearset.offHand, gearset.materia),
@@ -176,13 +172,9 @@ const getEquipmentFields = (gearset: Gearset) => {
             );
         }
 
-        fields.push(getFieldForFood());
-
         return fields;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-        errorHandler('getEquipmentFields', error);
-        return fields;
+    } catch (error: Error) {
+        throw new Error(error);
     }
 };
 
@@ -193,35 +185,42 @@ const getFieldForEquip = (
     inline = true,
     ringPrefix?: 'L' | 'R'
 ): EmbedField => {
-    // console.log(materia);
-    const equipMateria: MateriaType =
-        ringPrefix && materia[equip.id + ringPrefix]
-            ? materia[equip.id + ringPrefix]
-            : materia[equip.id];
-    console.log(equip.name, 'EQUIPID', equip.id, 'MATERIA', equipMateria);
-    console.log();
-    let materiaString = '';
-    Object.values(equipMateria).forEach((m) => {
-        materiaString += m.type + '+' + m.value + '\n';
-    });
+    const materiaString = getMateriaString(equip, materia, ringPrefix);
+    const value = `${equip.name}`;
+    /**
+     *  \n*${strings('itemLevel')} ${
+        equip.itemLevel
+    }*
+     */
     const field: EmbedField = {
-        name: getIconBySlotName(equip.slotName) + ' ' + strings(equip.slotName),
+        name: `${getIconBySlotName(equip.slotName)} ${strings(equip.slotName)}`,
         value:
             materiaString !== ''
-                ? `${equip.name} \n\n **Materia** \n ${materiaString}`
-                : `${equip.name}`,
+                ? `${value} \n\n **Materia** \n${materiaString}`
+                : `${value}`,
         inline: inline ?? false
     };
     return field;
 };
 
-const getFieldForFood = () => {
-    return {
-        // getIconBySlotName(data.slotName) + ' ' +
-        name: ':hamburger:' + ' ' + strings('Food'),
-        value: `irgend ein food`,
-        inline: false
-    };
+const getMateriaString = (
+    equip: Equipment,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    materia: any,
+    ringPrefix?: 'L' | 'R'
+) => {
+    const equipMateria: MateriaType =
+        ringPrefix && materia[equip.id + ringPrefix]
+            ? materia[equip.id + ringPrefix]
+            : materia[equip.id];
+    let materiaString = '';
+    if (equipMateria) {
+        Object.values(equipMateria).forEach((m) => {
+            materiaString += m.type + '+' + m.value + '\n';
+        });
+    }
+
+    return materiaString;
 };
 
 const getIconBySlotName = (slotName: string) => {
@@ -252,4 +251,23 @@ const getIconBySlotName = (slotName: string) => {
         default:
             return '';
     }
+};
+
+const getEtroIcon = async (
+    client: Client,
+    interaction: CommandInteraction<CacheType>,
+    iconId: number,
+    iconPath: string
+) => {
+    const icon = client.emojis.cache.find((emoji) => {
+        return emoji.name === iconId.toString();
+    });
+    if (!icon) {
+        const test = await interaction.guild?.emojis.create({
+            attachment: 'https://etro.gg/s/icons' + iconPath,
+            name: `${iconId}`
+        });
+    }
+
+    return icon;
 };

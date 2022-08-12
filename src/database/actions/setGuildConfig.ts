@@ -8,7 +8,7 @@ export const setGuildId = async (id: string, userRole: string) => {
     };
 
     const guildConfig = await GuildConfig.create(config);
-    console.log(
+    console.info(
         `Guild ID ${
             guildConfig.guild_id + ' ' + guildConfig.user_role
         } is saved in DB`

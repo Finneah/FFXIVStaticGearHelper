@@ -16,7 +16,7 @@ export const registerGuildCommands = async (guildId: string) => {
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
-            console.log('ERROR', error.message);
+            console.warn('ERROR', error.message);
         }
     } catch (error) {
         console.warn(error);

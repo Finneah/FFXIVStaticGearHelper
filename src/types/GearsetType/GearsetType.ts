@@ -50,7 +50,7 @@ export type Gearset = {
     wrists?: Equipment;
     fingerL?: Equipment;
     fingerR?: Equipment;
-    food: number;
+    food: {name: string; iconPath: string};
     materia: {[key: string]: MateriaType};
 };
 
@@ -59,5 +59,6 @@ export type Equipment = {
     name: string;
     materiaSlotCount: number;
     slotName: string;
+    itemLevel: number;
     materia?: {index: string; id: string; name: string}[];
 };

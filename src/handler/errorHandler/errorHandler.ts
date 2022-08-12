@@ -6,7 +6,7 @@ export const errorHandler = (
     error: Error,
     interaction?: CommandInteraction<CacheType>
 ) => {
-    console.log('ERROR ' + error.name + ' ' + namespace, error.message);
+    console.warn('ERROR ' + error.name + ' ' + namespace, error.message);
 
     if (interaction) {
         showInteraction(interaction, error);

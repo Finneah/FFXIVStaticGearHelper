@@ -9,7 +9,7 @@ export default (client: Client): void => {
         }
 
         registerGuildCommands('968410103999004732');
-        console.log('Client is online');
+        console.info('Client is online');
 
         await client.application.commands.set(Commands);
     });

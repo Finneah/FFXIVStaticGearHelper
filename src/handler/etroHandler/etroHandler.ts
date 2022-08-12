@@ -1,7 +1,12 @@
 import axios from 'axios';
-import {CommandInteraction, CacheType} from 'discord.js';
 
-import {Equipment, EtroGearset, Gearset} from '../../types/gearset/gearset';
+import {ErrorType} from '../../types/ErrorTypes/ErrorType';
+
+import {
+    Equipment,
+    EtroGearset,
+    Gearset
+} from '../../types/GearsetType/GearsetType';
 import {errorHandler} from '../errorHandler/errorHandler';
 
 export const ETRO_API = 'https://etro.gg/api';
@@ -9,84 +14,115 @@ export const ETRO_API = 'https://etro.gg/api';
 export const getEtroJobList = async () => {
     // https://etro.gg/api/jobs/
 
-    return (
-        axios
-            .get(ETRO_API + `/jobs/`)
-            .then((response) => {
-                return response.data;
-            })
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .catch((error: any) => {
-                errorHandler('getJobList', error);
-                return {success: false, data: ''};
-            })
-    );
+    return axios
+        .get(ETRO_API + `/jobs/`)
+        .then((response) => {
+            return response.data;
+        })
+
+        .catch((error: ErrorType) => {
+            errorHandler('getJobList', error);
+            return {success: false, data: ''};
+        });
 };
 
 export const getGearset = async (
-    gearsetId: string,
-    interaction?: CommandInteraction<CacheType>
+    gearsetId: string
 ): Promise<Gearset | undefined> => {
     try {
-        const gearset: Gearset = await getGearsetWithEquipment();
+        let gearset: Gearset = await getGearsetWithEquipment(gearsetId);
+
+        gearset = await getGearSetWithMateria(gearset);
 
         return gearset;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-        errorHandler('getGearset', error, interaction);
-        return undefined;
+    } catch (error: ErrorType) {
+        throw new Error(error);
     }
     // TODO Fehler beheben wenn link mitgegeben wird, response passt dann auch nicht
 };
 
+const getGearsetWithEquipment = async (gearsetId: string) => {
+    try {
+        // https://etro.gg/api/gearsets/e78a29e3-1dcf-4e53-bbcf-234f33b2c831/
+        // const testId = 'e78a29e3-1dcf-4e53-bbcf-234f33b2c831'; //'38fe3778-f2c1-4300-99e4-b58a0445e969'; //'e78a29e3-1dcf-4e53-bbcf-234f33b2c831';
+        const etroGearset = await getEtroGearset(gearsetId);
+        const equipment = await getEquipmentAll(etroGearset);
+        const etroFood = await getEtroFood(etroGearset.food);
+        const gearset: Gearset = {
+            id: etroGearset.id,
+            jobAbbrev: etroGearset.jobAbbrev,
+            name: etroGearset.name,
+            weapon: equipment.find((e) => e.id === etroGearset.weapon),
+            head: equipment.find((e) => e.id === etroGearset.head),
+            body: equipment.find((e) => e.id === etroGearset.body),
+            hands: equipment.find((e) => e.id === etroGearset.hands),
+            legs: equipment.find((e) => e.id === etroGearset.legs),
+            feet: equipment.find((e) => e.id === etroGearset.feet),
+            offHand: equipment.find((e) => e.id === etroGearset.offHand),
+            ears: equipment.find((e) => e.id === etroGearset.ears),
+            neck: equipment.find((e) => e.id === etroGearset.neck),
+            wrists: equipment.find((e) => e.id === etroGearset.wrists),
+            fingerL: equipment.find((e) => e.id === etroGearset.fingerL),
+            fingerR: equipment.find((e) => e.id === etroGearset.fingerR),
+            food: etroFood,
+            materia: etroGearset.materia
+        };
+
+        return gearset;
+    } catch (error: ErrorType) {
+        throw new Error(error);
+    }
+};
 const getEtroGearset = async (gearsetId: string) => {
     // TODO Fehler beheben wenn link mitgegeben wird, response passt dann auch nicht
-    return (
-        axios
-            .get(ETRO_API + `/gearsets/${gearsetId}/`)
-            .then((response) => {
-                if (response.status === 200) {
-                    return response.data;
-                } else {
-                    return {success: false, data: ''};
-                }
-            })
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .catch((error: any) => {
-                throw new Error(error);
-            })
-    );
+    return axios
+        .get(ETRO_API + `/gearsets/${gearsetId}/`)
+        .then((response) => {
+            if (response.status === 200) {
+                return response.data;
+            } else {
+                return {success: false, data: ''};
+            }
+        })
+
+        .catch((error: ErrorType) => {
+            throw new Error(error);
+        });
 };
 
-const getGearsetWithEquipment = async () => {
-    // https://etro.gg/api/gearsets/e78a29e3-1dcf-4e53-bbcf-234f33b2c831/
-    const testId = 'e78a29e3-1dcf-4e53-bbcf-234f33b2c831'; //'38fe3778-f2c1-4300-99e4-b58a0445e969'; //'e78a29e3-1dcf-4e53-bbcf-234f33b2c831';
-    const etroGearset = await getEtroGearset(testId);
-    const equipment = await getEquipmentAll(etroGearset);
+const getEtroFood = async (id: number) => {
+    return axios
+        .get(ETRO_API + `/food/${id}/`)
+        .then((response) => {
+            return response.data;
+        })
 
-    let gearset: Gearset = {
-        id: etroGearset.id,
-        jobAbbrev: etroGearset.jobAbbrev,
-        name: etroGearset.name,
-        weapon: equipment.find((e) => e.id === etroGearset.weapon),
-        head: equipment.find((e) => e.id === etroGearset.head),
-        body: equipment.find((e) => e.id === etroGearset.body),
-        hands: equipment.find((e) => e.id === etroGearset.hands),
-        legs: equipment.find((e) => e.id === etroGearset.legs),
-        feet: equipment.find((e) => e.id === etroGearset.feet),
-        offHand: equipment.find((e) => e.id === etroGearset.offHand),
-        ears: equipment.find((e) => e.id === etroGearset.ears),
-        neck: equipment.find((e) => e.id === etroGearset.neck),
-        wrists: equipment.find((e) => e.id === etroGearset.wrists),
-        fingerL: equipment.find((e) => e.id === etroGearset.fingerL),
-        fingerR: equipment.find((e) => e.id === etroGearset.fingerR),
-        food: etroGearset.food,
-        materia: etroGearset.materia
-    };
-    gearset = await getGearSetWithMateria(gearset);
+        .catch((error: ErrorType) => {
+            throw new Error(error);
+        });
+};
+const getEtroSingleEquipment = async (id: number) => {
+    return axios
+        .get(ETRO_API + `/equipment/${id}/`)
+        .then((response) => {
+            return response.data;
+        })
 
-    return gearset;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .catch((error: ErrorType) => {
+            throw new Error(error);
+        });
+};
+
+const getEtroMateriaList = async () => {
+    return axios
+        .get(ETRO_API + `/materia/`)
+        .then((response) => {
+            return response.data;
+        })
+
+        .catch((error: ErrorType) => {
+            throw new Error(error);
+        });
 };
 
 const getEquipmentAll = async (gearset: EtroGearset): Promise<Equipment[]> => {
@@ -109,36 +145,6 @@ const getEquipmentAll = async (gearset: EtroGearset): Promise<Equipment[]> => {
     const equip = await Promise.all(gearSet.map(getEtroSingleEquipment));
 
     return equip;
-};
-
-const getEtroSingleEquipment = async (id: number) => {
-    return (
-        axios
-            .get(ETRO_API + `/equipment/${id}/`)
-            .then((response) => {
-                return response.data;
-            })
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .catch((error: any) => {
-                errorHandler('getSingleEquipment ' + id, error);
-                return {success: false, data: ''};
-            })
-    );
-};
-
-const getEtroMateriaList = async () => {
-    return (
-        axios
-            .get(ETRO_API + `/materia/`)
-            .then((response) => {
-                return response.data;
-            })
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .catch((error: any) => {
-                errorHandler('getEtroMateriaList ', error);
-                return {success: false, data: ''};
-            })
-    );
 };
 
 const getGearSetWithMateria = async (gearset: Gearset): Promise<Gearset> => {
@@ -186,8 +192,7 @@ const getGearSetWithMateria = async (gearset: Gearset): Promise<Gearset> => {
         }
 
         return gearset;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error: ErrorType) {
         throw new Error(error);
     }
 };
