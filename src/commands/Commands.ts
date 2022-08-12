@@ -1,5 +1,4 @@
 import {Command} from './Command';
+import {ShowEtroBis} from './slashCommands/ShowEtroBis';
 
-import {ShowEtroBisById} from './slashCommands/ShowEtroBisById';
-
-export const Commands: Command[] = [ShowEtroBisById];
+export const Commands: Command[] = [ShowEtroBis];

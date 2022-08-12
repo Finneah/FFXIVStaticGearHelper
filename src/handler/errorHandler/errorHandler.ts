@@ -1,21 +1,34 @@
 import {CommandInteraction, CacheType} from 'discord.js';
-import {t} from 'i18next';
+import {strings} from '../../locale/i18n';
+
+import {ErrorType} from '../../types';
 
 export const errorHandler = (
     namespace: string,
-    error: Error,
+    error: ErrorType,
     interaction?: CommandInteraction<CacheType>
 ) => {
-    console.warn('ERROR ' + error.name + ' ' + namespace, error.message);
+    console.warn('ERROR ' + namespace, error);
 
+    // TODO refactor auslagern
+    let message = error.message;
+    if (message.search('AxiosError')) {
+        message = message.split('AxiosError')[1];
+        if (message.search('Request failed with status code 404')) {
+            message = strings('error.wrongRequest');
+        }
+    }
     if (interaction) {
-        showInteraction(interaction, error);
+        showInteraction(interaction, message);
     }
 };
 
 const showInteraction = async (
     interaction: CommandInteraction<CacheType>,
-    error: Error
+
+    message: ErrorType
 ) => {
-    await interaction.followUp(t('error.general', {details: error.message}));
+    await interaction.followUp(
+        strings('error.general', {details: '\n' + message})
+    );
 };

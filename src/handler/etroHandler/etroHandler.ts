@@ -27,10 +27,11 @@ export const getEtroJobList = async () => {
 };
 
 export const getGearset = async (
-    gearsetId: string
+    option: string,
+    idOrLink: string
 ): Promise<Gearset | undefined> => {
     try {
-        let gearset: Gearset = await getGearsetWithEquipment(gearsetId);
+        let gearset: Gearset = await getGearsetWithEquipment(option, idOrLink);
 
         gearset = await getGearSetWithMateria(gearset);
 
@@ -41,11 +42,11 @@ export const getGearset = async (
     // TODO Fehler beheben wenn link mitgegeben wird, response passt dann auch nicht
 };
 
-const getGearsetWithEquipment = async (gearsetId: string) => {
+const getGearsetWithEquipment = async (option: string, idOrLink: string) => {
     try {
         // https://etro.gg/api/gearsets/e78a29e3-1dcf-4e53-bbcf-234f33b2c831/
-        // const testId = 'e78a29e3-1dcf-4e53-bbcf-234f33b2c831'; //'38fe3778-f2c1-4300-99e4-b58a0445e969'; //'e78a29e3-1dcf-4e53-bbcf-234f33b2c831';
-        const etroGearset = await getEtroGearset(gearsetId);
+
+        const etroGearset = await getEtroGearset(option, idOrLink);
         const equipment = await getEquipmentAll(etroGearset);
         const etroFood = await getEtroFood(etroGearset.food);
         const gearset: Gearset = {
@@ -73,10 +74,15 @@ const getGearsetWithEquipment = async (gearsetId: string) => {
         throw new Error(error);
     }
 };
-const getEtroGearset = async (gearsetId: string) => {
-    // TODO Fehler beheben wenn link mitgegeben wird, response passt dann auch nicht
+const getEtroGearset = async (option: string, idOrLink: string) => {
+    // https://etro.gg/gearset/38fe3778-f2c1-4300-99e4-b58a0445e969
+    let id = idOrLink;
+    if (option === 'by_link') {
+        id = idOrLink.replace('https://etro.gg/gearset/', '');
+    }
+
     return axios
-        .get(ETRO_API + `/gearsets/${gearsetId}/`)
+        .get(ETRO_API + `/gearsets/${id}/`)
         .then((response) => {
             if (response.status === 200) {
                 return response.data;

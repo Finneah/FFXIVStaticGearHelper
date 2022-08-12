@@ -21,28 +21,48 @@ import {Command} from '../Command';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type Error = ErrorType;
 
-export const ShowEtroBisById: Command = {
-    name: 'show_bis_by_id',
-    description: strings('showBisById.description'),
+export const ShowEtroBis: Command = {
+    name: 'bis',
+    description: strings('showBis.description'),
     type: ApplicationCommandType.ChatInput,
     options: [
         {
-            name: 'id',
-            type: ApplicationCommandOptionType.String,
-            description: strings('bisIdOption.description'),
-            required: true
+            name: 'by_link',
+            type: ApplicationCommandOptionType.Subcommand,
+            description: 'test',
+            options: [
+                {
+                    name: 'link',
+                    type: ApplicationCommandOptionType.String,
+                    description: strings('bisLinkOption.description'),
+                    required: true
+                }
+            ]
+        },
+        {
+            name: 'by_id',
+            type: ApplicationCommandOptionType.Subcommand,
+            description: 'test',
+            options: [
+                {
+                    name: 'id',
+                    type: ApplicationCommandOptionType.String,
+                    description: strings('bisIdOption.description'),
+                    required: true
+                }
+            ]
         }
     ],
     run: async (client: Client, interaction: CommandInteraction) => {
         try {
             const idOption = interaction.options.data.find(
-                (option) => option.name === 'id'
+                (option) => option.name === 'by_id' || option.name === 'by_link'
             );
 
-            if (idOption && idOption.value) {
+            if (idOption && idOption.options?.[0].value) {
                 const gearset = await getGearset(
-                    'by_id',
-                    idOption.value.toString()
+                    idOption.name,
+                    idOption.options?.[0].value.toString()
                 );
 
                 if (gearset) {
@@ -56,7 +76,7 @@ export const ShowEtroBisById: Command = {
                 }
             }
         } catch (error: Error) {
-            errorHandler('ShowEtroBisById', error, interaction);
+            errorHandler('ShowEtroBis', error, interaction);
         }
     }
 };
@@ -254,23 +274,4 @@ const getIconBySlotName = (slotName: string) => {
         default:
             return '';
     }
-};
-
-const getEtroIcon = async (
-    client: Client,
-    interaction: CommandInteraction<CacheType>,
-    iconId: number,
-    iconPath: string
-) => {
-    const icon = client.emojis.cache.find((emoji) => {
-        return emoji.name === iconId.toString();
-    });
-    if (!icon) {
-        const test = await interaction.guild?.emojis.create({
-            attachment: 'https://etro.gg/s/icons' + iconPath,
-            name: `${iconId}`
-        });
-    }
-
-    return icon;
 };

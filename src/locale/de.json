@@ -3,8 +3,9 @@
     "userRoleOption.description": "Benutzer mit der gewählten Rolle sind Teil der Static. Ihr Bis wird in der Übersicht angezeigt.",
     "error.general": "Ein Fehler ist aufgetreten, {{details}}",
     "error.coruptInteraction": "Fehlerhafte Interaction",
-    "showBisById.description": "Zeigt das Etro BiS Gear für die gewähte Id",
+    "showBis.description": "Zeigt das Etro BiS Gear für den gewählten Link oder Id",
     "bisIdOption.description": "Die Id findest du im Etro Link https://etro.gg/gearset/ID",
+    "bisLinkOption.description": "Kopiere einfach den Link von Etro direkt hier rein",
     "weapon": "Waffe",
     "offHand": "Nebenhand",
     "head": "Kopf",
@@ -16,5 +17,6 @@
     "neck": "Hals",
     "wrists": "Armband",
     "finger": "Finger",
-    "itemLevel": "Item Level"
+    "itemLevel": "Item Level",
+    "error.wrongRequest": "Zu diesem Link oder Id konnte kein Gearset gefunden werden."
 }
