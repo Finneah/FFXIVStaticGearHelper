@@ -1,5 +1,6 @@
 import {Client} from 'discord.js';
 import {Commands} from '../commands/Commands';
+import {SeqGuilds} from '../database';
 import {registerGuildCommands} from '../registerGuildCommands';
 
 export default (client: Client): void => {
@@ -8,9 +9,10 @@ export default (client: Client): void => {
             return;
         }
 
+        SeqGuilds.sync();
         registerGuildCommands('968410103999004732');
-        console.info('Client is online');
 
         await client.application.commands.set(Commands);
+        console.info('Client is online');
     });
 };

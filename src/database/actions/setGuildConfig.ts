@@ -1,16 +1,20 @@
-import {GuildConfigType} from '../types/GuildConfigType';
-import {GuildConfig} from '../sequelize';
+import {GuildConfig} from '../types/GuildConfigType';
+import {SeqGuilds} from '../sequelize';
 
-export const setGuildId = async (id: string, userRole: string) => {
-    const config: GuildConfigType = {
-        guild_id: id,
-        user_role: userRole
+export const setGuildConfig = async (guildConfig: GuildConfig) => {
+    const config: GuildConfig = {
+        guild_id: guildConfig.guild_id,
+        moderator_role: guildConfig.moderator_role,
+        static_role: guildConfig.static_role
     };
-
-    const guildConfig = await GuildConfig.create(config);
+    const seqGuildConfig = await SeqGuilds.create(config);
     console.info(
         `Guild ID ${
-            guildConfig.guild_id + ' ' + guildConfig.user_role
+            seqGuildConfig.guild_id +
+            ' ' +
+            seqGuildConfig.moderator_role +
+            ' ' +
+            seqGuildConfig.static_role
         } is saved in DB`
     );
 };
