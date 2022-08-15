@@ -9,18 +9,44 @@ export const errorHandler = (
     interaction?: CommandInteraction<CacheType>
 ) => {
     console.warn('ERROR ' + namespace, error);
-
-    // TODO refactor auslagern
     let message = error.message;
-    if (message.search('AxiosError')) {
+    if (message && message.search('AxiosError') !== -1) {
+        // TODO refactor auslagern
         message = message.split('AxiosError')[1];
-        if (message.search('Request failed with status code 404')) {
+        if (message.search('Request failed with status code 404') !== -1) {
             message = strings('error.wrongRequest');
         }
+    }
+
+    if (error.name && error.name === 'SequelizeDatabaseError') {
+        message = handleDBError(error);
     }
     if (interaction) {
         showInteraction(interaction, message);
     }
+};
+
+const handleDBError = (error: ErrorType) => {
+    let message = error.code;
+    switch (error.code) {
+        case 'SQLITE_ERROR':
+            console.warn('SQLITE_ERROR', error.sql);
+            break;
+
+        default:
+            break;
+    }
+
+    switch (error.parent.errno) {
+        case 1:
+            message = strings('sqliteError.noSuchTable');
+            break;
+
+        default:
+            break;
+    }
+
+    return message;
 };
 
 const showInteraction = async (

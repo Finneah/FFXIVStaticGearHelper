@@ -1,5 +1,5 @@
-export type GuildConfigType = {
+export type GuildConfig = {
     guild_id: string;
-    user_role?: string;
+    static_role?: string;
     moderator_role?: string;
 };

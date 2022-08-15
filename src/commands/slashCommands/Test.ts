@@ -10,34 +10,40 @@ export const Test: Command = {
     name: 'test',
     description: 'test',
     type: ApplicationCommandType.ChatInput,
-
     run: async (client: Client, interaction: CommandInteraction) => {
         try {
-            const name = interaction.user.username;
-            const avatar = await interaction.user.avatarURL();
+            // const name = interaction.user.username;
+            // const avatar = await interaction.user.avatarURL();
 
             // interaction.guild?.emojis.create({
             //     attachment: 'https://etro.gg/s/icons/i/041000/041910.png',
             //     name: '041910'
             // });
-            const icons = await interaction.guild?.emojis.fetch();
+            // const icons = await interaction.guild?.emojis.fetch();
 
-            const ayy = client.emojis.cache.find(
-                (emoji) => emoji.name === '032795'
-            );
+            // const ayy = client.emojis.cache.find(
+            //     (emoji) => emoji.name === '032795'
+            // );
 
             const embed = new EmbedBuilder({
-                title: `${ayy} LMAO`,
-                fields: [
-                    {
-                        name: 'Test',
-                        value: `${ayy} Test`,
-                        inline: false
-                    }
-                ]
+                title: `Test`
             });
             await interaction.followUp({
                 ephemeral: true,
+                components: [
+                    {
+                        type: 1,
+                        components: [
+                            {
+                                style: 2,
+                                label: `Test`,
+                                custom_id: `primary`,
+                                disabled: false,
+                                type: 2
+                            }
+                        ]
+                    }
+                ],
                 embeds: [embed]
             });
 
