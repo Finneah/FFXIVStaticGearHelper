@@ -256,21 +256,21 @@ const getIconBySlotName = (slotName: string) => {
     }
 };
 
-const getEtroIcon = async (
-    client: Client,
-    interaction: CommandInteraction<CacheType>,
-    iconId: number,
-    iconPath: string
-) => {
-    const icon = client.emojis.cache.find((emoji) => {
-        return emoji.name === iconId.toString();
-    });
-    if (!icon) {
-        const test = await interaction.guild?.emojis.create({
-            attachment: 'https://etro.gg/s/icons' + iconPath,
-            name: `${iconId}`
-        });
-    }
+// const getEtroIcon = async (
+//     client: Client,
+//     interaction: CommandInteraction<CacheType>,
+//     iconId: number,
+//     iconPath: string
+// ) => {
+//     const icon = client.emojis.cache.find((emoji) => {
+//         return emoji.name === iconId.toString();
+//     });
+//     if (!icon) {
+//         const test = await interaction.guild?.emojis.create({
+//             attachment: 'https://etro.gg/s/icons' + iconPath,
+//             name: `${iconId}`
+//         });
+//     }
 
-    return icon;
-};
+//     return icon;
+// };
