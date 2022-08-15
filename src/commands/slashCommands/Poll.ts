@@ -81,7 +81,6 @@ const getOptions = (): ApplicationCommandOptionData[] => {
 export const Poll: Command = {
     name: 'polli',
     description: 'pollitest',
-
     type: ApplicationCommandType.ChatInput,
     options: getOptions(),
     run: async (client: Client, interaction: CommandInteraction) => {

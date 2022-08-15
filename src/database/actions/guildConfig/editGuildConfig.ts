@@ -1,7 +1,7 @@
-import {GuildConfig} from '../types/GuildConfigType';
-import {SeqGuilds} from '../sequelize';
+import {GuildConfigType} from '../../types/DataType';
+import {SeqGuilds} from '../../sequelize';
 
-export const editGuildConfig = async (guildConfig: GuildConfig) => {
+export const editGuildConfig = async (guildConfig: GuildConfigType) => {
     await SeqGuilds.update(
         {
             moderator_role: guildConfig.moderator_role,

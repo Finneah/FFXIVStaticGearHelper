@@ -11,20 +11,20 @@ import {
     ComponentType,
     EmbedBuilder,
     EmbedData,
-    Message,
-    PermissionsBitField
+    Message
 } from 'discord.js';
 import {setGuildConfig} from '../../database';
-import {editGuildConfig} from '../../database/actions/editGuildConfig';
+import {editGuildConfig} from '../../database/actions/guildConfig/editGuildConfig';
 
-import {getGuildConfig} from '../../database/actions/getGuildConfig';
-import {GuildConfig} from '../../database/types/GuildConfigType';
+import {getGuildConfig} from '../../database/actions/guildConfig/getGuildConfig';
+import {GuildConfigType} from '../../database/types/DataType';
 
 import {errorHandler} from '../../handler';
 import {strings} from '../../locale/i18n';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import {ErrorType} from '../../types';
+import {checkPermission} from '../../utils/permissions/permissions';
 
 import {Command} from '../Command';
 
@@ -73,14 +73,15 @@ export const ConfigureBotForGuild: Command = {
                 (option) => option.name === 'set' || option.name === 'get'
             );
 
-            const guildConfig: GuildConfig = await getGuildConfig(
-                interaction.guildId
+            const guildConfig: GuildConfigType = await getGuildConfig(
+                interaction.guildId,
+                interaction
             );
 
             const permissions = await checkPermission(
                 interaction,
                 interaction.guildId,
-                guildConfig
+                guildConfig.moderator_role
             );
             if (!permissions) {
                 return interaction.followUp(
@@ -123,7 +124,7 @@ const setConfig = async (
     static_roleOption: CommandInteractionOption<CacheType>,
     isUpdate = false
 ) => {
-    const newConfig: GuildConfig = {
+    const newConfig: GuildConfigType = {
         guild_id: interaction.guildId ?? '',
         moderator_role: moderator_roleOption.value?.toString() || '',
         static_role: static_roleOption.value?.toString() || ''
@@ -154,7 +155,7 @@ const setConfig = async (
 const handleSetConfig = async (
     interaction: CommandInteraction<CacheType>,
     subCommand: CommandInteractionOption<CacheType>,
-    guildConfig: GuildConfig
+    guildConfig: GuildConfigType
 ) => {
     try {
         const moderator_roleOption =
@@ -192,13 +193,13 @@ const handleSetConfig = async (
             });
         }
     } catch (error: ErrorType) {
-        throw new Error(error);
+        errorHandler('handleSetConfig', error, interaction);
     }
 };
 
 const handleGetConfig = async (
     interaction: CommandInteraction<CacheType>,
-    guildConfig: GuildConfig
+    guildConfig: GuildConfigType
 ) => {
     const embed = await getConfigEmbed(
         guildConfig.moderator_role,
@@ -220,7 +221,7 @@ const handleGetConfig = async (
 
 const handleSetConfigAlreadyExist = async (
     interaction: CommandInteraction<CacheType>,
-    guildConfig: GuildConfig,
+    guildConfig: GuildConfigType,
     moderator_roleOption: CommandInteractionOption<CacheType>,
     static_roleOption: CommandInteractionOption<CacheType>
 ) => {
@@ -389,26 +390,4 @@ const handleButtonCollector = (
     collector.on('end', (collected: {size: number}) => {
         console.info(`Collected ${collected.size} interactions.`);
     });
-};
-
-const checkPermission = async (
-    interaction: CommandInteraction<CacheType>,
-    guildId: string,
-    guildConfig: GuildConfig
-) => {
-    const guild = await interaction.client.guilds.fetch(guildId);
-    const member = await guild.members.fetch(interaction.user.id);
-
-    let hasPermisson = false;
-    hasPermisson =
-        member.permissions.has(PermissionsBitField.Flags.Administrator, true) ||
-        member.permissions.has(PermissionsBitField.Flags.ManageGuild, true) ||
-        guild.ownerId === member.id;
-
-    if (guildConfig?.moderator_role) {
-        if (!hasPermisson) {
-            hasPermisson = member.roles.cache.has(guildConfig.moderator_role);
-        }
-    }
-    return hasPermisson;
 };

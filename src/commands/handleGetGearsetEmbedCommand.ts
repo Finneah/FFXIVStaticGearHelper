@@ -1,63 +1,41 @@
 import {
-    APIEmbed,
-    ApplicationCommandOptionType,
-    ApplicationCommandType,
-    CacheType,
-    Client,
     CommandInteraction,
-    EmbedBuilder,
+    CacheType,
     EmbedData,
-    EmbedField,
-    resolveColor
+    APIEmbed,
+    resolveColor,
+    EmbedBuilder,
+    EmbedField
 } from 'discord.js';
-import {getGearset, errorHandler} from '../../handler';
-import {strings} from '../../locale/i18n';
-import {Gearset, Equipment, MateriaType, ErrorType} from '../../types';
-import {getJobIconUrl, getRoleColorByJob} from '../../utils';
-
-import {Command} from '../Command';
-
-// it is used
+import {errorHandler, getGearset} from '../handler';
+import {strings} from '../locale/i18n';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-type Error = ErrorType;
+import {Equipment, ErrorType, Gearset, MateriaType} from '../types';
+import {getJobIconUrl, getRoleColorByJob} from '../utils';
 
-export const ShowEtroBisById: Command = {
-    name: 'show_bis_by_id',
-    description: strings('showBisById.description'),
-    type: ApplicationCommandType.ChatInput,
-    options: [
-        {
-            name: 'id',
-            type: ApplicationCommandOptionType.String,
-            description: strings('bisIdOption.description'),
-            required: true
+export const handleGetGearsetEmbedCommand = async (
+    by: 'by_id' | 'by_link',
+    value: string,
+    interaction: CommandInteraction<CacheType>
+) => {
+    try {
+        const gearset = await getGearset(by, value);
+
+        if (gearset) {
+            const embed = await getEmbedBis(gearset, interaction);
+
+            await interaction.followUp({
+                ephemeral: false,
+                // content: 'finished',
+                // components: await getComponents(
+                //     hasPermission,
+                //     guildConfig
+                // ),
+                embeds: embed ? [embed] : undefined
+            });
         }
-    ],
-    run: async (client: Client, interaction: CommandInteraction) => {
-        try {
-            const idOption = interaction.options.data.find(
-                (option) => option.name === 'id'
-            );
-
-            if (idOption && idOption.value) {
-                const gearset = await getGearset(
-                    'by_id',
-                    idOption.value.toString()
-                );
-
-                if (gearset) {
-                    const embed = await getEmbedBis(gearset, interaction);
-
-                    await interaction.followUp({
-                        ephemeral: true,
-                        // content: 'finished',
-                        embeds: embed ? [embed] : undefined
-                    });
-                }
-            }
-        } catch (error: Error) {
-            errorHandler('ShowEtroBisById', error, interaction);
-        }
+    } catch (error: ErrorType) {
+        errorHandler('handleGetGearsetEmbedCommand', error, interaction);
     }
 };
 
@@ -67,7 +45,7 @@ const getEmbedBis = async (
 ) => {
     const avatar = await interaction.user.avatarURL();
     const jobIconPath = await getJobIconUrl(gearset.jobAbbrev);
-    const equipmentFields = getEquipmentFields(gearset);
+    const equipmentFields = getEquipmentFields(gearset, interaction);
     const embedData: EmbedData | APIEmbed = {
         color: resolveColor(getRoleColorByJob(gearset.jobAbbrev)),
         title: gearset.name,
@@ -99,7 +77,10 @@ const getEmbedBis = async (
     return new EmbedBuilder(embedData);
 };
 
-const getEquipmentFields = (gearset: Gearset) => {
+const getEquipmentFields = (
+    gearset: Gearset,
+    interaction: CommandInteraction<CacheType> | undefined
+) => {
     const fields: EmbedField[] = [];
     try {
         if (gearset.weapon) {
@@ -176,8 +157,9 @@ const getEquipmentFields = (gearset: Gearset) => {
         }
 
         return fields;
-    } catch (error: Error) {
-        throw new Error(error);
+    } catch (error: ErrorType) {
+        errorHandler('getEquipmentFields', error, interaction);
+        return [];
     }
 };
 
@@ -255,22 +237,3 @@ const getIconBySlotName = (slotName: string) => {
             return '';
     }
 };
-
-// const getEtroIcon = async (
-//     client: Client,
-//     interaction: CommandInteraction<CacheType>,
-//     iconId: number,
-//     iconPath: string
-// ) => {
-//     const icon = client.emojis.cache.find((emoji) => {
-//         return emoji.name === iconId.toString();
-//     });
-//     if (!icon) {
-//         const test = await interaction.guild?.emojis.create({
-//             attachment: 'https://etro.gg/s/icons' + iconPath,
-//             name: `${iconId}`
-//         });
-//     }
-
-//     return icon;
-// };
