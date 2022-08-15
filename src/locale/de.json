@@ -14,6 +14,8 @@
     "itemLevel": "Item Level",
     "legs": "Beine",
     "neck": "Hals",
+    "override": "Überschreiben",
+    "cancel": "Abbrechen",
     "offHand": "Nebenhand",
     "showBis.description": "Zeigt das Etro BiS Gear für den gewählten Link oder Id",
     "sqliteError.noSuchTable": "Die Tabelle konnte nicht gefunden werden",
@@ -21,5 +23,8 @@
     "weapon": "Waffe",
     "wrists": "Armband",
     "userRolesOption.description": "Gib die Rollen an die ihr Bis speichern dürfen.\n Die `static_role` Rolle darf das immer.",
-    "moderatorRoleOption.description": "Wer darf den Bot Configurieren?"
+    "moderatorRoleOption.description": "Wer darf den Bot Configurieren?",
+    "error.permissionDenied": "Sorry, das darfst du nicht!",
+    "configSetCommand.alreadyExistTitle": "Es sind bereits Einstellungen gespeichert",
+    "configSetCommand.alreadyExistDescription": "Wenn du die gespeicherten Einstellungen überschreiben willst, klicke auf `Überschreiben`"
 }

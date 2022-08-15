@@ -11,9 +11,11 @@ import {
     ComponentType,
     EmbedBuilder,
     EmbedData,
-    Message
+    Message,
+    PermissionsBitField
 } from 'discord.js';
 import {setGuildConfig} from '../../database';
+import {editGuildConfig} from '../../database/actions/editGuildConfig';
 
 import {getGuildConfig} from '../../database/actions/getGuildConfig';
 import {GuildConfig} from '../../database/types/GuildConfigType';
@@ -75,6 +77,19 @@ export const ConfigureBotForGuild: Command = {
                 interaction.guildId
             );
 
+            const permissions = await checkPermission(
+                interaction,
+                interaction.guildId,
+                guildConfig
+            );
+            if (!permissions) {
+                return interaction.followUp(
+                    strings('error.general', {
+                        details: 'error.permissionDenied'
+                    })
+                );
+            }
+
             switch (subCommand?.name) {
                 case 'set':
                     handleSetConfig(interaction, subCommand, guildConfig);
@@ -86,8 +101,8 @@ export const ConfigureBotForGuild: Command = {
                     } else {
                         return interaction.followUp({
                             ephemeral: true,
-
-                            content: 'Button, Configurieren?'
+                            content:
+                                'Es wurde noch keine Konfiguration gespeichert. Wenn du eine Konfiguration speichern willst, gib `/config set` ein.'
                         });
                     }
 
@@ -101,19 +116,25 @@ export const ConfigureBotForGuild: Command = {
         }
     }
 };
+
 const setConfig = async (
     interaction: CommandInteraction<CacheType>,
     moderator_roleOption: CommandInteractionOption<CacheType>,
-    static_roleOption: CommandInteractionOption<CacheType>
+    static_roleOption: CommandInteractionOption<CacheType>,
+    isUpdate = false
 ) => {
-    console.log('HERE', 'settingsExist NOT');
     const newConfig: GuildConfig = {
         guild_id: interaction.guildId ?? '',
         moderator_role: moderator_roleOption.value?.toString() || '',
         static_role: static_roleOption.value?.toString() || ''
     };
 
-    setGuildConfig(newConfig);
+    if (isUpdate) {
+        editGuildConfig(newConfig);
+    } else {
+        setGuildConfig(newConfig);
+    }
+
     const embed = await getConfigEmbed(
         newConfig.moderator_role,
         newConfig.static_role,
@@ -125,8 +146,7 @@ const setConfig = async (
         //     parse: ['roles'],
         //     roles: ['@ROLENAME']
         // },
-        ephemeral: true,
-
+        ephemeral: false,
         embeds: embed ? [embed] : undefined
     });
 };
@@ -226,14 +246,14 @@ const handleSetConfigAlreadyExist = async (
                     components: [
                         {
                             style: 2,
-                            label: `Überschreiben`,
+                            label: `${strings('override')}`,
                             custom_id: `overrideConfig`,
                             disabled: false,
                             type: 2
                         },
                         {
                             style: 4,
-                            label: `Abbrechen`,
+                            label: `${strings('cancel')}`,
                             custom_id: `cancelConfig`,
                             disabled: false,
                             type: 2
@@ -334,23 +354,27 @@ const handleButtonCollector = (
 ) => {
     const collector = message.createMessageComponentCollector({
         componentType: ComponentType.Button,
-        time: 15000
+        time: undefined
     });
 
     collector.on('collect', (i: ButtonInteraction) => {
         if (i.user.id === interaction.user.id) {
             switch (i.customId) {
                 case 'overrideConfig':
-                    setConfig(
-                        interaction,
-                        moderator_roleOption,
-                        static_roleOption
-                    );
-                    i.deleteReply();
+                    if (moderator_roleOption && static_roleOption) {
+                        setConfig(
+                            interaction,
+                            moderator_roleOption,
+                            static_roleOption,
+                            true
+                        );
+                        return interaction.deleteReply();
+                    }
+
                     break;
                 case 'cancelConfig':
-                    interaction.deleteReply();
-                    break;
+                    return interaction.deleteReply();
+
                 default:
                     break;
             }
@@ -363,11 +387,28 @@ const handleButtonCollector = (
     });
 
     collector.on('end', (collected: {size: number}) => {
-        console.log(`Collected ${collected.size} interactions.`);
-        if (collected.size === 0) {
-            message.edit({
-                components: []
-            });
-        }
+        console.info(`Collected ${collected.size} interactions.`);
     });
+};
+
+const checkPermission = async (
+    interaction: CommandInteraction<CacheType>,
+    guildId: string,
+    guildConfig: GuildConfig
+) => {
+    const guild = await interaction.client.guilds.fetch(guildId);
+    const member = await guild.members.fetch(interaction.user.id);
+
+    let hasPermisson = false;
+    hasPermisson =
+        member.permissions.has(PermissionsBitField.Flags.Administrator, true) ||
+        member.permissions.has(PermissionsBitField.Flags.ManageGuild, true) ||
+        guild.ownerId === member.id;
+
+    if (guildConfig?.moderator_role) {
+        if (!hasPermisson) {
+            hasPermisson = member.roles.cache.has(guildConfig.moderator_role);
+        }
+    }
+    return hasPermisson;
 };
