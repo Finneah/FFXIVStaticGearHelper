@@ -129,8 +129,7 @@ export const ConfigureBotForGuild: Command = {
 const setConfig = async (
     interaction: CommandInteraction<CacheType>,
     moderator_roleOption: CommandInteractionOption<CacheType>,
-    static_roleOption: CommandInteractionOption<CacheType>,
-    isUpdate = false
+    static_roleOption: CommandInteractionOption<CacheType>
 ) => {
     const newConfig: GuildConfigType = {
         guild_id: interaction.guildId ?? '',
@@ -138,11 +137,7 @@ const setConfig = async (
         static_role: static_roleOption.value?.toString() || ''
     };
 
-    if (isUpdate) {
-        editGuildConfig(newConfig);
-    } else {
-        setGuildConfig(newConfig);
-    }
+    editGuildConfig(newConfig);
 
     const embed = await getConfigEmbed(
         newConfig.moderator_role,
