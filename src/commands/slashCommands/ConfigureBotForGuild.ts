@@ -284,6 +284,10 @@ const getConfigEmbed = (
     static_role: string | undefined,
     color: number
 ) => {
+    moderator_role?.search('<@&') == -1 &&
+        (moderator_role = '<@&' + moderator_role + '>');
+    static_role?.search('<@&') == -1 &&
+        (static_role = '<@&' + static_role + '>');
     const embedData: EmbedData | APIEmbed = {
         title: `Static Gear Helper Config`,
         description: `Alle Mitglieder der Rolle ${moderator_role} dürfen die Konfiguration anpassen.\n
