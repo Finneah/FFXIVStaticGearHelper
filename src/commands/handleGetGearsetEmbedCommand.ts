@@ -37,17 +37,9 @@ export const handleGetGearsetEmbedCommand = async (
 ) => {
     try {
         const gearset = await getGearset(by, value);
-        logger.info('Start create embed with buttons');
 
         if (gearset) {
             const embed = await getEmbedBis(gearset, interaction);
-
-            /**
-             * button löschen wenn is saved
-             * reactions wenn is saved
-             *
-             * button save wenn canBeSaved
-             */
 
             if (bis && hasPermission && gearset) {
                 const actionRows = getActionRows(gearset, bis);
@@ -281,7 +273,7 @@ const addButtonComponent = (
     if (gear?.slotName) {
         const button = new ButtonBuilder()
             .setCustomId(
-                CommandNames.EDITBIS +
+                ButtonCommandNames.EDITBIS +
                     '_' +
                     (ringPrefix ? gear.slotName + ringPrefix : gear.slotName) +
                     '_' +
@@ -377,10 +369,10 @@ const getActionRowWithButtons = (
         if (lastRow.length < 5) {
             // push settings
             const settingsButton = new ButtonBuilder()
-                .setCustomId(ButtonCommandNames.SETTINGS)
-                .setLabel(' ')
-                .setStyle(2)
-                .setEmoji('⚙️');
+                .setCustomId(ButtonCommandNames.DELETE_BIS + '_' + bis_name)
+                .setLabel('Löschen')
+                .setStyle(4);
+            // .setEmoji('⚙️');
             lastRow.push(settingsButton);
         } else {
             // create new row push settings

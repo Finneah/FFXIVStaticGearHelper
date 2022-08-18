@@ -1,27 +1,28 @@
 import {ApplicationCommandType, ButtonInteraction, Client} from 'discord.js';
-import {editBisFromUser} from '../../database/actions/bestInSlot/editBisFromUser';
-import {getBisByUserByName} from '../../database/actions/bestInSlot/getBisFromUser';
-import {getGuildConfig} from '../../database/actions/guildConfig/getGuildConfig';
-import {GearTypes, GuildConfigType} from '../../database/types/DataType';
+import {editBisFromUser} from '../database/actions/bestInSlot/editBisFromUser';
+import {getBisByUserByName} from '../database/actions/bestInSlot/getBisFromUser';
+import {getGuildConfig} from '../database/actions/guildConfig/getGuildConfig';
+import {GearTypes, GuildConfigType} from '../database/types/DataType';
 
-import {errorHandler, getGearset} from '../../handler';
-import {strings} from '../../locale/i18n';
-import Logger from '../../logger';
+import {errorHandler, getGearset} from '../handler';
+import {strings} from '../locale/i18n';
+import Logger from '../logger';
 
 import {
-    CommandNames,
+    ButtonCommandNames,
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     ErrorType,
     SubCommandNames
-} from '../../types';
-import {checkPermission} from '../../utils/permissions/permissions';
-import {ButtonCommand} from '../Command';
-import {getActionRows} from '../handleGetGearsetEmbedCommand';
+} from '../types';
+import {checkPermission} from '../utils/permissions';
+import {ButtonCommand} from './Command';
+import {getActionRows} from './handleGetGearsetEmbedCommand';
 
-const logger = Logger.child({module: CommandNames.EDITBIS});
+const logger = Logger.child({module: ButtonCommandNames.EDITBIS});
 
 export const EditBis: ButtonCommand = {
-    name: CommandNames.EDITBIS,
+    name: ButtonCommandNames.EDITBIS,
     type: ApplicationCommandType.Message,
     run: async (client: Client, interaction: ButtonInteraction) => {
         try {
@@ -73,7 +74,6 @@ export const EditBis: ButtonCommand = {
                         const actionRows = getActionRows(gearset, bis);
 
                         await interaction.editReply({
-                            content: 'A button was clicked!',
                             components: actionRows
                         });
                     } else {

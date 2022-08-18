@@ -26,7 +26,7 @@ import {
     OptionNames,
     SubCommandNames
 } from '../../types';
-import {checkPermission} from '../../utils/permissions/permissions';
+import {checkPermission} from '../../utils/permissions';
 
 import {Command} from '../Command';
 import {handleGetGearsetEmbedCommand} from '../handleGetGearsetEmbedCommand';
@@ -122,12 +122,7 @@ export const BestInSlot: Command = {
                     break;
 
                 case SubCommandNames.GET:
-                    handleGetBis(
-                        interaction,
-                        subCommand,
-                        savedBis,
-                        hasPermissions
-                    );
+                    handleGetBis(interaction, subCommand, hasPermissions);
                     break;
 
                 default:
@@ -181,7 +176,7 @@ const handleSetBis = async (
         logger.info('Erfolgreich gespeichert');
         return interaction.followUp({
             ephemeral: true,
-            content: 'Erfolgreich gespeichert'
+            content: `BiS ${name} Gespeichert. Schau es dir mit \`/${CommandNames.BESTINSLOT} ${SubCommandNames.GET} :${OptionNames.NAME}\` gleich an`
         });
     } catch (error: ErrorType) {
         errorHandler('handleSetBis', error, interaction);
@@ -191,7 +186,6 @@ const handleSetBis = async (
 const handleGetBis = async (
     interaction: CommandInteraction<CacheType>,
     subCommand: CommandInteractionOption<CacheType>,
-    savedBis: BisLinksType[],
     hasPermission: boolean
 ) => {
     try {

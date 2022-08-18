@@ -1,3 +1,3 @@
-export * from './iconMapper/iconMapper';
-export * from './roleColorMapper/roleColorMapper';
-export * from './validation/validation';
+export * from './iconMapper';
+export * from './role';
+export * from './validation';

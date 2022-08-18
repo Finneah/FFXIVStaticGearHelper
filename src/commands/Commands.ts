@@ -1,4 +1,7 @@
-import {EditBis} from './buttonCommands/editBis';
+import {ConfigCancel} from './ConfigCancel';
+import {ConfigOverride} from './ConfigOverride';
+import {DeleteBis} from './DeleteBis';
+import {EditBis} from './EditBis';
 import {ButtonCommand, Command} from './Command';
 import {BestInSlot} from './slashCommands/BestInSlot';
 import {ConfigureBotForGuild} from './slashCommands/ConfigureBotForGuild';
@@ -12,6 +15,8 @@ export const Commands: Command[] = [
 ];
 
 export const ButtonCommands: ButtonCommand[] = [
-    EditBis
-    // ButtonOverrideConfig
+    EditBis,
+    DeleteBis,
+    ConfigOverride,
+    ConfigCancel
 ];

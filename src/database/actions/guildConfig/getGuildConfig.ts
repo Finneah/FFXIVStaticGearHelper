@@ -7,8 +7,9 @@ import {ErrorType} from '../../../types';
 import {SeqGuilds} from '../../sequelize';
 import {GuildConfigType} from '../../types/DataType';
 const logger = Logger.child({module: 'getGuildConfig'});
+
 export const getGuildConfig = async (
-    guildId: string,
+    guild_id: string,
     interaction:
         | CommandInteraction<CacheType>
         | ButtonInteraction<CacheType>
@@ -16,19 +17,21 @@ export const getGuildConfig = async (
 ): Promise<GuildConfigType> => {
     try {
         const seqGuildConfig: GuildConfigType = await SeqGuilds.findOne({
-            where: {guild_id: guildId}
+            where: {guild_id: guild_id}
         });
         if (seqGuildConfig) {
             const guildConfig = {
-                ...seqGuildConfig,
+                guild_id: seqGuildConfig.guild_id,
                 moderator_role: seqGuildConfig.moderator_role,
                 static_role: seqGuildConfig.static_role
             };
+
             return guildConfig;
         }
+
         return seqGuildConfig;
     } catch (error: ErrorType) {
         errorHandler('getGuildConfig', error, interaction);
-        return Promise.reject();
+        return Promise.reject('something went wrong');
     }
 };
