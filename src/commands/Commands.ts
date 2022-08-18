@@ -1,7 +1,8 @@
-import {ConfigCancel} from './ConfigCancel';
-import {ConfigOverride} from './ConfigOverride';
-import {DeleteBis} from './DeleteBis';
-import {EditBis} from './EditBis';
+import {ConfigCancel} from './buttonCommands/ConfigCancel';
+import {ConfigOverride} from './buttonCommands/ConfigOverride';
+import {DeleteBis} from './buttonCommands/DeleteBis';
+import {EditBis} from './buttonCommands/EditBis';
+
 import {ButtonCommand, Command} from './Command';
 import {BestInSlot} from './slashCommands/BestInSlot';
 import {ConfigureBotForGuild} from './slashCommands/ConfigureBotForGuild';

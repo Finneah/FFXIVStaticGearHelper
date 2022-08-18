@@ -1,15 +1,15 @@
 import {ApplicationCommandType, ButtonInteraction, Client} from 'discord.js';
 
-import {errorHandler} from '../handler';
-import {strings} from '../locale/i18n';
-import Logger from '../logger';
+import {errorHandler} from '../../handler';
+import {strings} from '../../locale/i18n';
+import Logger from '../../logger';
 
 import {
     ButtonCommandNames,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     ErrorType
-} from '../types';
-import {ButtonCommand} from './Command';
+} from '../../types';
+import {ButtonCommand} from '../Command';
 
 const logger = Logger.child({module: ButtonCommandNames.CONFIG_CANCEL});
 

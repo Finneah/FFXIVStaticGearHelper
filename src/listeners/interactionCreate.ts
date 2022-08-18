@@ -6,15 +6,16 @@ import {
     CommandInteraction,
     Interaction
 } from 'discord.js';
-import {ConfigCancel} from '../commands/ConfigCancel';
-import {ConfigOverride} from '../commands/ConfigOverride';
-import {DeleteBis} from '../commands/DeleteBis';
-import {EditBis} from '../commands/EditBis';
+import {ConfigCancel} from '../commands/buttonCommands/ConfigCancel';
+import {ConfigOverride} from '../commands/buttonCommands/ConfigOverride';
+import {DeleteBis} from '../commands/buttonCommands/DeleteBis';
+import {EditBis} from '../commands/buttonCommands/EditBis';
+
 import {ButtonCommand} from '../commands/Command';
-import {ButtonCommands, Commands} from '../commands/Commands';
+import {Commands} from '../commands/Commands';
 import {getBisByUser} from '../database/actions/bestInSlot/getBisFromUser';
 import Logger from '../logger';
-import {ButtonCommandNames, CommandNames, SubCommandNames} from '../types';
+import {ButtonCommandNames, CommandNames} from '../types';
 const logger = Logger.child({module: 'interactionCreate'});
 
 export default (client: Client): void => {
