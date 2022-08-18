@@ -19,10 +19,22 @@ export const SeqGuilds = sequelize.define('guilds', {
 });
 
 export const SeqBiSLinks = sequelize.define('bis', {
-    bis_name: {type: Sequelize.STRING, allowNull: false},
-    bis_link: {type: Sequelize.STRING, allowNull: false},
     user_id: {
         type: Sequelize.STRING,
         allowNull: false
-    }
+    },
+    bis_name: {type: Sequelize.STRING, allowNull: false},
+    bis_link: {type: Sequelize.STRING, allowNull: false},
+    weapon: {type: Sequelize.BOOLEAN, allowNull: true},
+    head: {type: Sequelize.BOOLEAN, allowNull: true},
+    body: {type: Sequelize.BOOLEAN, allowNull: true},
+    hands: {type: Sequelize.BOOLEAN, allowNull: true},
+    legs: {type: Sequelize.BOOLEAN, allowNull: true},
+    feet: {type: Sequelize.BOOLEAN, allowNull: true},
+    offHand: {type: Sequelize.BOOLEAN, allowNull: true},
+    ears: {type: Sequelize.BOOLEAN, allowNull: true},
+    neck: {type: Sequelize.BOOLEAN, allowNull: true},
+    wrists: {type: Sequelize.BOOLEAN, allowNull: true},
+    fingerL: {type: Sequelize.BOOLEAN, allowNull: true},
+    fingerR: {type: Sequelize.BOOLEAN, allowNull: true}
 });

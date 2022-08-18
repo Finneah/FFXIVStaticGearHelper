@@ -4,26 +4,33 @@ import {
     Client,
     CommandInteraction
 } from 'discord.js';
+
 import {errorHandler} from '../../handler';
 import {strings} from '../../locale/i18n';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import {ErrorType} from '../../types';
+import Logger from '../../logger';
 
+import {
+    CommandNames,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    ErrorType,
+    OptionNames,
+    SubCommandNames
+} from '../../types';
 import {Command} from '../Command';
 import {handleGetGearsetEmbedCommand} from '../handleGetGearsetEmbedCommand';
 
 export const ShowEtroBis: Command = {
-    name: 'show_bis',
+    name: CommandNames.SHOWETROBIS,
     description: strings('showBis.description'),
     type: ApplicationCommandType.ChatInput,
     options: [
         {
-            name: 'by_link',
+            name: SubCommandNames.BY_LINK,
             type: ApplicationCommandOptionType.Subcommand,
-            description: 'test',
+            description: strings('bisLinkCommand.description'),
             options: [
                 {
-                    name: 'link',
+                    name: OptionNames.LINK,
                     type: ApplicationCommandOptionType.String,
                     description: strings('bisLinkOption.description'),
                     required: true
@@ -31,12 +38,12 @@ export const ShowEtroBis: Command = {
             ]
         },
         {
-            name: 'by_id',
+            name: SubCommandNames.BY_ID,
             type: ApplicationCommandOptionType.Subcommand,
-            description: 'test',
+            description: strings('bisIdCommand.description'),
             options: [
                 {
-                    name: 'id',
+                    name: OptionNames.ID,
                     type: ApplicationCommandOptionType.String,
                     description: strings('bisIdOption.description'),
                     required: true
@@ -47,6 +54,7 @@ export const ShowEtroBis: Command = {
     run: async (client: Client, interaction: CommandInteraction) => {
         try {
             if (!interaction.guildId) {
+                Logger.warn('no interaction.guildId');
                 return interaction.followUp(
                     strings('error.general', {
                         details: 'error.coruptInteraction'
@@ -54,8 +62,18 @@ export const ShowEtroBis: Command = {
                 );
             }
             const idOption = interaction.options.data.find(
-                (option) => option.name === 'by_id' || option.name === 'by_link'
+                (option) =>
+                    option.name === SubCommandNames.BY_LINK ||
+                    option.name === SubCommandNames.BY_ID
             );
+            if (!idOption?.options?.[0].value) {
+                Logger.warn('no idOption?.options?.[0].value');
+                return interaction.followUp(
+                    strings('error.general', {
+                        details: 'error.coruptInteraction'
+                    })
+                );
+            }
 
             // const guildConfig: GuildConfigTypes = await getGuildConfig(
             //     interaction.guildId
@@ -68,7 +86,9 @@ export const ShowEtroBis: Command = {
 
             if (idOption && idOption.options?.[0].value) {
                 handleGetGearsetEmbedCommand(
-                    idOption.name === 'by_id' ? 'by_id' : 'by_link',
+                    idOption.name === SubCommandNames.BY_ID
+                        ? SubCommandNames.BY_ID
+                        : SubCommandNames.BY_LINK,
                     idOption.options?.[0].value.toString(),
                     interaction
                 );

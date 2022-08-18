@@ -12,7 +12,8 @@
     "scripts": {
         "start": "node build/main.js",
         "build": "tsc",
-        "start:dev": "nodemon src/main.ts",
+        "build:watch": "tsc -w",
+        "start:dev": "nodemon build/main.js | pino-pretty -i pid,hostname -t dd-mm-yyyy HH:MM:ss",
         "lint": "eslint src --ext .ts",
         "format": "prettier --write src/**/*.ts",
         "check-types": "tsc --noEmit"
@@ -24,7 +25,9 @@
         "discord-api-types": "^0.37.1",
         "discord.js": "^14.1.2",
         "dotenv": "^16.0.1",
+        "fs": "^0.0.1-security",
         "i18next": "^21.8.16",
+        "pino": "^7.0.0-rc.9",
         "sequelize": "^6.21.3",
         "sqlite3": "^5.0.11"
     },

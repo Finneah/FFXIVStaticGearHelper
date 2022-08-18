@@ -17,14 +17,21 @@ import {BisLinksType, GuildConfigType} from '../../database/types/DataType';
 
 import {errorHandler} from '../../handler';
 import {strings} from '../../locale/i18n';
+import Logger from '../../logger';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import {ErrorType} from '../../types';
+import {
+    CommandNames,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    ErrorType,
+    OptionNames,
+    SubCommandNames
+} from '../../types';
 import {checkPermission} from '../../utils/permissions/permissions';
 
 import {Command} from '../Command';
 import {handleGetGearsetEmbedCommand} from '../handleGetGearsetEmbedCommand';
 
+const logger = Logger.child({module: 'BestInSlot'});
 /**
  * 1. set bis link name
  * - schon vorhanden? request umbenennen mit modal
@@ -35,23 +42,23 @@ import {handleGetGearsetEmbedCommand} from '../handleGetGearsetEmbedCommand';
  */
 
 export const BestInSlot: Command = {
-    name: 'my_bis',
+    name: CommandNames.BESTINSLOT,
     description: 'bisCommand.description',
     type: ApplicationCommandType.ChatInput,
     options: [
         {
-            name: 'set',
+            name: SubCommandNames.SET,
             type: ApplicationCommandOptionType.Subcommand,
-            description: strings('setConfigCommand.description'),
+            description: strings('setBisCommand.description'),
             options: [
                 {
-                    name: 'link',
+                    name: OptionNames.LINK,
                     type: ApplicationCommandOptionType.String,
                     description: strings('bisCommand.link.description'),
                     required: true
                 },
                 {
-                    name: 'name',
+                    name: OptionNames.NAME,
                     type: ApplicationCommandOptionType.String,
                     description: strings('bisCommand.name.description'),
                     required: true
@@ -59,18 +66,18 @@ export const BestInSlot: Command = {
             ]
         },
         {
-            name: 'get',
+            name: SubCommandNames.GET,
             type: ApplicationCommandOptionType.Subcommand,
+            description: strings('getBisCommand.description'),
             options: [
                 {
-                    name: 'name',
+                    name: OptionNames.NAME,
                     type: ApplicationCommandOptionType.String,
                     description: strings('bisCommand.name.description'),
                     required: true,
                     autocomplete: true
                 }
-            ],
-            description: strings('getConfigCommand.description')
+            ]
         }
     ],
     run: async (client: Client, interaction: CommandInteraction) => {
@@ -84,7 +91,9 @@ export const BestInSlot: Command = {
             }
 
             const subCommand = interaction.options.data.find(
-                (option) => option.name === 'set' || option.name === 'get'
+                (option) =>
+                    option.name === SubCommandNames.SET ||
+                    option.name === SubCommandNames.GET
             );
 
             const guildConfig: GuildConfigType = await getGuildConfig(
@@ -92,13 +101,13 @@ export const BestInSlot: Command = {
                 interaction
             );
 
-            const permissions = await checkPermission(
+            const hasPermissions = await checkPermission(
                 interaction,
                 interaction.guildId,
-                guildConfig.static_role
+                guildConfig?.static_role
             );
 
-            if (!permissions) {
+            if (!hasPermissions) {
                 return interaction.followUp(
                     strings('error.general', {
                         details: 'error.permissionDenied'
@@ -107,15 +116,18 @@ export const BestInSlot: Command = {
             }
             const savedBis = await getBisByUser(interaction.user.id);
             switch (subCommand?.name) {
-                case 'set':
-                    console.log('SET');
+                case SubCommandNames.SET:
                     handleSetBis(interaction, subCommand, savedBis);
 
                     break;
 
-                case 'get':
-                    console.log('GET');
-                    handleGetBis(interaction, subCommand, savedBis);
+                case SubCommandNames.GET:
+                    handleGetBis(
+                        interaction,
+                        subCommand,
+                        savedBis,
+                        hasPermissions
+                    );
                     break;
 
                 default:
@@ -133,16 +145,27 @@ const handleSetBis = async (
     savedBis: BisLinksType[]
 ) => {
     try {
-        // TODO vor dem speichern prüfen oder der user bereits ein Bis mit dem gleichen namen gespeichert hat!!!
         const link = subCommand.options?.find(
-            (opt) => opt.name === 'link'
+            (opt) => opt.name === OptionNames.LINK
         )?.value;
         const name = subCommand.options?.find(
-            (opt) => opt.name === 'name'
+            (opt) => opt.name === OptionNames.NAME
         )?.value;
-        console.log('handleSetBis', savedBis);
 
+        const exist = savedBis.find(
+            (saved) =>
+                saved.bis_name === name && saved.user_id === interaction.user.id
+        );
+        if (exist) {
+            logger.warn('bisNameExist', link, name);
+            return interaction.followUp(
+                strings('error.general', {
+                    details: 'error.bisNameExist'
+                })
+            );
+        }
         if (!link || !name) {
+            logger.warn('missingParameter', link, name);
             return interaction.followUp(
                 strings('error.general', {
                     details: 'error.missingParameter'
@@ -154,6 +177,8 @@ const handleSetBis = async (
             bis_link: link.toString(),
             bis_name: name.toString()
         });
+
+        logger.info('Erfolgreich gespeichert');
         return interaction.followUp({
             ephemeral: true,
             content: 'Erfolgreich gespeichert'
@@ -166,13 +191,12 @@ const handleSetBis = async (
 const handleGetBis = async (
     interaction: CommandInteraction<CacheType>,
     subCommand: CommandInteractionOption<CacheType>,
-    savedBis: BisLinksType[]
+    savedBis: BisLinksType[],
+    hasPermission: boolean
 ) => {
     try {
-        console.log(savedBis);
-
         const name = subCommand.options?.find(
-            (opt) => opt.name === 'name'
+            (opt) => opt.name === OptionNames.NAME
         )?.value;
         if (!name) {
             return interaction.followUp(
@@ -188,7 +212,13 @@ const handleGetBis = async (
             interaction
         );
 
-        handleGetGearsetEmbedCommand('by_link', bis.bis_link, interaction);
+        handleGetGearsetEmbedCommand(
+            SubCommandNames.BY_LINK,
+            bis.bis_link,
+            interaction,
+            bis,
+            hasPermission
+        );
     } catch (error) {
         errorHandler('handleSetBis', error, interaction);
     }

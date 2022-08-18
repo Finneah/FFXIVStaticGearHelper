@@ -22,30 +22,36 @@ import {GuildConfigType} from '../../database/types/DataType';
 import {errorHandler} from '../../handler';
 import {strings} from '../../locale/i18n';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import {ErrorType} from '../../types';
+import {
+    ButtonCommandNames,
+    CommandNames,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    ErrorType,
+    OptionNames,
+    SubCommandNames
+} from '../../types';
 import {checkPermission} from '../../utils/permissions/permissions';
 
 import {Command} from '../Command';
 
 export const ConfigureBotForGuild: Command = {
-    name: 'config',
+    name: CommandNames.CONFIGUREBOTFORGUILD,
     description: 'configCommand.description',
     type: ApplicationCommandType.ChatInput,
     options: [
         {
-            name: 'set',
+            name: SubCommandNames.SET,
             type: ApplicationCommandOptionType.Subcommand,
             description: strings('setConfigCommand.description'),
             options: [
                 {
-                    name: 'moderator_role',
+                    name: OptionNames.MODERATOR_ROLE,
                     type: ApplicationCommandOptionType.Role,
                     description: strings('moderatorRoleOption.description'),
                     required: true
                 },
                 {
-                    name: 'static_role',
+                    name: OptionNames.STATIC_ROLE,
                     type: ApplicationCommandOptionType.Role,
                     description: strings('staticRoleOption.description'),
                     required: true
@@ -53,7 +59,7 @@ export const ConfigureBotForGuild: Command = {
             ]
         },
         {
-            name: 'get',
+            name: SubCommandNames.GET,
             type: ApplicationCommandOptionType.Subcommand,
             description: strings('getConfigCommand.description')
         }
@@ -70,7 +76,9 @@ export const ConfigureBotForGuild: Command = {
             }
 
             const subCommand = interaction.options.data.find(
-                (option) => option.name === 'set' || option.name === 'get'
+                (option) =>
+                    option.name === SubCommandNames.SET ||
+                    option.name === SubCommandNames.GET
             );
 
             const guildConfig: GuildConfigType = await getGuildConfig(
@@ -81,7 +89,7 @@ export const ConfigureBotForGuild: Command = {
             const permissions = await checkPermission(
                 interaction,
                 interaction.guildId,
-                guildConfig.moderator_role
+                guildConfig?.moderator_role
             );
             if (!permissions) {
                 return interaction.followUp(
@@ -92,11 +100,11 @@ export const ConfigureBotForGuild: Command = {
             }
 
             switch (subCommand?.name) {
-                case 'set':
+                case SubCommandNames.SET:
                     handleSetConfig(interaction, subCommand, guildConfig);
                     break;
 
-                case 'get':
+                case SubCommandNames.GET:
                     if (guildConfig) {
                         handleGetConfig(interaction, guildConfig);
                     } else {
@@ -161,11 +169,13 @@ const handleSetConfig = async (
         const moderator_roleOption =
             subCommand.options &&
             subCommand.options.find(
-                (option) => option.name === 'moderator_role'
+                (option) => option.name === OptionNames.MODERATOR_ROLE
             );
         const static_roleOption =
             subCommand.options &&
-            subCommand.options.find((option) => option.name === 'static_role');
+            subCommand.options.find(
+                (option) => option.name === OptionNames.STATIC_ROLE
+            );
 
         if (moderator_roleOption && static_roleOption) {
             if (
@@ -238,8 +248,7 @@ const handleSetConfigAlreadyExist = async (
 
     return interaction
         .followUp({
-            ephemeral: true,
-            content: strings('configset.alreadyExist'),
+            ephemeral: false,
             embeds: embed ? [alreadyExistEmbed] : undefined,
             components: [
                 {
@@ -248,14 +257,14 @@ const handleSetConfigAlreadyExist = async (
                         {
                             style: 2,
                             label: `${strings('override')}`,
-                            custom_id: `overrideConfig`,
+                            custom_id: ButtonCommandNames.CONFIG_OVERRIDE,
                             disabled: false,
                             type: 2
                         },
                         {
                             style: 4,
                             label: `${strings('cancel')}`,
-                            custom_id: `cancelConfig`,
+                            custom_id: ButtonCommandNames.CONFIG_CANCEL,
                             disabled: false,
                             type: 2
                         }
@@ -285,12 +294,12 @@ const getConfigEmbed = (
         color: color,
         fields: [
             {
-                name: `moderator_role`,
+                name: OptionNames.MODERATOR_ROLE,
                 value: `<@&${moderator_role}>`,
                 inline: true
             },
             {
-                name: `static_role`,
+                name: OptionNames.STATIC_ROLE,
                 value: `<@&${static_role}>`,
                 inline: true
             },
@@ -305,15 +314,15 @@ const getConfigEmbed = (
                 value: '\u200B'
             },
             {
-                name: `/addBis :bis_name`,
+                name: `/${CommandNames.BESTINSLOT} ${SubCommandNames.SET} :bis_name`,
                 value: `speicher dieses Gearset`
             },
             {
-                name: `/getBis :bis_name`,
+                name: `/${CommandNames.BESTINSLOT} ${SubCommandNames.GET} :bis_name`,
                 value: `zeigt das gespeicherte Gearset`
             },
             {
-                name: `/deleteBis :bis_name`,
+                name: `/${CommandNames.BESTINSLOT} ${SubCommandNames.DELETE} :bis_name`,
                 value: `Lösche das gespeicherte Gearset`
             }
         ]
@@ -361,7 +370,7 @@ const handleButtonCollector = (
     collector.on('collect', (i: ButtonInteraction) => {
         if (i.user.id === interaction.user.id) {
             switch (i.customId) {
-                case 'overrideConfig':
+                case ButtonCommandNames.CONFIG_OVERRIDE:
                     if (moderator_roleOption && static_roleOption) {
                         setConfig(
                             interaction,
@@ -373,7 +382,7 @@ const handleButtonCollector = (
                     }
 
                     break;
-                case 'cancelConfig':
+                case ButtonCommandNames.CONFIG_CANCEL:
                     return interaction.deleteReply();
 
                 default:

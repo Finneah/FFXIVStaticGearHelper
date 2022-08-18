@@ -1,7 +1,12 @@
-import {CommandInteraction, CacheType, PermissionsBitField} from 'discord.js';
+import {
+    CommandInteraction,
+    CacheType,
+    PermissionsBitField,
+    ButtonInteraction
+} from 'discord.js';
 
 export const checkPermission = async (
-    interaction: CommandInteraction<CacheType>,
+    interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType>,
     guildId: string,
     guildConfigRole: string | undefined
 ) => {
