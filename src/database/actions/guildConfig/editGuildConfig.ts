@@ -1,7 +1,8 @@
-import {GuildConfig} from '../types/GuildConfigType';
-import {SeqGuilds} from '../sequelize';
-
-export const editGuildConfig = async (guildConfig: GuildConfig) => {
+import {GuildConfigType} from '../../types/DataType';
+import {SeqGuilds} from '../../sequelize';
+import Logger from '../../../logger';
+const logger = Logger.child({module: 'editGuildConfig'});
+export const editGuildConfig = async (guildConfig: GuildConfigType) => {
     await SeqGuilds.update(
         {
             moderator_role: guildConfig.moderator_role,
@@ -9,7 +10,7 @@ export const editGuildConfig = async (guildConfig: GuildConfig) => {
         },
         {where: {guild_id: guildConfig.guild_id}}
     );
-    console.info(
+    logger.info(
         `Guild ID ${
             guildConfig.moderator_role + ' ' + guildConfig.static_role
         } is updated in DB`

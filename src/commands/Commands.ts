@@ -1,11 +1,19 @@
-import {Command} from './Command';
+import {EditBis} from './buttonCommands/editBis';
+import {ButtonCommand, Command} from './Command';
+import {BestInSlot} from './slashCommands/BestInSlot';
 import {ConfigureBotForGuild} from './slashCommands/ConfigureBotForGuild';
-import {Poll} from './slashCommands/Poll';
+
 import {ShowEtroBis} from './slashCommands/ShowEtroBis';
+import {Test} from './slashCommands/Test';
 
-export const Commands: Command[] = [ShowEtroBis, ConfigureBotForGuild, Poll];
+export const Commands: Command[] = [
+    ShowEtroBis,
+    ConfigureBotForGuild,
+    BestInSlot,
+    Test
+];
 
-// export const ButtonCommands: ButtonCommand[] = [
-//     ButtonTest,
-//     ButtonOverrideConfig
-// ];
+export const ButtonCommands: ButtonCommand[] = [
+    EditBis
+    // ButtonOverrideConfig
+];

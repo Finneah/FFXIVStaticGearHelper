@@ -1,2 +1,2 @@
 export * from './sequelize';
-export * from './actions/setGuildConfig';
+export * from './actions/guildConfig/setGuildConfig';

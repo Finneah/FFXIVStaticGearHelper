@@ -1,7 +1,7 @@
 import {Client} from 'discord.js';
 import {Commands} from '../commands/Commands';
-import {SeqGuilds} from '../database';
-import {registerGuildCommands} from '../registerGuildCommands';
+import {SeqBiSLinks, SeqGuilds} from '../database';
+import Logger from '../logger';
 
 export default (client: Client): void => {
     client.on('ready', async () => {
@@ -10,9 +10,10 @@ export default (client: Client): void => {
         }
 
         SeqGuilds.sync();
-        registerGuildCommands('968410103999004732');
+        SeqBiSLinks.sync();
+        // registerGuildCommands('968410103999004732');
 
         await client.application.commands.set(Commands);
-        console.info('Client is online');
+        Logger.info('ONLINE');
     });
 };

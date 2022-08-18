@@ -1,5 +1,11 @@
 import {EmbedBuilder} from '@discordjs/builders';
-import {ApplicationCommandType, Client, CommandInteraction} from 'discord.js';
+import {
+    APIMessageComponentEmoji,
+    ApplicationCommandType,
+    ButtonBuilder,
+    Client,
+    CommandInteraction
+} from 'discord.js';
 
 import {errorHandler} from '../../handler/errorHandler/errorHandler';
 
@@ -24,7 +30,17 @@ export const Test: Command = {
             // const ayy = client.emojis.cache.find(
             //     (emoji) => emoji.name === '032795'
             // );
+            const button = new ButtonBuilder({
+                custom_id: 'shield',
+                emoji: {name: '🛡️'},
+                style: 2
+            });
 
+            const button2 = new ButtonBuilder({
+                custom_id: 'weapon',
+                emoji: {name: '🗡️'},
+                style: 2
+            });
             const embed = new EmbedBuilder({
                 title: `Test`
             });
@@ -33,15 +49,7 @@ export const Test: Command = {
                 components: [
                     {
                         type: 1,
-                        components: [
-                            {
-                                style: 2,
-                                label: `Test`,
-                                custom_id: `primary`,
-                                disabled: false,
-                                type: 2
-                            }
-                        ]
+                        components: [button, button2]
                     }
                 ],
                 embeds: [embed]

@@ -37,7 +37,8 @@ export const getGearset = async (
 
         return gearset;
     } catch (error: ErrorType) {
-        throw new Error(error);
+        errorHandler('getGearset', error);
+        return Promise.reject();
     }
     // TODO Fehler beheben wenn link mitgegeben wird, response passt dann auch nicht
 };
@@ -71,7 +72,8 @@ const getGearsetWithEquipment = async (option: string, idOrLink: string) => {
 
         return gearset;
     } catch (error: ErrorType) {
-        throw new Error(error);
+        errorHandler('getGearsetWithEquipment', error);
+        return Promise.reject();
     }
 };
 const getEtroGearset = async (option: string, idOrLink: string) => {
@@ -92,7 +94,8 @@ const getEtroGearset = async (option: string, idOrLink: string) => {
         })
 
         .catch((error: ErrorType) => {
-            throw new Error(error);
+            errorHandler('getEtroGearset', error);
+            return Promise.reject();
         });
 };
 
@@ -104,7 +107,8 @@ const getEtroFood = async (id: number) => {
         })
 
         .catch((error: ErrorType) => {
-            throw new Error(error);
+            errorHandler('getEtroFood', error);
+            return Promise.reject();
         });
 };
 const getEtroSingleEquipment = async (id: number) => {
@@ -115,7 +119,8 @@ const getEtroSingleEquipment = async (id: number) => {
         })
 
         .catch((error: ErrorType) => {
-            throw new Error(error);
+            errorHandler('getEtroSingleEquipment', error);
+            return Promise.reject();
         });
 };
 
@@ -127,7 +132,8 @@ const getEtroMateriaList = async () => {
         })
 
         .catch((error: ErrorType) => {
-            throw new Error(error);
+            errorHandler('getEtroMateriaList', error);
+            return Promise.reject();
         });
 };
 
@@ -199,6 +205,7 @@ const getGearSetWithMateria = async (gearset: Gearset): Promise<Gearset> => {
 
         return gearset;
     } catch (error: ErrorType) {
-        throw new Error(error);
+        errorHandler('getGearSetWithMateria', error);
+        return Promise.reject();
     }
 };
