@@ -36,7 +36,7 @@ export const EditBis: ButtonCommand = {
                 const hasPermission = await checkPermission(
                     interaction,
                     interaction.guildId,
-                    guildConfig.static_role
+                    guildConfig?.static_role
                 );
 
                 // if user = user embed

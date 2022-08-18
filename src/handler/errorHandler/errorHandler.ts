@@ -68,7 +68,8 @@ export const handleInteractionError = async (
 ) => {
     const logger = Logger.child({module: namespace});
     logger.error(message);
-    await interaction.followUp(
-        strings('error.general', {details: '\n' + message})
-    );
+    await interaction.followUp({
+        ephemeral: true,
+        content: strings('error.general', {details: '\n' + message})
+    });
 };
