@@ -60,3 +60,15 @@ const showInteraction = async (
         strings('error.general', {details: '\n' + message})
     );
 };
+
+export const handleInteractionError = async (
+    namespace: string,
+    interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType>,
+    message: string
+) => {
+    const logger = Logger.child({module: namespace});
+    logger.error(message);
+    await interaction.followUp(
+        strings('error.general', {details: '\n' + message})
+    );
+};

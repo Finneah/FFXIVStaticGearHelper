@@ -1,21 +1,14 @@
 import {ApplicationCommandType, ButtonInteraction, Client} from 'discord.js';
-import {deleteBisFromUser} from '../database/actions/bestInSlot/deleteBisFromUser';
-import {getGuildConfig} from '../database/actions/guildConfig/getGuildConfig';
-import {GuildConfigType} from '../database/types/DataType';
-
-import {errorHandler} from '../handler';
-import {strings} from '../locale/i18n';
-import Logger from '../logger';
-
-import {
-    ButtonCommandNames,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    ErrorType
-} from '../types';
-import {checkPermission} from '../utils/permissions';
-import {ButtonCommand} from './Command';
-
-const logger = Logger.child({module: ButtonCommandNames.DELETE_BIS});
+import {deleteBisFromUser} from '../../database/actions/bestInSlot/deleteBisFromUser';
+import {getGuildConfig} from '../../database/actions/guildConfig/getGuildConfig';
+import {GuildConfigType} from '../../database/types/DataType';
+import {errorHandler, handleInteractionError} from '../../handler';
+import {strings} from '../../locale/i18n';
+import Logger from '../../logger';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import {ButtonCommandNames, ErrorType} from '../../types';
+import {checkPermission} from '../../utils/permissions';
+import {ButtonCommand} from '../Command';
 
 export const DeleteBis: ButtonCommand = {
     name: ButtonCommandNames.DELETE_BIS,
@@ -23,12 +16,12 @@ export const DeleteBis: ButtonCommand = {
     run: async (client: Client, interaction: ButtonInteraction) => {
         try {
             if (!interaction.guildId) {
-                logger.warn('no interaction.guildId');
-                return interaction.followUp(
-                    strings('error.general', {
-                        details: 'error.coruptInteraction'
-                    })
+                handleInteractionError(
+                    'DeleteBis',
+                    interaction,
+                    strings('error.coruptInteraction')
                 );
+                return;
             }
 
             if (
@@ -55,16 +48,20 @@ export const DeleteBis: ButtonCommand = {
                     );
                     await interaction.deleteReply();
                 } else {
-                    interaction.followUp({
-                        content: `Missing permission!`,
-                        ephemeral: true
-                    });
+                    handleInteractionError(
+                        'DeleteBis',
+                        interaction,
+                        strings('error.permissionDenied')
+                    );
+                    return;
                 }
             } else {
-                interaction.followUp({
-                    content: `These buttons aren't for you!`,
-                    ephemeral: true
-                });
+                handleInteractionError(
+                    'DeleteBis',
+                    interaction,
+                    strings('error.permissionDenied')
+                );
+                return;
             }
         } catch (error: ErrorType) {
             errorHandler('EditBis', error, interaction);

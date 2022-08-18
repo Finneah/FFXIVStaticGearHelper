@@ -15,7 +15,7 @@ import {setBisForUser} from '../../database/actions/bestInSlot/setBisForUser';
 import {getGuildConfig} from '../../database/actions/guildConfig/getGuildConfig';
 import {BisLinksType, GuildConfigType} from '../../database/types/DataType';
 
-import {errorHandler} from '../../handler';
+import {errorHandler, handleInteractionError} from '../../handler';
 import {strings} from '../../locale/i18n';
 import Logger from '../../logger';
 
@@ -83,11 +83,12 @@ export const BestInSlot: Command = {
     run: async (client: Client, interaction: CommandInteraction) => {
         try {
             if (!interaction.guildId) {
-                return interaction.followUp(
-                    strings('error.general', {
-                        details: 'error.coruptInteraction'
-                    })
+                handleInteractionError(
+                    'BestInSlot',
+                    interaction,
+                    strings('error.coruptInteraction')
                 );
+                return;
             }
 
             const subCommand = interaction.options.data.find(
@@ -108,11 +109,12 @@ export const BestInSlot: Command = {
             );
 
             if (!hasPermissions) {
-                return interaction.followUp(
-                    strings('error.general', {
-                        details: 'error.permissionDenied'
-                    })
+                handleInteractionError(
+                    'BestInSlot',
+                    interaction,
+                    strings('error.permissionDenied')
                 );
+                return;
             }
             const savedBis = await getBisByUser(interaction.user.id);
             switch (subCommand?.name) {
@@ -155,7 +157,7 @@ const handleSetBis = async (
             logger.warn('bisNameExist', link, name);
             return interaction.followUp(
                 strings('error.general', {
-                    details: 'error.bisNameExist'
+                    details: strings('error.bisNameExist')
                 })
             );
         }
@@ -163,7 +165,7 @@ const handleSetBis = async (
             logger.warn('missingParameter', link, name);
             return interaction.followUp(
                 strings('error.general', {
-                    details: 'error.missingParameter'
+                    details: strings('error.missingParameter')
                 })
             );
         }
@@ -195,7 +197,7 @@ const handleGetBis = async (
         if (!name) {
             return interaction.followUp(
                 strings('error.general', {
-                    details: 'error.missingParameter'
+                    details: strings('error.missingParameter')
                 })
             );
         }

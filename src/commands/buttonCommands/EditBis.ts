@@ -1,25 +1,16 @@
 import {ApplicationCommandType, ButtonInteraction, Client} from 'discord.js';
-import {editBisFromUser} from '../database/actions/bestInSlot/editBisFromUser';
-import {getBisByUserByName} from '../database/actions/bestInSlot/getBisFromUser';
-import {getGuildConfig} from '../database/actions/guildConfig/getGuildConfig';
-import {GearTypes, GuildConfigType} from '../database/types/DataType';
-
-import {errorHandler, getGearset} from '../handler';
-import {strings} from '../locale/i18n';
-import Logger from '../logger';
-
-import {
-    ButtonCommandNames,
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    ErrorType,
-    SubCommandNames
-} from '../types';
-import {checkPermission} from '../utils/permissions';
-import {ButtonCommand} from './Command';
-import {getActionRows} from './handleGetGearsetEmbedCommand';
-
-const logger = Logger.child({module: ButtonCommandNames.EDITBIS});
+import {editBisFromUser} from '../../database/actions/bestInSlot/editBisFromUser';
+import {getBisByUserByName} from '../../database/actions/bestInSlot/getBisFromUser';
+import {getGuildConfig} from '../../database/actions/guildConfig/getGuildConfig';
+import {GuildConfigType, GearTypes} from '../../database/types/DataType';
+import {getGearset, errorHandler, handleInteractionError} from '../../handler';
+import {strings} from '../../locale/i18n';
+import Logger from '../../logger';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import {ButtonCommandNames, SubCommandNames, ErrorType} from '../../types';
+import {checkPermission} from '../../utils/permissions';
+import {ButtonCommand} from '../Command';
+import {getActionRows} from '../handleGetGearsetEmbedCommand';
 
 export const EditBis: ButtonCommand = {
     name: ButtonCommandNames.EDITBIS,
@@ -27,12 +18,12 @@ export const EditBis: ButtonCommand = {
     run: async (client: Client, interaction: ButtonInteraction) => {
         try {
             if (!interaction.guildId) {
-                logger.warn('no interaction.guildId');
-                return interaction.followUp(
-                    strings('error.general', {
-                        details: 'error.coruptInteraction'
-                    })
+                handleInteractionError(
+                    'EditBis',
+                    interaction,
+                    strings('error.coruptInteraction')
                 );
+                return;
             }
 
             if (
@@ -77,19 +68,28 @@ export const EditBis: ButtonCommand = {
                             components: actionRows
                         });
                     } else {
-                        interaction.followUp({content: 'Gearset is missing'});
+                        handleInteractionError(
+                            'EditBis',
+                            interaction,
+                            strings('error.coruptInteraction')
+                        );
+                        return;
                     }
                 } else {
-                    interaction.followUp({
-                        content: `Missing permission!`,
-                        ephemeral: true
-                    });
+                    handleInteractionError(
+                        'EditBis',
+                        interaction,
+                        strings('error.permissionDenied')
+                    );
+                    return;
                 }
             } else {
-                interaction.followUp({
-                    content: `These buttons aren't for you!`,
-                    ephemeral: true
-                });
+                handleInteractionError(
+                    'EditBis',
+                    interaction,
+                    strings('error.permissionDenied')
+                );
+                return;
             }
         } catch (error: ErrorType) {
             errorHandler('EditBis', error, interaction);

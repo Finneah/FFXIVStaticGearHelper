@@ -17,7 +17,7 @@ import {editGuildConfig} from '../../database/actions/guildConfig/editGuildConfi
 import {getGuildConfig} from '../../database/actions/guildConfig/getGuildConfig';
 import {GuildConfigType} from '../../database/types/DataType';
 
-import {errorHandler} from '../../handler';
+import {errorHandler, handleInteractionError} from '../../handler';
 import {strings} from '../../locale/i18n';
 import Logger from '../../logger';
 
@@ -32,8 +32,6 @@ import {
 import {checkPermission} from '../../utils/permissions';
 
 import {Command} from '../Command';
-
-const logger = Logger.child({module: 'ConfigureBotForGuild'});
 
 export const ConfigureBotForGuild: Command = {
     name: CommandNames.CONFIGUREBOTFORGUILD,
@@ -69,11 +67,12 @@ export const ConfigureBotForGuild: Command = {
     run: async (client: Client, interaction: CommandInteraction) => {
         try {
             if (!interaction.guildId) {
-                return interaction.followUp(
-                    strings('error.general', {
-                        details: 'error.coruptInteraction'
-                    })
+                handleInteractionError(
+                    'ConfigureBotForGuild',
+                    interaction,
+                    strings('error.coruptInteraction')
                 );
+                return;
             }
 
             const subCommand = interaction.options.data.find(
@@ -93,11 +92,12 @@ export const ConfigureBotForGuild: Command = {
                 guildConfig?.moderator_role
             );
             if (!permissions) {
-                return interaction.followUp(
-                    strings('error.general', {
-                        details: 'error.permissionDenied'
-                    })
+                handleInteractionError(
+                    'ConfigureBotForGuild',
+                    interaction,
+                    strings('error.permissionDenied')
                 );
+                return;
             }
 
             switch (subCommand?.name) {
@@ -204,7 +204,9 @@ const handleSetConfig = async (
         } else {
             return interaction.followUp({
                 ephemeral: true,
-                content: strings('error.rolesMissing')
+                content: strings('error.general', {
+                    details: strings('error.rolesMissing')
+                })
             });
         }
     } catch (error: ErrorType) {
@@ -337,7 +339,7 @@ const getConfigAlreadyExistEmbed = (
         color: Colors.Red,
         fields: [
             {
-                name: `Neue Rollen`,
+                name: `${strings('configSetCommand.newRoles')}`,
                 value: `\u200b`,
                 inline: false
             },

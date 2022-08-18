@@ -1,6 +1,6 @@
 import {ApplicationCommandType, ButtonInteraction, Client} from 'discord.js';
 
-import {errorHandler} from '../../handler';
+import {errorHandler, handleInteractionError} from '../../handler';
 import {strings} from '../../locale/i18n';
 import Logger from '../../logger';
 
@@ -19,12 +19,12 @@ export const ConfigCancel: ButtonCommand = {
     run: async (client: Client, interaction: ButtonInteraction) => {
         try {
             if (!interaction.guildId) {
-                logger.warn('no interaction.guildId');
-                return interaction.followUp(
-                    strings('error.general', {
-                        details: 'error.coruptInteraction'
-                    })
+                handleInteractionError(
+                    'ShowEtroBis',
+                    interaction,
+                    strings('error.coruptInteraction')
                 );
+                return;
             }
             return interaction.deleteReply();
         } catch (error: ErrorType) {

@@ -1,22 +1,14 @@
 import {ApplicationCommandType, ButtonInteraction, Client} from 'discord.js';
-import {getGuildConfig} from '../database/actions/guildConfig/getGuildConfig';
-import {GuildConfigType} from '../database/types/DataType';
-
-import {errorHandler} from '../handler';
-import {strings} from '../locale/i18n';
-import Logger from '../logger';
-
-import {
-    ButtonCommandNames,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    ErrorType,
-    OptionNames
-} from '../types';
-import {checkPermission} from '../utils/permissions';
-import {ButtonCommand} from './Command';
-import {setConfig} from './slashCommands/ConfigureBotForGuild';
-
-const logger = Logger.child({module: ButtonCommandNames.CONFIG_OVERRIDE});
+import {getGuildConfig} from '../../database/actions/guildConfig/getGuildConfig';
+import {GuildConfigType} from '../../database/types/DataType';
+import {errorHandler, handleInteractionError} from '../../handler';
+import {strings} from '../../locale/i18n';
+import Logger from '../../logger';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import {ButtonCommandNames, OptionNames, ErrorType} from '../../types';
+import {checkPermission} from '../../utils/permissions';
+import {ButtonCommand} from '../Command';
+import {setConfig} from '../slashCommands/ConfigureBotForGuild';
 
 export const ConfigOverride: ButtonCommand = {
     name: ButtonCommandNames.CONFIG_OVERRIDE,
@@ -24,12 +16,12 @@ export const ConfigOverride: ButtonCommand = {
     run: async (client: Client, interaction: ButtonInteraction) => {
         try {
             if (!interaction.guildId) {
-                logger.warn('no interaction.guildId');
-                return interaction.followUp(
-                    strings('error.general', {
-                        details: 'error.coruptInteraction'
-                    })
+                handleInteractionError(
+                    'ConfigOverride',
+                    interaction,
+                    strings('error.coruptInteraction')
                 );
+                return;
             }
             const guildConfig: GuildConfigType = await getGuildConfig(
                 interaction.guildId,
@@ -42,12 +34,13 @@ export const ConfigOverride: ButtonCommand = {
             );
 
             if (!guildConfig.guild_id) {
-                return interaction.followUp({
-                    content: `Something went wrong!`,
-                    ephemeral: true
-                });
+                handleInteractionError(
+                    'ConfigOverride',
+                    interaction,
+                    strings('error.coruptInteraction')
+                );
+                return;
             }
-            console.log('HERE', guildConfig.guild_id);
 
             if (
                 interaction.user.id ===
@@ -76,10 +69,12 @@ export const ConfigOverride: ButtonCommand = {
                     }
                 }
             } else {
-                interaction.followUp({
-                    content: `These buttons aren't for you!`,
-                    ephemeral: true
-                });
+                handleInteractionError(
+                    'ConfigOverride',
+                    interaction,
+                    strings('error.permissionDenied')
+                );
+                return;
             }
         } catch (error: ErrorType) {
             errorHandler('EditBis', error, interaction);

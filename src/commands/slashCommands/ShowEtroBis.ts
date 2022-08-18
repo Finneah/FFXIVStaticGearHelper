@@ -5,7 +5,7 @@ import {
     CommandInteraction
 } from 'discord.js';
 
-import {errorHandler} from '../../handler';
+import {errorHandler, handleInteractionError} from '../../handler';
 import {strings} from '../../locale/i18n';
 import Logger from '../../logger';
 
@@ -55,11 +55,12 @@ export const ShowEtroBis: Command = {
         try {
             if (!interaction.guildId) {
                 Logger.warn('no interaction.guildId');
-                return interaction.followUp(
-                    strings('error.general', {
-                        details: 'error.coruptInteraction'
-                    })
+                handleInteractionError(
+                    'ShowEtroBis',
+                    interaction,
+                    strings('error.coruptInteraction')
                 );
+                return;
             }
             const idOption = interaction.options.data.find(
                 (option) =>
@@ -67,12 +68,12 @@ export const ShowEtroBis: Command = {
                     option.name === SubCommandNames.BY_ID
             );
             if (!idOption?.options?.[0].value) {
-                Logger.warn('no idOption?.options?.[0].value');
-                return interaction.followUp(
-                    strings('error.general', {
-                        details: 'error.coruptInteraction'
-                    })
+                handleInteractionError(
+                    'ShowEtroBis',
+                    interaction,
+                    strings('error.coruptInteraction')
                 );
+                return;
             }
 
             // const guildConfig: GuildConfigTypes = await getGuildConfig(

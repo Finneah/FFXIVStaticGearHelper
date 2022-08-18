@@ -196,11 +196,7 @@ const getFieldForEquip = (
 ): EmbedField => {
     const materiaString = getMateriaString(equip, materia, ringPrefix);
     const value = `${equip.name}`;
-    /**
-     *  \n*${strings('itemLevel')} ${
-        equip.itemLevel
-    }*
-     */
+
     const field: EmbedField = {
         name: `${getIconBySlotName(equip.slotName)} ${strings(equip.slotName)}`,
         value:
