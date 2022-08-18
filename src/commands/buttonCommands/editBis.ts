@@ -16,7 +16,7 @@ import {
 } from '../../types';
 import {checkPermission} from '../../utils/permissions/permissions';
 import {ButtonCommand} from '../Command';
-import {getActionRows, getEmbedBis} from '../handleGetGearsetEmbedCommand';
+import {getActionRows} from '../handleGetGearsetEmbedCommand';
 
 const logger = Logger.child({module: CommandNames.EDITBIS});
 
@@ -26,7 +26,7 @@ export const EditBis: ButtonCommand = {
     run: async (client: Client, interaction: ButtonInteraction) => {
         try {
             if (!interaction.guildId) {
-                Logger.warn('no interaction.guildId');
+                logger.warn('no interaction.guildId');
                 return interaction.followUp(
                     strings('error.general', {
                         details: 'error.coruptInteraction'

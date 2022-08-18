@@ -1,6 +1,5 @@
 import {EmbedBuilder} from '@discordjs/builders';
 import {
-    APIMessageComponentEmoji,
     ApplicationCommandType,
     ButtonBuilder,
     Client,

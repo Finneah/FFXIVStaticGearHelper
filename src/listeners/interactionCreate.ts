@@ -1,6 +1,5 @@
 import {
     AutocompleteInteraction,
-    ButtonBuilder,
     ButtonInteraction,
     CacheType,
     Client,
@@ -8,11 +7,9 @@ import {
     Interaction
 } from 'discord.js';
 import {ButtonCommands, Commands} from '../commands/Commands';
-import {getEmbedBis} from '../commands/handleGetGearsetEmbedCommand';
 import {getBisByUser} from '../database/actions/bestInSlot/getBisFromUser';
-import {getGearset} from '../handler';
 import Logger from '../logger';
-import {CommandNames, SubCommandNames} from '../types';
+import {CommandNames} from '../types';
 const logger = Logger.child({module: 'interactionCreate'});
 
 export default (client: Client): void => {
