@@ -5,7 +5,7 @@ import {getGuildConfig} from '../../database/actions/guildConfig/getGuildConfig'
 import {GuildConfigType, GearTypes} from '../../database/types/DataType';
 import {getGearset, errorHandler, handleInteractionError} from '../../handler';
 import {strings} from '../../locale/i18n';
-import Logger from '../../logger';
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import {ButtonCommandNames, SubCommandNames, ErrorType} from '../../types';
 import {checkPermission} from '../../utils/permissions';

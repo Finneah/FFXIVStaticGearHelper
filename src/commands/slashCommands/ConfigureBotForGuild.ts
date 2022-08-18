@@ -19,7 +19,6 @@ import {GuildConfigType} from '../../database/types/DataType';
 
 import {errorHandler, handleInteractionError} from '../../handler';
 import {strings} from '../../locale/i18n';
-import Logger from '../../logger';
 
 import {
     ButtonCommandNames,

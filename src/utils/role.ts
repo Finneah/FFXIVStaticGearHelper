@@ -1,11 +1,3 @@
-const getConvertedRoleId = (roleString: string) => {
-    return roleString
-        .replace('<', '')
-        .replace('@', '')
-        .replace('&', '')
-        .replace('>', '');
-};
-
 export const getRoleColorByJob = (jobAbbrev: string) => {
     switch (jobAbbrev) {
         // Heals

@@ -2,7 +2,6 @@ import {ApplicationCommandType, ButtonInteraction, Client} from 'discord.js';
 
 import {errorHandler, handleInteractionError} from '../../handler';
 import {strings} from '../../locale/i18n';
-import Logger from '../../logger';
 
 import {
     ButtonCommandNames,
@@ -11,8 +10,6 @@ import {
 } from '../../types';
 import {ButtonCommand} from '../Command';
 
-const logger = Logger.child({module: ButtonCommandNames.CONFIG_CANCEL});
-
 export const ConfigCancel: ButtonCommand = {
     name: ButtonCommandNames.CONFIG_CANCEL,
     type: ApplicationCommandType.Message,
@@ -20,7 +17,7 @@ export const ConfigCancel: ButtonCommand = {
         try {
             if (!interaction.guildId) {
                 handleInteractionError(
-                    'ShowEtroBis',
+                    'ConfigCancel',
                     interaction,
                     strings('error.coruptInteraction')
                 );

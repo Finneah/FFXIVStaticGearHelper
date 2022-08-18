@@ -1,12 +1,11 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import {CommandInteraction, CacheType, ButtonInteraction} from 'discord.js';
 import {errorHandler} from '../../../handler';
-import Logger from '../../../logger';
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import {ErrorType} from '../../../types';
 import {SeqGuilds} from '../../sequelize';
 import {GuildConfigType} from '../../types/DataType';
-const logger = Logger.child({module: 'getGuildConfig'});
 
 export const getGuildConfig = async (
     guild_id: string,

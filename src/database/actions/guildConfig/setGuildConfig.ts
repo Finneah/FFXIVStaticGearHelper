@@ -2,8 +2,6 @@ import {GuildConfigType} from '../../types/DataType';
 import {SeqGuilds} from '../../sequelize';
 import {errorHandler} from '../../../handler';
 
-import Logger from '../../../logger';
-const logger = Logger.child({module: 'editGuildConfig'});
 export const setGuildConfig = (guildConfig: GuildConfigType): void => {
     try {
         const config: GuildConfigType = {

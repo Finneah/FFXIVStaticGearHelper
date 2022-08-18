@@ -13,11 +13,9 @@ import {
 import {BisLinksType} from '../database/types/DataType';
 import {errorHandler, getGearset} from '../handler';
 import {strings} from '../locale/i18n';
-import Logger from '../logger';
 
 import {
     ButtonCommandNames,
-    CommandNames,
     Equipment,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     ErrorType,
@@ -26,7 +24,6 @@ import {
     SubCommandNames
 } from '../types';
 import {getJobIconUrl, getRoleColorByJob} from '../utils';
-const logger = Logger.child({module: 'handleGetGearsetEmbedCommand'});
 
 export const handleGetGearsetEmbedCommand = async (
     by: SubCommandNames.BY_LINK | SubCommandNames.BY_ID,
