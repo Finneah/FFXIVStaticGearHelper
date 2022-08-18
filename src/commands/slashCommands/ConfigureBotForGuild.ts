@@ -370,8 +370,7 @@ const handleButtonCollector = (
                         setConfig(
                             interaction,
                             moderator_roleOption,
-                            static_roleOption,
-                            true
+                            static_roleOption
                         );
                         return interaction.deleteReply();
                     }
