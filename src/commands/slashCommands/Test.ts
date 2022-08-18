@@ -1,5 +1,11 @@
 import {EmbedBuilder} from '@discordjs/builders';
-import {ApplicationCommandType, Client, CommandInteraction} from 'discord.js';
+import {
+    APIMessageComponentEmoji,
+    ApplicationCommandType,
+    ButtonBuilder,
+    Client,
+    CommandInteraction
+} from 'discord.js';
 
 import {errorHandler} from '../../handler/errorHandler/errorHandler';
 
@@ -10,34 +16,42 @@ export const Test: Command = {
     name: 'test',
     description: 'test',
     type: ApplicationCommandType.ChatInput,
-
     run: async (client: Client, interaction: CommandInteraction) => {
         try {
-            const name = interaction.user.username;
-            const avatar = await interaction.user.avatarURL();
+            // const name = interaction.user.username;
+            // const avatar = await interaction.user.avatarURL();
 
             // interaction.guild?.emojis.create({
             //     attachment: 'https://etro.gg/s/icons/i/041000/041910.png',
             //     name: '041910'
             // });
-            const icons = await interaction.guild?.emojis.fetch();
+            // const icons = await interaction.guild?.emojis.fetch();
 
-            const ayy = client.emojis.cache.find(
-                (emoji) => emoji.name === '032795'
-            );
+            // const ayy = client.emojis.cache.find(
+            //     (emoji) => emoji.name === '032795'
+            // );
+            const button = new ButtonBuilder({
+                custom_id: 'shield',
+                emoji: {name: '🛡️'},
+                style: 2
+            });
 
+            const button2 = new ButtonBuilder({
+                custom_id: 'weapon',
+                emoji: {name: '🗡️'},
+                style: 2
+            });
             const embed = new EmbedBuilder({
-                title: `${ayy} LMAO`,
-                fields: [
-                    {
-                        name: 'Test',
-                        value: `${ayy} Test`,
-                        inline: false
-                    }
-                ]
+                title: `Test`
             });
             await interaction.followUp({
                 ephemeral: true,
+                components: [
+                    {
+                        type: 1,
+                        components: [button, button2]
+                    }
+                ],
                 embeds: [embed]
             });
 
