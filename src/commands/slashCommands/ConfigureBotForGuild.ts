@@ -8,10 +8,8 @@ import {
     Colors,
     CommandInteraction,
     CommandInteractionOption,
-    ComponentType,
     EmbedBuilder,
-    EmbedData,
-    Message
+    EmbedData
 } from 'discord.js';
 import {setGuildConfig} from '../../database';
 import {editGuildConfig} from '../../database/actions/guildConfig/editGuildConfig';
@@ -19,7 +17,7 @@ import {editGuildConfig} from '../../database/actions/guildConfig/editGuildConfi
 import {getGuildConfig} from '../../database/actions/guildConfig/getGuildConfig';
 import {GuildConfigType} from '../../database/types/DataType';
 
-import {errorHandler} from '../../handler';
+import {errorHandler, handleInteractionError} from '../../handler';
 import {strings} from '../../locale/i18n';
 
 import {
@@ -30,7 +28,7 @@ import {
     OptionNames,
     SubCommandNames
 } from '../../types';
-import {checkPermission} from '../../utils/permissions/permissions';
+import {checkPermission} from '../../utils/permissions';
 
 import {Command} from '../Command';
 
@@ -68,11 +66,12 @@ export const ConfigureBotForGuild: Command = {
     run: async (client: Client, interaction: CommandInteraction) => {
         try {
             if (!interaction.guildId) {
-                return interaction.followUp(
-                    strings('error.general', {
-                        details: 'error.coruptInteraction'
-                    })
+                handleInteractionError(
+                    'ConfigureBotForGuild',
+                    interaction,
+                    strings('error.coruptInteraction')
                 );
+                return;
             }
 
             const subCommand = interaction.options.data.find(
@@ -92,11 +91,12 @@ export const ConfigureBotForGuild: Command = {
                 guildConfig?.moderator_role
             );
             if (!permissions) {
-                return interaction.followUp(
-                    strings('error.general', {
-                        details: 'error.permissionDenied'
-                    })
+                handleInteractionError(
+                    'ConfigureBotForGuild',
+                    interaction,
+                    strings('error.permissionDenied')
                 );
+                return;
             }
 
             switch (subCommand?.name) {
@@ -126,33 +126,36 @@ export const ConfigureBotForGuild: Command = {
     }
 };
 
-const setConfig = async (
-    interaction: CommandInteraction<CacheType>,
-    moderator_roleOption: CommandInteractionOption<CacheType>,
-    static_roleOption: CommandInteractionOption<CacheType>
+export const setConfig = async (
+    interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType>,
+    moderator_role: string,
+    static_role: string,
+    guild_idExist: boolean
 ) => {
-    const newConfig: GuildConfigType = {
-        guild_id: interaction.guildId ?? '',
-        moderator_role: moderator_roleOption.value?.toString() || '',
-        static_role: static_roleOption.value?.toString() || ''
-    };
+    try {
+        const newConfig: GuildConfigType = {
+            guild_id: interaction.guildId ?? '',
+            moderator_role: moderator_role,
+            static_role: static_role
+        };
+        if (guild_idExist) {
+            editGuildConfig(newConfig);
+        } else {
+            setGuildConfig(newConfig);
+        }
 
-    editGuildConfig(newConfig);
-
-    const embed = await getConfigEmbed(
-        newConfig.moderator_role,
-        newConfig.static_role,
-        Colors.Red
-    );
-    return interaction.followUp({
-        // allowed_mentions: {
-        //     replied_user: false,
-        //     parse: ['roles'],
-        //     roles: ['@ROLENAME']
-        // },
-        ephemeral: false,
-        embeds: embed ? [embed] : undefined
-    });
+        const embed = await getConfigEmbed(
+            newConfig.moderator_role,
+            newConfig.static_role,
+            Colors.Red
+        );
+        return interaction.followUp({
+            ephemeral: false,
+            embeds: embed ? [embed] : undefined
+        });
+    } catch (error) {
+        errorHandler('setConfig', error, interaction);
+    }
 };
 
 const handleSetConfig = async (
@@ -172,7 +175,12 @@ const handleSetConfig = async (
                 (option) => option.name === OptionNames.STATIC_ROLE
             );
 
-        if (moderator_roleOption && static_roleOption) {
+        if (
+            moderator_roleOption &&
+            moderator_roleOption.value &&
+            static_roleOption &&
+            static_roleOption.value
+        ) {
             if (
                 guildConfig &&
                 guildConfig.moderator_role &&
@@ -181,20 +189,23 @@ const handleSetConfig = async (
                 await handleSetConfigAlreadyExist(
                     interaction,
                     guildConfig,
-                    moderator_roleOption,
-                    static_roleOption
+                    moderator_roleOption.value.toString(),
+                    static_roleOption.value.toString()
                 );
             } else {
                 await setConfig(
                     interaction,
-                    moderator_roleOption,
-                    static_roleOption
+                    moderator_roleOption.value.toString(),
+                    static_roleOption.value.toString(),
+                    guildConfig.guild_id ? true : false
                 );
             }
         } else {
             return interaction.followUp({
                 ephemeral: true,
-                content: strings('error.rolesMissing')
+                content: strings('error.general', {
+                    details: strings('error.rolesMissing')
+                })
             });
         }
     } catch (error: ErrorType) {
@@ -227,8 +238,8 @@ const handleGetConfig = async (
 const handleSetConfigAlreadyExist = async (
     interaction: CommandInteraction<CacheType>,
     guildConfig: GuildConfigType,
-    moderator_roleOption: CommandInteractionOption<CacheType>,
-    static_roleOption: CommandInteractionOption<CacheType>
+    moderator_role: string,
+    static_role: string
 ) => {
     const embed = await getConfigEmbed(
         guildConfig.moderator_role,
@@ -237,44 +248,35 @@ const handleSetConfigAlreadyExist = async (
     );
 
     const alreadyExistEmbed = await getConfigAlreadyExistEmbed(
-        guildConfig.moderator_role,
-        guildConfig.static_role
+        moderator_role,
+        static_role
     );
 
-    return interaction
-        .followUp({
-            ephemeral: false,
-            embeds: embed ? [alreadyExistEmbed] : undefined,
-            components: [
-                {
-                    type: 1,
-                    components: [
-                        {
-                            style: 2,
-                            label: `${strings('override')}`,
-                            custom_id: ButtonCommandNames.CONFIG_OVERRIDE,
-                            disabled: false,
-                            type: 2
-                        },
-                        {
-                            style: 4,
-                            label: `${strings('cancel')}`,
-                            custom_id: ButtonCommandNames.CONFIG_CANCEL,
-                            disabled: false,
-                            type: 2
-                        }
-                    ]
-                }
-            ]
-        })
-        .then((message: Message<boolean>) => {
-            handleButtonCollector(
-                message,
-                interaction,
-                moderator_roleOption,
-                static_roleOption
-            );
-        });
+    return interaction.followUp({
+        ephemeral: false,
+        embeds: embed ? [alreadyExistEmbed] : undefined,
+        components: [
+            {
+                type: 1,
+                components: [
+                    {
+                        style: 2,
+                        label: `${strings('override')}`,
+                        custom_id: ButtonCommandNames.CONFIG_OVERRIDE,
+                        disabled: false,
+                        type: 2
+                    },
+                    {
+                        style: 4,
+                        label: `${strings('cancel')}`,
+                        custom_id: ButtonCommandNames.CONFIG_CANCEL,
+                        disabled: false,
+                        type: 2
+                    }
+                ]
+            }
+        ]
+    });
 };
 
 const getConfigEmbed = (
@@ -284,24 +286,19 @@ const getConfigEmbed = (
 ) => {
     const embedData: EmbedData | APIEmbed = {
         title: `Static Gear Helper Config`,
-        description: `Alle Mitglieder der Rolle <@&${moderator_role}> dürfen die Konfiguration anpassen.\n
-        Alle Mitglieder der Rolle <@&${static_role}> dürfen nun ihr BiS Gear speichern. `,
+        description: `Alle Mitglieder der Rolle ${moderator_role} dürfen die Konfiguration anpassen.\n
+        Alle Mitglieder der Rolle ${static_role} dürfen nun ihr BiS Gear speichern. `,
         color: color,
         fields: [
             {
                 name: OptionNames.MODERATOR_ROLE,
-                value: `<@&${moderator_role}>`,
+                value: `${moderator_role}`,
                 inline: true
             },
             {
                 name: OptionNames.STATIC_ROLE,
-                value: `<@&${static_role}>`,
+                value: `${static_role}`,
                 inline: true
-            },
-
-            {
-                name: '\u200B',
-                value: '\u200B'
             },
 
             {
@@ -309,15 +306,15 @@ const getConfigEmbed = (
                 value: '\u200B'
             },
             {
-                name: `/${CommandNames.BESTINSLOT} ${SubCommandNames.SET} :bis_name`,
+                name: `/${CommandNames.BESTINSLOT} ${SubCommandNames.SET} :${OptionNames.LINK} :${OptionNames.NAME}`,
                 value: `speicher dieses Gearset`
             },
             {
-                name: `/${CommandNames.BESTINSLOT} ${SubCommandNames.GET} :bis_name`,
+                name: `/${CommandNames.BESTINSLOT} ${SubCommandNames.GET} :${OptionNames.NAME}`,
                 value: `zeigt das gespeicherte Gearset`
             },
             {
-                name: `/${CommandNames.BESTINSLOT} ${SubCommandNames.DELETE} :bis_name`,
+                name: `/${CommandNames.BESTINSLOT} ${SubCommandNames.DELETE} :${OptionNames.NAME}`,
                 value: `Lösche das gespeicherte Gearset`
             }
         ]
@@ -330,67 +327,33 @@ const getConfigAlreadyExistEmbed = (
     moderator_role: string | undefined,
     static_role: string | undefined
 ) => {
+    moderator_role?.search('<@&') == -1 &&
+        (moderator_role = '<@&' + moderator_role + '>');
+    static_role?.search('<@&') == -1 &&
+        (static_role = '<@&' + static_role + '>');
+
     const embedData: EmbedData | APIEmbed = {
         title: strings('configSetCommand.alreadyExistTitle'),
         description: strings('configSetCommand.alreadyExistDescription'),
         color: Colors.Red,
         fields: [
             {
-                name: `moderator_role`,
-                value: `<@&${moderator_role}>`,
+                name: `${strings('configSetCommand.newRoles')}`,
+                value: `\u200b`,
+                inline: false
+            },
+            {
+                name: `${OptionNames.MODERATOR_ROLE}`,
+                value: `${moderator_role}`,
                 inline: true
             },
             {
-                name: `static_role`,
-                value: `<@&${static_role}>`,
+                name: `${OptionNames.STATIC_ROLE}`,
+                value: `${static_role}`,
                 inline: true
             }
         ]
     };
 
     return new EmbedBuilder(embedData);
-};
-
-const handleButtonCollector = (
-    message: Message<boolean>,
-    interaction: CommandInteraction<CacheType>,
-    moderator_roleOption: CommandInteractionOption<CacheType>,
-    static_roleOption: CommandInteractionOption<CacheType>
-) => {
-    const collector = message.createMessageComponentCollector({
-        componentType: ComponentType.Button,
-        time: undefined
-    });
-
-    collector.on('collect', (i: ButtonInteraction) => {
-        if (i.user.id === interaction.user.id) {
-            switch (i.customId) {
-                case ButtonCommandNames.CONFIG_OVERRIDE:
-                    if (moderator_roleOption && static_roleOption) {
-                        setConfig(
-                            interaction,
-                            moderator_roleOption,
-                            static_roleOption
-                        );
-                        return interaction.deleteReply();
-                    }
-
-                    break;
-                case ButtonCommandNames.CONFIG_CANCEL:
-                    return interaction.deleteReply();
-
-                default:
-                    break;
-            }
-        } else {
-            i.reply({
-                content: `These buttons aren't for you!`,
-                ephemeral: true
-            });
-        }
-    });
-
-    collector.on('end', (collected: {size: number}) => {
-        console.info(`Collected ${collected.size} interactions.`);
-    });
 };

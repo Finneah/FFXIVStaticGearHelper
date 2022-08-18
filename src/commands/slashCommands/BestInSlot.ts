@@ -15,7 +15,7 @@ import {setBisForUser} from '../../database/actions/bestInSlot/setBisForUser';
 import {getGuildConfig} from '../../database/actions/guildConfig/getGuildConfig';
 import {BisLinksType, GuildConfigType} from '../../database/types/DataType';
 
-import {errorHandler} from '../../handler';
+import {errorHandler, handleInteractionError} from '../../handler';
 import {strings} from '../../locale/i18n';
 import Logger from '../../logger';
 
@@ -26,7 +26,7 @@ import {
     OptionNames,
     SubCommandNames
 } from '../../types';
-import {checkPermission} from '../../utils/permissions/permissions';
+import {checkPermission} from '../../utils/permissions';
 
 import {Command} from '../Command';
 import {handleGetGearsetEmbedCommand} from '../handleGetGearsetEmbedCommand';
@@ -83,11 +83,12 @@ export const BestInSlot: Command = {
     run: async (client: Client, interaction: CommandInteraction) => {
         try {
             if (!interaction.guildId) {
-                return interaction.followUp(
-                    strings('error.general', {
-                        details: 'error.coruptInteraction'
-                    })
+                handleInteractionError(
+                    'BestInSlot',
+                    interaction,
+                    strings('error.coruptInteraction')
                 );
+                return;
             }
 
             const subCommand = interaction.options.data.find(
@@ -108,11 +109,12 @@ export const BestInSlot: Command = {
             );
 
             if (!hasPermissions) {
-                return interaction.followUp(
-                    strings('error.general', {
-                        details: 'error.permissionDenied'
-                    })
+                handleInteractionError(
+                    'BestInSlot',
+                    interaction,
+                    strings('error.permissionDenied')
                 );
+                return;
             }
             const savedBis = await getBisByUser(interaction.user.id);
             switch (subCommand?.name) {
@@ -122,12 +124,7 @@ export const BestInSlot: Command = {
                     break;
 
                 case SubCommandNames.GET:
-                    handleGetBis(
-                        interaction,
-                        subCommand,
-                        savedBis,
-                        hasPermissions
-                    );
+                    handleGetBis(interaction, subCommand, hasPermissions);
                     break;
 
                 default:
@@ -160,7 +157,7 @@ const handleSetBis = async (
             logger.warn('bisNameExist', link, name);
             return interaction.followUp(
                 strings('error.general', {
-                    details: 'error.bisNameExist'
+                    details: strings('error.bisNameExist')
                 })
             );
         }
@@ -168,7 +165,7 @@ const handleSetBis = async (
             logger.warn('missingParameter', link, name);
             return interaction.followUp(
                 strings('error.general', {
-                    details: 'error.missingParameter'
+                    details: strings('error.missingParameter')
                 })
             );
         }
@@ -181,7 +178,7 @@ const handleSetBis = async (
         logger.info('Erfolgreich gespeichert');
         return interaction.followUp({
             ephemeral: true,
-            content: 'Erfolgreich gespeichert'
+            content: `BiS ${name} Gespeichert. Schau es dir mit \`/${CommandNames.BESTINSLOT} ${SubCommandNames.GET} :${OptionNames.NAME}\` gleich an`
         });
     } catch (error: ErrorType) {
         errorHandler('handleSetBis', error, interaction);
@@ -191,7 +188,6 @@ const handleSetBis = async (
 const handleGetBis = async (
     interaction: CommandInteraction<CacheType>,
     subCommand: CommandInteractionOption<CacheType>,
-    savedBis: BisLinksType[],
     hasPermission: boolean
 ) => {
     try {
@@ -201,7 +197,7 @@ const handleGetBis = async (
         if (!name) {
             return interaction.followUp(
                 strings('error.general', {
-                    details: 'error.missingParameter'
+                    details: strings('error.missingParameter')
                 })
             );
         }

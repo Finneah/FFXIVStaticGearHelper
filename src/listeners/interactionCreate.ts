@@ -6,10 +6,16 @@ import {
     CommandInteraction,
     Interaction
 } from 'discord.js';
-import {ButtonCommands, Commands} from '../commands/Commands';
+import {ConfigCancel} from '../commands/buttonCommands/ConfigCancel';
+import {ConfigOverride} from '../commands/buttonCommands/ConfigOverride';
+import {DeleteBis} from '../commands/buttonCommands/DeleteBis';
+import {EditBis} from '../commands/buttonCommands/EditBis';
+
+import {ButtonCommand} from '../commands/Command';
+import {Commands} from '../commands/Commands';
 import {getBisByUser} from '../database/actions/bestInSlot/getBisFromUser';
 import Logger from '../logger';
-import {CommandNames} from '../types';
+import {ButtonCommandNames, CommandNames} from '../types';
 const logger = Logger.child({module: 'interactionCreate'});
 
 export default (client: Client): void => {
@@ -77,14 +83,26 @@ const handleButtonCommand = async (
     client: Client,
     interaction: ButtonInteraction<CacheType>
 ): Promise<void> => {
-    const buttonCommand = ButtonCommands.find((c) => {
-        if (
-            interaction.customId.startsWith('editbis_') &&
-            c.name === 'editbis'
-        ) {
-            return c;
+    let buttonCommand: ButtonCommand | undefined = undefined;
+    if (interaction.customId.startsWith('editbis_')) {
+        buttonCommand = EditBis;
+    } else if (
+        interaction.customId.startsWith(ButtonCommandNames.DELETE_BIS + '_')
+    ) {
+        buttonCommand = DeleteBis;
+    } else {
+        switch (interaction.customId) {
+            case ButtonCommandNames.CONFIG_OVERRIDE:
+                buttonCommand = ConfigOverride;
+                break;
+            case ButtonCommandNames.CONFIG_CANCEL:
+                buttonCommand = ConfigCancel;
+                break;
+
+            default:
+                break;
         }
-    });
+    }
 
     if (!buttonCommand) {
         logger.error(

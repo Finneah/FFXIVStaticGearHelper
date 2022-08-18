@@ -1,10 +1,8 @@
 export enum CommandNames {
     BESTINSLOT = 'mybis',
     SHOWETROBIS = 'show',
-    CONFIGUREBOTFORGUILD = 'config',
-    EDITBIS = 'editbis'
+    CONFIGUREBOTFORGUILD = 'config'
 }
-
 export enum SubCommandNames {
     SET = 'set',
     GET = 'get',
@@ -17,7 +15,8 @@ export enum ButtonCommandNames {
     CONFIG_OVERRIDE = 'overrideConfig',
     CONFIG_CANCEL = 'cancelConfig',
     DELETE_BIS = 'deleteBis',
-    SETTINGS = 'settings'
+    SETTINGS = 'settings',
+    EDITBIS = 'editbis'
 }
 
 export enum OptionNames {

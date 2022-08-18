@@ -1,6 +1,6 @@
 {
     "name": "ffxiv-static-gear-helper",
-    "version": "1.0.1",
+    "version": "1.1.0",
     "main": "index.js",
     "repository": "https://github.com/Finneah/FFXIVStaticGearHelper.git",
     "author": "Finneah <finneah@icloud.com>",
@@ -15,6 +15,7 @@
         "build:watch": "tsc -w",
         "start:dev": "nodemon build/main.js | pino-pretty -i pid,hostname -t dd-mm-yyyy HH:MM:ss",
         "lint": "eslint src --ext .ts",
+        "lint:fix": "eslint src --ext .ts --fix",
         "format": "prettier --write src/**/*.ts",
         "check-types": "tsc --noEmit"
     },
