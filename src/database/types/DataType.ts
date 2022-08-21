@@ -5,9 +5,11 @@ export type GuildConfigType = {
 };
 
 export type BisLinksType = {
+    bis_id?: number;
     user_id: string;
     bis_link: string;
     bis_name: string;
+    is_main?: boolean;
     weapon?: boolean;
     head?: boolean;
     body?: boolean;

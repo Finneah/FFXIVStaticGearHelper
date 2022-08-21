@@ -53,28 +53,29 @@ const handleSlashCommand = async (
     slashCommand.run(client, interaction);
 };
 
+/**
+ * @description set Values for Autocomplete on slash command /mybis get
+ * @param client
+ * @param interaction
+ */
 const handleAutocomplete = async (
     client: Client<boolean>,
     interaction: AutocompleteInteraction<CacheType>
 ) => {
     if (interaction.commandName === CommandNames.BESTINSLOT) {
         const focusedValue = interaction.options.getFocused();
-        const savedBis = await getBisByUser(interaction.user.id);
-        const choices: string[] = [];
+        const allSavedBis = await getBisByUser(interaction.user.id);
 
-        if (savedBis) {
-            savedBis.forEach((sBis) => {
-                choices.push(sBis.bis_name);
-            });
-
-            if (choices.length > 0) {
-                const filtered = choices.filter((choice) =>
-                    choice.startsWith(focusedValue)
-                );
-                await interaction.respond(
-                    filtered.map((choice) => ({name: choice, value: choice}))
-                );
-            }
+        if (allSavedBis && allSavedBis.length > 0) {
+            const filtered = allSavedBis.filter((savedBis) =>
+                savedBis.bis_name.startsWith(focusedValue)
+            );
+            await interaction.respond(
+                filtered.map((savedBis) => ({
+                    name: savedBis.bis_name,
+                    value: savedBis.bis_name
+                }))
+            );
         }
     }
 };

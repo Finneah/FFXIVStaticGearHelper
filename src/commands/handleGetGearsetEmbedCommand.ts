@@ -8,62 +8,84 @@ import {
     EmbedField,
     ButtonBuilder,
     ActionRowBuilder,
-    ButtonInteraction
+    ButtonInteraction,
+    Message
 } from 'discord.js';
 import {BisLinksType} from '../database/types/DataType';
-import {errorHandler, getGearset} from '../handler';
+import {errorHandler, getGearset, handleInteractionError} from '../handler';
 import {strings} from '../locale/i18n';
 
 import {
     ButtonCommandNames,
     Equipment,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    ErrorType,
     Gearset,
     MateriaType,
     SubCommandNames
 } from '../types';
 import {getJobIconUrl, getRoleColorByJob} from '../utils';
 
-export const handleGetGearsetEmbedCommand = async (
+/**
+ * @description get the gearset embed content
+ * @param by
+ * @param value
+ * @param interaction
+ * @param bis
+ * @param hasPermission
+ * @returns Promise<Message<boolean>>
+ */
+export const getGearsetEmbedCommand = async (
     by: SubCommandNames.BY_LINK | SubCommandNames.BY_ID,
     value: string,
     interaction: CommandInteraction<CacheType>,
     bis?: BisLinksType,
     hasPermission?: boolean
-) => {
+): Promise<Message<boolean>> => {
     try {
         const gearset = await getGearset(by, value);
-
-        if (gearset) {
-            const embed = await getEmbedBis(gearset, interaction);
-
-            if (bis && hasPermission && gearset) {
-                const actionRows = getActionRows(gearset, bis);
-                await interaction.followUp({
-                    ephemeral: false,
-                    components: actionRows,
-                    embeds: embed ? [embed] : undefined
-                });
-            } else {
-                await interaction.followUp({
-                    ephemeral: false,
-                    embeds: embed ? [embed] : undefined
-                });
-            }
+        if (!gearset) {
+            return handleInteractionError(
+                'EditBis',
+                interaction,
+                strings('error.coruptInteraction')
+            );
         }
-    } catch (error: ErrorType) {
-        errorHandler('handleGetGearsetEmbedCommand', error, interaction);
+
+        const embed = await getEmbedBis(gearset, interaction);
+
+        if (bis && hasPermission && gearset) {
+            const actionRows = getActionRows(gearset, bis);
+            return interaction.followUp({
+                ephemeral: false,
+                components: actionRows,
+                embeds: embed ? [embed] : undefined
+            });
+        } else {
+            return interaction.followUp({
+                ephemeral: false,
+                embeds: embed ? [embed] : undefined
+            });
+        }
+    } catch (error) {
+        return interaction.followUp({
+            ephemeral: true,
+            content: errorHandler('handleGetGearsetEmbedCommand', error)
+        });
     }
 };
 
+/**
+ * @description tbd
+ * @param gearset
+ * @param interaction
+ * @returns  Promise<EmbedBuilder>
+ */
 export const getEmbedBis = async (
     gearset: Gearset,
     interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType>
-) => {
+): Promise<EmbedBuilder> => {
     const avatar = await interaction.user.avatarURL();
     const jobIconPath = await getJobIconUrl(gearset.jobAbbrev);
-    const equipmentFields = getEquipmentFields(gearset, interaction);
+    const equipmentFields = getEquipmentFields(gearset);
     const embedData: EmbedData | APIEmbed = {
         color: resolveColor(getRoleColorByJob(gearset.jobAbbrev)),
         title: gearset.name,
@@ -95,13 +117,12 @@ export const getEmbedBis = async (
     return new EmbedBuilder(embedData);
 };
 
-const getEquipmentFields = (
-    gearset: Gearset,
-    interaction:
-        | CommandInteraction<CacheType>
-        | ButtonInteraction<CacheType>
-        | undefined
-) => {
+/**
+ * @description tbd
+ * @param gearset
+ * @returns EmbedField[]
+ */
+const getEquipmentFields = (gearset: Gearset): EmbedField[] => {
     const fields: EmbedField[] = [];
     try {
         if (gearset.weapon) {
@@ -178,12 +199,20 @@ const getEquipmentFields = (
         }
 
         return fields;
-    } catch (error: ErrorType) {
-        errorHandler('getEquipmentFields', error, interaction);
+    } catch (error) {
+        errorHandler('getEquipmentFields', error);
         return [];
     }
 };
 
+/**
+ * @description tbd
+ * @param equip
+ * @param materia
+ * @param inline
+ * @param ringPrefix
+ * @returns EmbedField
+ */
 const getFieldForEquip = (
     equip: Equipment,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -205,12 +234,19 @@ const getFieldForEquip = (
     return field;
 };
 
+/**
+ * @description tbd
+ * @param equip
+ * @param materia
+ * @param ringPrefix
+ * @returns string
+ */
 const getMateriaString = (
     equip: Equipment,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     materia: any,
     ringPrefix?: 'L' | 'R'
-) => {
+): string => {
     const equipMateria: MateriaType =
         ringPrefix && materia[equip.id + ringPrefix]
             ? materia[equip.id + ringPrefix]
@@ -225,7 +261,12 @@ const getMateriaString = (
     return materiaString;
 };
 
-const getIconBySlotName = (slotName: string) => {
+/**
+ * @description tbd
+ * @param slotName
+ * @returns string
+ */
+const getIconBySlotName = (slotName: string): string => {
     switch (slotName) {
         case 'weapon':
             return '🗡️';
@@ -255,12 +296,19 @@ const getIconBySlotName = (slotName: string) => {
     }
 };
 
+/**
+ * @description tbd
+ * @param gear
+ * @param bis_name
+ * @param row
+ * @param ringPrefix
+ */
 const addButtonComponent = (
     gear: {slotName: string; looted: boolean},
     bis_name: string,
     row: ActionRowBuilder<ButtonBuilder>,
     ringPrefix?: 'L' | 'R'
-) => {
+): void => {
     const label = gear?.looted ? '✔️' : '❌';
 
     if (gear?.slotName) {
@@ -280,7 +328,16 @@ const addButtonComponent = (
     }
 };
 
-export const getActionRows = (gearset: Gearset, bis: BisLinksType) => {
+/**
+ * @description tbd
+ * @param gearset
+ * @param bis
+ * @returns ActionRowBuilder<ButtonBuilder>[]
+ */
+export const getActionRows = (
+    gearset: Gearset,
+    bis: BisLinksType
+): ActionRowBuilder<ButtonBuilder>[] => {
     const gearArray: {slotName: string; looted: boolean}[] = [];
 
     gearset.weapon &&
@@ -351,6 +408,14 @@ export const getActionRows = (gearset: Gearset, bis: BisLinksType) => {
     return actionRows;
 };
 
+/**
+ * @description tbd
+ * @param rows
+ * @param gearArray
+ * @param bis_name
+ * @param index
+ * @returns ActionRowBuilder<ButtonBuilder>[]
+ */
 const getActionRowWithButtons = (
     rows: ActionRowBuilder<ButtonBuilder>[],
     gearArray: {slotName: string; looted: boolean}[],

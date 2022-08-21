@@ -1,23 +1,32 @@
 import {GuildConfigType} from '../../types/DataType';
-import {SeqGuilds} from '../../sequelize';
+
 import Logger from '../../../logger';
 import {errorHandler} from '../../../handler';
+import {QueryConfig} from 'pg';
+import {runQuery} from '../../database';
 
 const logger = Logger.child({module: 'editGuildConfig'});
-export const editGuildConfig = async (guildConfig: GuildConfigType) => {
+
+/**
+ * @description edit the GuildConfig on slash command /config set override
+ * @param guildConfig GuildConfigType
+ */
+export const editGuildConfig = async (
+    guildConfig: GuildConfigType
+): Promise<void> => {
     try {
-        await SeqGuilds.update(
-            {
-                moderator_role: guildConfig.moderator_role,
-                static_role: guildConfig.static_role
-            },
-            {where: {guild_id: guildConfig.guild_id}}
-        );
-        logger.info(
-            `Guild ID ${
-                guildConfig.moderator_role + ' ' + guildConfig.static_role
-            } is updated in DB`
-        );
+        const query: QueryConfig = {
+            name: 'edit-GuildConfig',
+            text: 'UPDATE guilds SET moderator_role=$1, static_role=$2 WHERE guild_id=$3;',
+            values: [
+                guildConfig.moderator_role,
+                guildConfig.static_role,
+                guildConfig.guild_id
+            ]
+        };
+
+        const res = await runQuery(query);
+        logger.info(`edit-GuildConfig ${JSON.stringify(res?.rows[0])}`);
     } catch (error) {
         errorHandler('editGuildConfig', error);
     }

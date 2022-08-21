@@ -1,15 +1,19 @@
 import {ApplicationCommandType, ButtonInteraction, Client} from 'discord.js';
 import {getGuildConfig} from '../../database/actions/guildConfig/getGuildConfig';
-import {GuildConfigType} from '../../database/types/DataType';
+
 import {errorHandler, handleInteractionError} from '../../handler';
 import {strings} from '../../locale/i18n';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import {ButtonCommandNames, OptionNames, ErrorType} from '../../types';
+import {ButtonCommandNames, OptionNames} from '../../types';
 import {checkPermission} from '../../utils/permissions';
 import {ButtonCommand} from '../Command';
 import {setConfig} from '../slashCommands/ConfigureBotForGuild';
 
+/**
+ * @todo bis-channel
+ * @description Button Command Config Override,
+ * override the exist guildConfig
+ */
 export const ConfigOverride: ButtonCommand = {
     name: ButtonCommandNames.CONFIG_OVERRIDE,
     type: ApplicationCommandType.Message,
@@ -23,17 +27,14 @@ export const ConfigOverride: ButtonCommand = {
                 );
                 return;
             }
-            const guildConfig: GuildConfigType = await getGuildConfig(
-                interaction.guildId,
-                interaction
-            );
+            const guildConfig = await getGuildConfig(interaction.guildId);
             const hasPermission = await checkPermission(
                 interaction,
                 interaction.guildId,
-                guildConfig.static_role
+                guildConfig?.static_role
             );
 
-            if (!guildConfig.guild_id) {
+            if (!guildConfig?.guild_id) {
                 handleInteractionError(
                     'ConfigOverride',
                     interaction,
@@ -76,8 +77,8 @@ export const ConfigOverride: ButtonCommand = {
                 );
                 return;
             }
-        } catch (error: ErrorType) {
-            errorHandler('EditBis', error, interaction);
+        } catch (error) {
+            errorHandler('EditBis', error);
         }
     }
 };

@@ -1,14 +1,15 @@
-import {ButtonInteraction, CacheType, CommandInteraction} from 'discord.js';
+import {
+    ButtonInteraction,
+    CacheType,
+    CommandInteraction,
+    Message
+} from 'discord.js';
 
 import {strings} from '../../locale/i18n';
 import Logger from '../../logger';
 import {ErrorType} from '../../types';
 
-export const errorHandler = (
-    namespace: string,
-    error: ErrorType,
-    interaction?: CommandInteraction<CacheType> | ButtonInteraction<CacheType>
-) => {
+export const errorHandler = (namespace: string, error: ErrorType): string => {
     const logger = Logger.child({module: namespace});
     logger.error(error);
     let message = error.message;
@@ -23,9 +24,7 @@ export const errorHandler = (
     if (error.name && error.name === 'SequelizeDatabaseError') {
         message = handleDBError(error);
     }
-    if (interaction && !interaction.isButton()) {
-        showInteraction(interaction, message);
-    }
+    return message;
 };
 
 const handleDBError = (error: ErrorType) => {
@@ -51,24 +50,14 @@ const handleDBError = (error: ErrorType) => {
     return message;
 };
 
-const showInteraction = async (
-    interaction: CommandInteraction<CacheType>,
-
-    message: ErrorType
-) => {
-    await interaction.followUp(
-        strings('error.general', {details: '\n' + message})
-    );
-};
-
 export const handleInteractionError = async (
     namespace: string,
     interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType>,
     message: string
-) => {
+): Promise<Message<boolean>> => {
     const logger = Logger.child({module: namespace});
     logger.error(message);
-    await interaction.followUp({
+    return interaction.followUp({
         ephemeral: true,
         content: strings('error.general', {details: '\n' + message})
     });

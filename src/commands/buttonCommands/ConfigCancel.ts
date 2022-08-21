@@ -3,13 +3,13 @@ import {ApplicationCommandType, ButtonInteraction, Client} from 'discord.js';
 import {errorHandler, handleInteractionError} from '../../handler';
 import {strings} from '../../locale/i18n';
 
-import {
-    ButtonCommandNames,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    ErrorType
-} from '../../types';
+import {ButtonCommandNames} from '../../types';
 import {ButtonCommand} from '../Command';
 
+/**
+ * @description Button Command Config Cancel,
+ * cancel interaction config already exist
+ */
 export const ConfigCancel: ButtonCommand = {
     name: ButtonCommandNames.CONFIG_CANCEL,
     type: ApplicationCommandType.Message,
@@ -24,8 +24,8 @@ export const ConfigCancel: ButtonCommand = {
                 return;
             }
             return interaction.deleteReply();
-        } catch (error: ErrorType) {
-            errorHandler('EditBis', error, interaction);
+        } catch (error) {
+            errorHandler('EditBis', error);
         }
     }
 };

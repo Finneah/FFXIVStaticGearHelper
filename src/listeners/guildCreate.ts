@@ -1,5 +1,5 @@
 import {Client} from 'discord.js';
-import {setGuildConfig} from '../database';
+import {initDB, setGuildConfig} from '../database';
 
 export default (client: Client) => {
     client.on('guildCreate', (guild) => {
@@ -8,6 +8,7 @@ export default (client: Client) => {
          * @todo
          * show start message configure bot
          */
+        initDB();
         if (id) {
             //  registerGuildCommands(id);
             // save guildId in DB

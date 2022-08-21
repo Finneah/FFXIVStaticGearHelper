@@ -80,10 +80,7 @@ export const ConfigureBotForGuild: Command = {
                     option.name === SubCommandNames.GET
             );
 
-            const guildConfig: GuildConfigType = await getGuildConfig(
-                interaction.guildId,
-                interaction
-            );
+            const guildConfig = await getGuildConfig(interaction.guildId);
 
             const permissions = await checkPermission(
                 interaction,
@@ -105,7 +102,12 @@ export const ConfigureBotForGuild: Command = {
                     break;
 
                 case SubCommandNames.GET:
-                    if (guildConfig) {
+                    if (
+                        guildConfig &&
+                        guildConfig.moderator_role &&
+                        guildConfig.static_role
+                        // && guildConfig.bis_channle
+                    ) {
                         handleGetConfig(interaction, guildConfig);
                     } else {
                         return interaction.followUp({
@@ -121,7 +123,7 @@ export const ConfigureBotForGuild: Command = {
                     break;
             }
         } catch (error: ErrorType) {
-            errorHandler('ConfigureBotForGuild', error, interaction);
+            errorHandler('ConfigureBotForGuild', error);
         }
     }
 };
@@ -154,14 +156,14 @@ export const setConfig = async (
             embeds: embed ? [embed] : undefined
         });
     } catch (error) {
-        errorHandler('setConfig', error, interaction);
+        errorHandler('setConfig', error);
     }
 };
 
 const handleSetConfig = async (
     interaction: CommandInteraction<CacheType>,
     subCommand: CommandInteractionOption<CacheType>,
-    guildConfig: GuildConfigType
+    guildConfig: GuildConfigType | null
 ) => {
     try {
         const moderator_roleOption =
@@ -181,11 +183,7 @@ const handleSetConfig = async (
             static_roleOption &&
             static_roleOption.value
         ) {
-            if (
-                guildConfig &&
-                guildConfig.moderator_role &&
-                guildConfig.static_role
-            ) {
+            if (guildConfig?.moderator_role && guildConfig?.static_role) {
                 await handleSetConfigAlreadyExist(
                     interaction,
                     guildConfig,
@@ -197,7 +195,7 @@ const handleSetConfig = async (
                     interaction,
                     moderator_roleOption.value.toString(),
                     static_roleOption.value.toString(),
-                    guildConfig.guild_id ? true : false
+                    guildConfig?.guild_id ? true : false
                 );
             }
         } else {
@@ -209,7 +207,7 @@ const handleSetConfig = async (
             });
         }
     } catch (error: ErrorType) {
-        errorHandler('handleSetConfig', error, interaction);
+        errorHandler('handleSetConfig', error);
     }
 };
 
@@ -224,13 +222,7 @@ const handleGetConfig = async (
     );
 
     return interaction.followUp({
-        // allowed_mentions: {
-        //     replied_user: false,
-        //     parse: ['roles'],
-        //     roles: ['@ROLENAME']
-        // },
         ephemeral: true,
-
         embeds: embed ? [embed] : undefined
     });
 };

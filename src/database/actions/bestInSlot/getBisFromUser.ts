@@ -1,40 +1,59 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import {CommandInteraction, CacheType} from 'discord.js';
+import {QueryConfig} from 'pg';
 import {errorHandler} from '../../../handler';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import {ErrorType} from '../../../types';
-import {SeqBiSLinks} from '../../sequelize';
+import Logger from '../../../logger';
+
+import {runQuery} from '../../database';
 import {BisLinksType} from '../../types/DataType';
 
-export const getBisByUser = async (
-    userId: string,
-    interaction?: CommandInteraction<CacheType> | undefined
-): Promise<BisLinksType[]> => {
-    try {
-        const seqUserBisLinks: BisLinksType[] = await SeqBiSLinks.findAll({
-            where: {user_id: userId}
-        });
+const logger = Logger.child({module: 'getBis'});
 
-        return seqUserBisLinks;
-    } catch (error: ErrorType) {
-        errorHandler('getBisFromUser', error, interaction);
-        return Promise.reject('getBisFromUser');
+/**
+ * @description get all bis from User for Autofill /bis get
+ * @param userId
+ * @param interaction
+ * @returns BisLinksType[]
+ */
+export const getBisByUser = async (
+    userId: string
+): Promise<BisLinksType[] | null> => {
+    try {
+        const query: QueryConfig = {
+            name: 'get-BisByUser',
+            text: 'SELECT * FROM bis WHERE user_id=$1 ;',
+            values: [userId]
+        };
+
+        const res = await runQuery(query);
+        logger.info(`get-BisForUser ${JSON.stringify(res?.rows[0])}`);
+
+        return res?.rows ?? null;
+    } catch (error) {
+        errorHandler('getBisByUser', error);
+        return Promise.reject('getBisByUser');
     }
 };
 
+/**
+ * @description get specific bis from User on slash command /bis get
+ * @param userId
+ * @param interaction
+ * @returns BisLinksType[]
+ */
 export const getBisByUserByName = async (
     userId: string,
-    bis_name: string,
-    interaction?: CommandInteraction<CacheType> | undefined
-): Promise<BisLinksType> => {
+    bis_name: string
+): Promise<BisLinksType | null> => {
     try {
-        const seqUserBisLinks: BisLinksType = await SeqBiSLinks.findOne({
-            where: {user_id: userId, bis_name: bis_name}
-        });
+        const query: QueryConfig = {
+            name: 'get-BisByUserByName',
+            text: 'SELECT * FROM bis WHERE user_id=$1 AND bis_name=$2;',
+            values: [userId, bis_name]
+        };
 
-        return seqUserBisLinks;
-    } catch (error: ErrorType) {
-        errorHandler('getBisFromUser', error, interaction);
-        return Promise.reject('getBisFromUser');
+        const res = await runQuery(query);
+        logger.info(`get-BisByUserByName ${JSON.stringify(res?.rows[0])}`);
+        return res?.rows[0] ?? null;
+    } catch (error) {
+        return Promise.reject(error);
     }
 };

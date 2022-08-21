@@ -1,36 +1,32 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import {CommandInteraction, CacheType, ButtonInteraction} from 'discord.js';
-import {errorHandler} from '../../../handler';
+import {QueryConfig} from 'pg';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import {ErrorType} from '../../../types';
-import {SeqGuilds} from '../../sequelize';
+import Logger from '../../../logger';
+
+import {runQuery} from '../../database';
 import {GuildConfigType} from '../../types/DataType';
 
+const logger = Logger.child({module: 'getGuildConfig'});
+
+/**
+ * @description get the GuildConfig on slash command /config get
+ * @param guild_id
+ * @param interaction
+ * @returns
+ */
 export const getGuildConfig = async (
-    guild_id: string,
-    interaction:
-        | CommandInteraction<CacheType>
-        | ButtonInteraction<CacheType>
-        | undefined
-): Promise<GuildConfigType> => {
+    guild_id: string
+): Promise<GuildConfigType | null> => {
     try {
-        const seqGuildConfig: GuildConfigType = await SeqGuilds.findOne({
-            where: {guild_id: guild_id}
-        });
-        if (seqGuildConfig) {
-            const guildConfig = {
-                guild_id: seqGuildConfig.guild_id,
-                moderator_role: seqGuildConfig.moderator_role,
-                static_role: seqGuildConfig.static_role
-            };
+        const query: QueryConfig = {
+            name: 'get-GuildConfig',
+            text: 'SELECT * FROM guilds WHERE guild_id=$1;',
+            values: [guild_id]
+        };
 
-            return guildConfig;
-        }
-
-        return seqGuildConfig;
-    } catch (error: ErrorType) {
-        errorHandler('getGuildConfig', error, interaction);
-        return Promise.reject('something went wrong');
+        const res = await runQuery(query);
+        logger.info(`get-GuildConfig ${JSON.stringify(res?.rows[0])}`);
+        return res?.rows[0] ?? null;
+    } catch (error) {
+        return Promise.reject(error);
     }
 };

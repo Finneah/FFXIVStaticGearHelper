@@ -17,7 +17,9 @@ import {
     SubCommandNames
 } from '../../types';
 import {Command} from '../Command';
-import {handleGetGearsetEmbedCommand} from '../handleGetGearsetEmbedCommand';
+import {getGearsetEmbedCommand} from '../handleGetGearsetEmbedCommand';
+
+const logger = Logger.child({module: 'ShowEtroBis'});
 
 export const ShowEtroBis: Command = {
     name: CommandNames.SHOWETROBIS,
@@ -54,7 +56,7 @@ export const ShowEtroBis: Command = {
     run: async (client: Client, interaction: CommandInteraction) => {
         try {
             if (!interaction.guildId) {
-                Logger.warn('no interaction.guildId');
+                logger.warn('no interaction.guildId');
                 handleInteractionError(
                     'ShowEtroBis',
                     interaction,
@@ -86,7 +88,7 @@ export const ShowEtroBis: Command = {
             // );
 
             if (idOption && idOption.options?.[0].value) {
-                handleGetGearsetEmbedCommand(
+                getGearsetEmbedCommand(
                     idOption.name === SubCommandNames.BY_ID
                         ? SubCommandNames.BY_ID
                         : SubCommandNames.BY_LINK,
@@ -95,7 +97,7 @@ export const ShowEtroBis: Command = {
                 );
             }
         } catch (error: ErrorType) {
-            errorHandler('ShowEtroBis', error, interaction);
+            errorHandler('ShowEtroBis', error);
         }
     }
 };
