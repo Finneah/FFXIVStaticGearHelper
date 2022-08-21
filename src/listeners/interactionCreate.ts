@@ -13,7 +13,7 @@ import {EditBis} from '../commands/buttonCommands/EditBis';
 
 import {ButtonCommand} from '../commands/Command';
 import {Commands} from '../commands/Commands';
-import {getBisByUser} from '../database/actions/bestInSlot/getBisFromUser';
+import {getAllBisByUser} from '../database/actions/bestInSlot/getBisFromUser';
 import Logger from '../logger';
 import {ButtonCommandNames, CommandNames} from '../types';
 const logger = Logger.child({module: 'interactionCreate'});
@@ -62,9 +62,12 @@ const handleAutocomplete = async (
     client: Client<boolean>,
     interaction: AutocompleteInteraction<CacheType>
 ) => {
-    if (interaction.commandName === CommandNames.BESTINSLOT) {
+    if (
+        interaction.commandName === CommandNames.BESTINSLOT ||
+        interaction.commandName === CommandNames.SETMAINBIS
+    ) {
         const focusedValue = interaction.options.getFocused();
-        const allSavedBis = await getBisByUser(interaction.user.id);
+        const allSavedBis = await getAllBisByUser(interaction.user.id);
 
         if (allSavedBis && allSavedBis.length > 0) {
             const filtered = allSavedBis.filter((savedBis) =>

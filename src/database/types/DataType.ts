@@ -20,8 +20,8 @@ export type BisLinksType = {
     ears?: boolean;
     neck?: boolean;
     wrists?: boolean;
-    fingerL?: boolean;
-    fingerR?: boolean;
+    finger_l?: boolean;
+    finger_r?: boolean;
 };
 
 export enum GearTypes {
@@ -35,6 +35,6 @@ export enum GearTypes {
     EARS = 'ears',
     NECK = 'neck',
     WRISTS = 'wrists',
-    FINGERL = 'fingerL',
-    FINGER = 'fingerR'
+    FINGERL = 'finger_l',
+    FINGER = 'finger_r'
 }

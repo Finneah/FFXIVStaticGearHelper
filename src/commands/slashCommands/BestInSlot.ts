@@ -8,7 +8,7 @@ import {
     Message
 } from 'discord.js';
 import {
-    getBisByUser,
+    getAllBisByUser,
     getBisByUserByName
 } from '../../database/actions/bestInSlot/getBisFromUser';
 import {setBisForUser} from '../../database/actions/bestInSlot/setBisForUser';
@@ -88,9 +88,7 @@ export const BestInSlot: Command = {
                     option.name === SubCommandNames.GET
             );
 
-            const guildConfig: GuildConfigType | null = await getGuildConfig(
-                interaction.guildId
-            );
+            const guildConfig = await getGuildConfig(interaction.guildId);
 
             const hasPermissions = await checkPermission(
                 interaction,
@@ -106,10 +104,20 @@ export const BestInSlot: Command = {
                 );
                 return;
             }
-            const savedBis = await getBisByUser(interaction.user.id);
+            const allSavedBisFromUser = await getAllBisByUser(
+                interaction.user.id
+            );
+
             switch (subCommand?.name) {
                 case SubCommandNames.SET:
-                    handleSetBis(interaction, subCommand, savedBis);
+                    if (allSavedBisFromUser?.length === 2) {
+                        return interaction.followUp({
+                            ephemeral: true,
+                            content:
+                                'Es tut mir leid, du kannst nur 2 BiS Links speichern.'
+                        });
+                    }
+                    handleSetBis(interaction, subCommand, allSavedBisFromUser);
 
                     break;
 
@@ -130,13 +138,13 @@ export const BestInSlot: Command = {
  * @description handle the set bis Command
  * @param interaction CommandInteraction<CacheType>
  * @param subCommand  CommandInteractionOption<CacheType>
- * @param savedBis BisLinksType[] | null
+ * @param allSavedBisFromUser BisLinksType[] | null
  * @returns : Promise<Message<boolean>>
  */
 const handleSetBis = async (
     interaction: CommandInteraction<CacheType>,
     subCommand: CommandInteractionOption<CacheType>,
-    savedBis: BisLinksType[] | null
+    allSavedBisFromUser: BisLinksType[] | null
 ): Promise<Message<boolean>> => {
     try {
         const link = subCommand.options?.find(
@@ -156,8 +164,8 @@ const handleSetBis = async (
         }
 
         const exist =
-            savedBis &&
-            savedBis.find(
+            allSavedBisFromUser &&
+            allSavedBisFromUser.find(
                 (saved) =>
                     saved.bis_name === name &&
                     saved.user_id === interaction.user.id

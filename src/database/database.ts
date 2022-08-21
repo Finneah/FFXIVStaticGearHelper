@@ -1,13 +1,14 @@
 import {Client as PGClient, QueryConfig} from 'pg';
+import {NODE_ENV, LOCAL_DB_USER, LOCAL_DB_PW, DATABASE_URL} from '../config';
 
 import Logger from '../logger';
 
 const logger = Logger.child({module: 'Databse'});
 
 export const getClient = () => {
-    if (process.env.NODE_ENV === 'production') {
+    if (NODE_ENV === 'production') {
         const client = new PGClient({
-            connectionString: process.env.DATABASE_URL,
+            connectionString: DATABASE_URL,
             ssl: {
                 rejectUnauthorized: false
             }
@@ -16,10 +17,10 @@ export const getClient = () => {
         return client;
     }
     const client = new PGClient({
-        connectionString: process.env.DATABASE_URL,
+        connectionString: DATABASE_URL,
         ssl: false,
-        user: process.env.LOCAL_DB_USER,
-        password: process.env.LOCAL_DB_PW
+        user: LOCAL_DB_USER,
+        password: LOCAL_DB_PW
     });
     client.connect();
     return client;
@@ -54,6 +55,7 @@ const createDBBis = () => {
         user_id varchar(256) NOT NULL,
         bis_name varchar(256) NOT NULL,
         bis_link varchar(256) NOT NULL, 
+        is_main BOOLEAN DEFAULT false,
         weapon BOOLEAN DEFAULT false,
         head BOOLEAN DEFAULT false,
         body BOOLEAN DEFAULT false,
@@ -64,8 +66,8 @@ const createDBBis = () => {
         ears BOOLEAN DEFAULT false,
         neck BOOLEAN DEFAULT false,
         wrists BOOLEAN DEFAULT false,
-        fingerL BOOLEAN DEFAULT false,
-        fingerR BOOLEAN DEFAULT false
+        finger_l BOOLEAN DEFAULT false,
+        finger_r BOOLEAN DEFAULT false
     );`;
     client.query(string, (err, res) => {
         if (err) logger.error(err);

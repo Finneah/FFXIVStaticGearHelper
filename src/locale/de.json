@@ -22,6 +22,8 @@
     "itemLevel": "Item Level",
     "legs": "Beine",
     "neck": "Hals",
+    "_r": "R",
+    "_l": "L",
     "override": "Überschreiben",
     "cancel": "Abbrechen",
     "offHand": "Nebenhand",

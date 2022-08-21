@@ -45,11 +45,20 @@ export const EditBis: ButtonCommand = {
                         interaction.message.embeds[0].url
                     );
                     if (gearset) {
-                        const gearType = interaction.customId.split(
-                            '_'
-                        )[1] as GearTypes;
+                        let customId = interaction.customId;
+                        customId = customId.replace('editbis_', '');
 
-                        const bis_name = interaction.customId.split('_')[2];
+                        const gearType = customId.substring(
+                            0,
+                            customId.lastIndexOf('_')
+                        ) as GearTypes;
+
+                        const bis_name = customId
+                            .substring(
+                                customId.lastIndexOf('_'),
+                                customId.length
+                            )
+                            .replace('_', '');
 
                         const bis = await editBisFromUser(
                             bis_name,

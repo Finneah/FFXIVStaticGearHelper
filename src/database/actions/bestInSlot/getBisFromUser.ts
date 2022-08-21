@@ -13,7 +13,7 @@ const logger = Logger.child({module: 'getBis'});
  * @param interaction
  * @returns BisLinksType[]
  */
-export const getBisByUser = async (
+export const getAllBisByUser = async (
     userId: string
 ): Promise<BisLinksType[] | null> => {
     try {
@@ -24,7 +24,7 @@ export const getBisByUser = async (
         };
 
         const res = await runQuery(query);
-        logger.info(`get-BisForUser ${JSON.stringify(res?.rows[0])}`);
+        logger.info(`get-BisForUser ${JSON.stringify(res?.rows)}`);
 
         return res?.rows ?? null;
     } catch (error) {

@@ -1,6 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pino = require('pino');
 import {createWriteStream} from 'fs';
+import {NODE_ENV} from './config';
 // TODO LOGIN BUILD!
 const streams = [
     {level: 'error', stream: createWriteStream('./log.json', {flags: 'a'})},
@@ -12,7 +13,7 @@ const streams = [
 const Logger = pino(
     {
         name: 'FFXVIStaticGearHelper',
-        level: process.env.NODE_ENV === 'production' ? 'error' : 'debug' // must be the lowest level of all streams
+        level: NODE_ENV === 'production' ? 'error' : 'debug' // must be the lowest level of all streams
     },
     pino.multistream(streams)
 );

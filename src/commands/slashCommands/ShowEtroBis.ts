@@ -9,13 +9,7 @@ import {errorHandler, handleInteractionError} from '../../handler';
 import {strings} from '../../locale/i18n';
 import Logger from '../../logger';
 
-import {
-    CommandNames,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    ErrorType,
-    OptionNames,
-    SubCommandNames
-} from '../../types';
+import {CommandNames, OptionNames, SubCommandNames} from '../../types';
 import {Command} from '../Command';
 import {getGearsetEmbedCommand} from '../handleGetGearsetEmbedCommand';
 
@@ -78,15 +72,6 @@ export const ShowEtroBis: Command = {
                 return;
             }
 
-            // const guildConfig: GuildConfigTypes = await getGuildConfig(
-            //     interaction.guildId
-            // );
-            // const hasPermission = await checkPermission(
-            //     interaction,
-            //     interaction.guildId,
-            //     guildConfig.static_role
-            // );
-
             if (idOption && idOption.options?.[0].value) {
                 getGearsetEmbedCommand(
                     idOption.name === SubCommandNames.BY_ID
@@ -96,7 +81,7 @@ export const ShowEtroBis: Command = {
                     interaction
                 );
             }
-        } catch (error: ErrorType) {
+        } catch (error) {
             errorHandler('ShowEtroBis', error);
         }
     }

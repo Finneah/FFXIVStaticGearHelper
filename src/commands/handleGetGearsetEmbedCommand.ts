@@ -188,8 +188,8 @@ const getEquipmentFields = (gearset: Gearset): EmbedField[] => {
                     value: '\u200b',
                     inline: false
                 },
-                getFieldForEquip(gearset.fingerL, gearset.materia, true, 'L'),
-                getFieldForEquip(gearset.fingerR, gearset.materia, true, 'R'),
+                getFieldForEquip(gearset.fingerL, gearset.materia, true, '_l'),
+                getFieldForEquip(gearset.fingerR, gearset.materia, true, '_r'),
                 {
                     name: '\u200b',
                     value: '\u200b',
@@ -218,7 +218,7 @@ const getFieldForEquip = (
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     materia: any,
     inline = true,
-    ringPrefix?: 'L' | 'R'
+    ringPrefix?: '_l' | '_r'
 ): EmbedField => {
     const materiaString = getMateriaString(equip, materia, ringPrefix);
     const value = `${equip.name}`;
@@ -245,7 +245,7 @@ const getMateriaString = (
     equip: Equipment,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     materia: any,
-    ringPrefix?: 'L' | 'R'
+    ringPrefix?: '_l' | '_r'
 ): string => {
     const equipMateria: MateriaType =
         ringPrefix && materia[equip.id + ringPrefix]
@@ -307,7 +307,7 @@ const addButtonComponent = (
     gear: {slotName: string; looted: boolean},
     bis_name: string,
     row: ActionRowBuilder<ButtonBuilder>,
-    ringPrefix?: 'L' | 'R'
+    ringPrefix?: '_l' | '_r'
 ): void => {
     const label = gear?.looted ? '✔️' : '❌';
 
@@ -320,7 +320,7 @@ const addButtonComponent = (
                     '_' +
                     bis_name
             )
-            .setLabel((ringPrefix ?? ' ') + label)
+            .setLabel(((ringPrefix && strings(ringPrefix)) ?? ' ') + label)
             .setStyle(gear?.looted ? 3 : 2)
             .setEmoji(getIconBySlotName(gear.slotName));
 
@@ -392,15 +392,16 @@ export const getActionRows = (
             slotName: gearset.wrists.slotName,
             looted: bis.wrists === true ? true : false
         });
+
     gearset.fingerL &&
         gearArray.push({
             slotName: gearset.fingerL.slotName,
-            looted: bis.fingerL === true ? true : false
+            looted: bis.finger_l === true ? true : false
         });
     gearset.fingerR &&
         gearArray.push({
             slotName: gearset.fingerR.slotName,
-            looted: bis.fingerR === true ? true : false
+            looted: bis.finger_r === true ? true : false
         });
 
     const actionRows = getActionRowWithButtons([], gearArray, bis.bis_name, 0);
@@ -450,9 +451,9 @@ const getActionRowWithButtons = (
                 bis_name,
                 row,
                 i == gearArray.length - 2
-                    ? 'L'
+                    ? '_l'
                     : i == gearArray.length - 1
-                    ? 'R'
+                    ? '_r'
                     : undefined
             );
             i++;

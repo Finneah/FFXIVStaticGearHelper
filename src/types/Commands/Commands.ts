@@ -1,7 +1,9 @@
 export enum CommandNames {
     BESTINSLOT = 'mybis',
     SHOWETROBIS = 'show',
-    CONFIGUREBOTFORGUILD = 'config'
+    CONFIGUREBOTFORGUILD = 'config',
+    SETMAINBIS = 'mainbis',
+    STATICOVERVIEW = 'static_overview'
 }
 export enum SubCommandNames {
     SET = 'set',
