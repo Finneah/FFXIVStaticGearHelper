@@ -12,7 +12,7 @@ const streams = [
 const Logger = pino(
     {
         name: 'FFXVIStaticGearHelper',
-        level: 'debug' // must be the lowest level of all streams
+        level: process.env.NODE_ENV === 'production' ? 'error' : 'debug' // must be the lowest level of all streams
     },
     pino.multistream(streams)
 );
