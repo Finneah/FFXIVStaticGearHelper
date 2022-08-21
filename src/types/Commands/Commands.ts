@@ -24,5 +24,6 @@ export enum OptionNames {
     STATIC_ROLE = 'static_role',
     LINK = 'link',
     NAME = 'name',
-    ID = 'id'
+    ID = 'id',
+    ISMAIN = 'is_main'
 }

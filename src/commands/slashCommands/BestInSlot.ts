@@ -4,43 +4,34 @@ import {
     CacheType,
     Client,
     CommandInteraction,
-    CommandInteractionOption
+    CommandInteractionOption,
+    Message
 } from 'discord.js';
 import {
     getBisByUser,
     getBisByUserByName
 } from '../../database/actions/bestInSlot/getBisFromUser';
 import {setBisForUser} from '../../database/actions/bestInSlot/setBisForUser';
-
 import {getGuildConfig} from '../../database/actions/guildConfig/getGuildConfig';
+
 import {BisLinksType, GuildConfigType} from '../../database/types/DataType';
 
 import {errorHandler, handleInteractionError} from '../../handler';
 import {strings} from '../../locale/i18n';
 import Logger from '../../logger';
 
-import {
-    CommandNames,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    ErrorType,
-    OptionNames,
-    SubCommandNames
-} from '../../types';
+import {CommandNames, OptionNames, SubCommandNames} from '../../types';
 import {checkPermission} from '../../utils/permissions';
 
 import {Command} from '../Command';
-import {handleGetGearsetEmbedCommand} from '../handleGetGearsetEmbedCommand';
+import {getGearsetEmbedCommand} from '../handleGetGearsetEmbedCommand';
 
 const logger = Logger.child({module: 'BestInSlot'});
-/**
- * 1. set bis link name
- * - schon vorhanden? request umbenennen mit modal
- * - noch nicht vorhanden ? speichern, request anzeigen?
- * 2. get bis name=select
- * - button settings => löschen, umbenennen
- * - reaktionen icons für erhalten/nicht erhalten
- */
 
+/**
+ * @description Slot Command BestInSlot,
+ * get or set the users BiS in DB
+ */
 export const BestInSlot: Command = {
     name: CommandNames.BESTINSLOT,
     description: 'bisCommand.description',
@@ -97,9 +88,8 @@ export const BestInSlot: Command = {
                     option.name === SubCommandNames.GET
             );
 
-            const guildConfig: GuildConfigType = await getGuildConfig(
-                interaction.guildId,
-                interaction
+            const guildConfig: GuildConfigType | null = await getGuildConfig(
+                interaction.guildId
             );
 
             const hasPermissions = await checkPermission(
@@ -130,17 +120,24 @@ export const BestInSlot: Command = {
                 default:
                     break;
             }
-        } catch (error: ErrorType) {
-            errorHandler('BestInSlot', error, interaction);
+        } catch (error) {
+            errorHandler('BestInSlot', error);
         }
     }
 };
 
+/**
+ * @description handle the set bis Command
+ * @param interaction CommandInteraction<CacheType>
+ * @param subCommand  CommandInteractionOption<CacheType>
+ * @param savedBis BisLinksType[] | null
+ * @returns : Promise<Message<boolean>>
+ */
 const handleSetBis = async (
     interaction: CommandInteraction<CacheType>,
     subCommand: CommandInteractionOption<CacheType>,
-    savedBis: BisLinksType[]
-) => {
+    savedBis: BisLinksType[] | null
+): Promise<Message<boolean>> => {
     try {
         const link = subCommand.options?.find(
             (opt) => opt.name === OptionNames.LINK
@@ -149,18 +146,6 @@ const handleSetBis = async (
             (opt) => opt.name === OptionNames.NAME
         )?.value;
 
-        const exist = savedBis.find(
-            (saved) =>
-                saved.bis_name === name && saved.user_id === interaction.user.id
-        );
-        if (exist) {
-            logger.warn('bisNameExist', link, name);
-            return interaction.followUp(
-                strings('error.general', {
-                    details: strings('error.bisNameExist')
-                })
-            );
-        }
         if (!link || !name) {
             logger.warn('missingParameter', link, name);
             return interaction.followUp(
@@ -169,53 +154,91 @@ const handleSetBis = async (
                 })
             );
         }
-        setBisForUser({
+
+        const exist =
+            savedBis &&
+            savedBis.find(
+                (saved) =>
+                    saved.bis_name === name &&
+                    saved.user_id === interaction.user.id
+            );
+        if (exist) {
+            logger.warn('bisNameExist', link, name);
+            return interaction.followUp(
+                strings('error.general', {
+                    details: strings('error.bisNameExist')
+                })
+            );
+        }
+
+        const message = await setBisForUser({
             user_id: interaction.user.id,
             bis_link: link.toString(),
             bis_name: name.toString()
         });
 
-        logger.info('Erfolgreich gespeichert');
         return interaction.followUp({
             ephemeral: true,
-            content: `BiS ${name} Gespeichert. Schau es dir mit \`/${CommandNames.BESTINSLOT} ${SubCommandNames.GET} :${OptionNames.NAME}\` gleich an`
+            content: message
         });
-    } catch (error: ErrorType) {
-        errorHandler('handleSetBis', error, interaction);
+    } catch (error) {
+        return interaction.followUp({
+            ephemeral: true,
+            content: errorHandler('handleSetBis', error)
+        });
     }
 };
 
+/**
+ *
+ * @param interaction
+ * @param subCommand
+ * @param hasPermission
+ * @returns  Promise<Message<boolean>>
+ */
 const handleGetBis = async (
     interaction: CommandInteraction<CacheType>,
     subCommand: CommandInteractionOption<CacheType>,
     hasPermission: boolean
-) => {
+): Promise<Message<boolean>> => {
     try {
         const name = subCommand.options?.find(
             (opt) => opt.name === OptionNames.NAME
         )?.value;
         if (!name) {
-            return interaction.followUp(
-                strings('error.general', {
+            return interaction.followUp({
+                ephemeral: true,
+                content: strings('error.general', {
                     details: strings('error.missingParameter')
                 })
+            });
+        }
+
+        const bis: BisLinksType | null = await getBisByUserByName(
+            interaction.user.id,
+            name.toString()
+        );
+
+        if (bis?.bis_link) {
+            return getGearsetEmbedCommand(
+                SubCommandNames.BY_LINK,
+                bis.bis_link,
+                interaction,
+                bis,
+                hasPermission
             );
         }
 
-        const bis: BisLinksType = await getBisByUserByName(
-            interaction.user.id,
-            name.toString(),
-            interaction
-        );
-
-        handleGetGearsetEmbedCommand(
-            SubCommandNames.BY_LINK,
-            bis.bis_link,
-            interaction,
-            bis,
-            hasPermission
-        );
+        return interaction.followUp({
+            ephemeral: true,
+            content: strings('error.general', {
+                details: strings('error.noSavedBis')
+            })
+        });
     } catch (error) {
-        errorHandler('handleSetBis', error, interaction);
+        return interaction.followUp({
+            ephemeral: true,
+            content: errorHandler('handleSetBis', error)
+        });
     }
 };

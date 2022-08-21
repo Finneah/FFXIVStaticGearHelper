@@ -1,17 +1,19 @@
 import {ApplicationCommandType, ButtonInteraction, Client} from 'discord.js';
 import {editBisFromUser} from '../../database/actions/bestInSlot/editBisFromUser';
-import {getBisByUserByName} from '../../database/actions/bestInSlot/getBisFromUser';
 import {getGuildConfig} from '../../database/actions/guildConfig/getGuildConfig';
-import {GuildConfigType, GearTypes} from '../../database/types/DataType';
+import {GearTypes} from '../../database/types/DataType';
 import {getGearset, errorHandler, handleInteractionError} from '../../handler';
 import {strings} from '../../locale/i18n';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import {ButtonCommandNames, SubCommandNames, ErrorType} from '../../types';
+import {ButtonCommandNames, SubCommandNames} from '../../types';
 import {checkPermission} from '../../utils/permissions';
 import {ButtonCommand} from '../Command';
 import {getActionRows} from '../handleGetGearsetEmbedCommand';
 
+/**
+ * @description Button Command EditBis,
+ * set gear type is looted or not
+ */
 export const EditBis: ButtonCommand = {
     name: ButtonCommandNames.EDITBIS,
     type: ApplicationCommandType.Message,
@@ -29,10 +31,7 @@ export const EditBis: ButtonCommand = {
             if (
                 interaction.user.id === interaction.message.interaction?.user.id
             ) {
-                const guildConfig: GuildConfigType = await getGuildConfig(
-                    interaction.guildId,
-                    interaction
-                );
+                const guildConfig = await getGuildConfig(interaction.guildId);
                 const hasPermission = await checkPermission(
                     interaction,
                     interaction.guildId,
@@ -52,28 +51,32 @@ export const EditBis: ButtonCommand = {
 
                         const bis_name = interaction.customId.split('_')[2];
 
-                        await editBisFromUser(
+                        const bis = await editBisFromUser(
                             bis_name,
                             interaction.user.id,
                             gearType
                         );
 
-                        const bis = await getBisByUserByName(
-                            interaction.user.id,
-                            bis_name
-                        );
+                        if (!bis) {
+                            handleInteractionError(
+                                'EditBis',
+                                interaction,
+                                strings('error.noSavedBis')
+                            );
+                            return;
+                        }
+
                         const actionRows = getActionRows(gearset, bis);
 
-                        await interaction.editReply({
+                        return await interaction.editReply({
                             components: actionRows
                         });
                     } else {
-                        handleInteractionError(
+                        return handleInteractionError(
                             'EditBis',
                             interaction,
                             strings('error.coruptInteraction')
                         );
-                        return;
                     }
                 } else {
                     handleInteractionError(
@@ -91,8 +94,9 @@ export const EditBis: ButtonCommand = {
                 );
                 return;
             }
-        } catch (error: ErrorType) {
-            errorHandler('EditBis', error, interaction);
+        } catch (error) {
+            errorHandler('EditBis', error);
+            return;
         }
     }
 };

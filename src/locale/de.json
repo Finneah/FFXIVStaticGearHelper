@@ -4,6 +4,7 @@
     "body": "Brust",
     "configCommand.description": "Richte den Bot zur Benutzung ein",
     "ears": "Ohring",
+    "error.noSavedBis": "Ich konnte dein BiS nicht finden",
     "error.coruptInteraction": "Fehlerhafte Interaction",
     "error.general": "Ein Fehler ist aufgetreten, {{details}}",
     "error.wrongRequest": "Zu diesem Link oder Id konnte kein Gearset gefunden werden.",
