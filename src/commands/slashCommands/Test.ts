@@ -1,4 +1,9 @@
-import {ApplicationCommandType, Client, CommandInteraction} from 'discord.js';
+import {
+    ApplicationCommandType,
+    Client,
+    CommandInteraction,
+    messageLink
+} from 'discord.js';
 import {getGuildConfig} from '../../database/actions/guildConfig/getGuildConfig';
 
 import {
@@ -8,6 +13,7 @@ import {
 import {strings} from '../../locale/i18n';
 
 import {Command} from '../Command';
+import {getEmbedStaticOverview} from '../getEmbedStaticOverview';
 
 export const Test: Command = {
     name: 'test',
@@ -33,26 +39,6 @@ export const Test: Command = {
                 );
                 return;
             }
-            const guild = await client.guilds.fetch(interaction.guildId);
-            const role = await interaction.guild?.roles.fetch(
-                guildConfig.static_role
-            );
-            const userIds = await guild.members
-                .fetch()
-                .then((fetchedMembers) => {
-                    const user_ids: any[] | PromiseLike<any[]> = [];
-                    const totalOnline = fetchedMembers.filter((member) => {
-                        const res = member.roles.cache.find(
-                            (r) => r.id === role?.id
-                        );
-                        return res ? true : false;
-                    });
-                    totalOnline.forEach((mem) => {
-                        user_ids.push(mem.user.id);
-                        console.log(mem.user.username);
-                    });
-                    return user_ids;
-                });
 
             await interaction.followUp({
                 ephemeral: true,

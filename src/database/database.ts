@@ -27,8 +27,21 @@ export const getClient = () => {
 };
 
 export const initDB = async () => {
+    dropTables();
     createDBGuild();
     createDBBis();
+};
+
+const dropTables = () => {
+    const client = getClient();
+    const string = `DROP TABLE bis; DROP TABLE guilds;`;
+    client.query(string, (err, res) => {
+        if (err) logger.error(err);
+        for (const row of res?.rows) {
+            logger.info(JSON.stringify(row));
+        }
+        client.end();
+    });
 };
 
 const createDBGuild = () => {
@@ -37,7 +50,8 @@ const createDBGuild = () => {
     guild_id varchar(256) NOT NULL PRIMARY KEY,
     moderator_role varchar(256) DEFAULT NULL,
     static_role varchar(256) DEFAULT NULL,
-    bis_channel varchar(256) DEFAULT NULL
+    bis_channel varchar(256) DEFAULT NULL,
+    bis_message_id varchar(256) DEFAULT NULL
 );`;
     client.query(string, (err, res) => {
         if (err) logger.error(err);
@@ -67,7 +81,8 @@ const createDBBis = () => {
         neck BOOLEAN DEFAULT false,
         wrists BOOLEAN DEFAULT false,
         finger_l BOOLEAN DEFAULT false,
-        finger_r BOOLEAN DEFAULT false
+        finger_r BOOLEAN DEFAULT false,
+        bis_message_id varchar(256) DEFAULT NULL
     );`;
     client.query(string, (err, res) => {
         if (err) logger.error(err);

@@ -45,3 +45,22 @@ export const setMainBis = async (
         return Promise.reject('setMainBis');
     }
 };
+
+export const setMainBisGearByUser = async (
+    userId: string,
+    gearType: string
+): Promise<BisLinksType | null> => {
+    try {
+        const query: QueryConfig = {
+            name: 'set-MainBisGearByUser',
+            text: `UPDATE bis SET ${gearType} = NOT ${gearType}  WHERE user_id=$1 AND is_main=true;`,
+            values: [userId]
+        };
+
+        const res = await runQuery(query);
+        logger.info(`set-MainBisGearByUser ${JSON.stringify(res?.rows[0])}`);
+        return res?.rows[0] ?? null;
+    } catch (error) {
+        return Promise.reject(error);
+    }
+};

@@ -18,6 +18,7 @@ import {checkPermission} from '../../utils/permissions';
 
 import {Command} from '../Command';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const logger = Logger.child({module: 'SetMainBis'});
 
 export const SetMainBis: Command = {

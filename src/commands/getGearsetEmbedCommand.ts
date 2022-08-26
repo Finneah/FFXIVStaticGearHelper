@@ -22,7 +22,7 @@ import {
     MateriaType,
     SubCommandNames
 } from '../types';
-import {getJobIconUrl, getRoleColorByJob} from '../utils';
+import {getIconBySlotName, getJobIconUrl, getRoleColorByJob} from '../utils';
 
 /**
  * @description get the gearset embed content
@@ -44,7 +44,7 @@ export const getGearsetEmbedCommand = async (
         const gearset = await getGearset(by, value);
         if (!gearset) {
             return handleInteractionError(
-                'EditBis',
+                'getGearsetEmbedCommand',
                 interaction,
                 strings('error.coruptInteraction')
             );
@@ -53,7 +53,7 @@ export const getGearsetEmbedCommand = async (
         const embed = await getEmbedBis(gearset, interaction);
 
         if (bis && hasPermission && gearset) {
-            const actionRows = getActionRows(gearset, bis);
+            const actionRows = getActionRowsForEditBis(gearset, bis);
             return interaction.followUp({
                 ephemeral: false,
                 components: actionRows,
@@ -147,6 +147,7 @@ const getEquipmentFields = (gearset: Gearset): EmbedField[] => {
                 );
             }
         }
+
         if (
             gearset.head &&
             gearset.body &&
@@ -247,9 +248,11 @@ const getMateriaString = (
     materia: any,
     ringPrefix?: '_l' | '_r'
 ): string => {
+    const prefix =
+        ringPrefix === '_l' ? 'L' : ringPrefix === '_r' ? 'R' : undefined;
     const equipMateria: MateriaType =
-        ringPrefix && materia[equip.id + ringPrefix]
-            ? materia[equip.id + ringPrefix]
+        prefix && materia[equip.id + prefix]
+            ? materia[equip.id + prefix]
             : materia[equip.id];
     let materiaString = '';
     if (equipMateria) {
@@ -259,41 +262,6 @@ const getMateriaString = (
     }
 
     return materiaString;
-};
-
-/**
- * @description tbd
- * @param slotName
- * @returns string
- */
-const getIconBySlotName = (slotName: string): string => {
-    switch (slotName) {
-        case 'weapon':
-            return '🗡️';
-        case 'offHand':
-            return '🛡️';
-        case 'head':
-            return '🪖';
-        case 'body':
-            return '🥼';
-        case 'hands':
-            return '🧤';
-        case 'legs':
-            return '👖';
-        case 'feet':
-            return '👟';
-        case 'ears':
-            return '👂';
-        case 'neck':
-            return '🧣';
-        case 'wrists':
-            return '⌚';
-        case 'finger':
-            return '💍';
-
-        default:
-            return '';
-    }
 };
 
 /**
@@ -334,7 +302,7 @@ const addButtonComponent = (
  * @param bis
  * @returns ActionRowBuilder<ButtonBuilder>[]
  */
-export const getActionRows = (
+export const getActionRowsForEditBis = (
     gearset: Gearset,
     bis: BisLinksType
 ): ActionRowBuilder<ButtonBuilder>[] => {

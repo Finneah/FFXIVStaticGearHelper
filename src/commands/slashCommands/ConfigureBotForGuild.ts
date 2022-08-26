@@ -15,7 +15,7 @@ import {setGuildConfig} from '../../database';
 import {editGuildConfig} from '../../database/actions/guildConfig/editGuildConfig';
 
 import {getGuildConfig} from '../../database/actions/guildConfig/getGuildConfig';
-import {GuildConfigType} from '../../database/types/DataType';
+import {GuildConfig} from '../../database/types/DataType';
 
 import {errorHandler, handleInteractionError} from '../../handler';
 import {strings} from '../../locale/i18n';
@@ -135,7 +135,7 @@ export const setConfig = async (
     guild_idExist: boolean
 ) => {
     try {
-        const newConfig: GuildConfigType = {
+        const newConfig: GuildConfig = {
             guild_id: interaction.guildId ?? '',
             moderator_role: moderator_role,
             static_role: static_role
@@ -163,7 +163,7 @@ export const setConfig = async (
 const handleSetConfig = async (
     interaction: CommandInteraction<CacheType>,
     subCommand: CommandInteractionOption<CacheType>,
-    guildConfig: GuildConfigType | null
+    guildConfig: GuildConfig | null
 ) => {
     try {
         const moderator_roleOption =
@@ -213,7 +213,7 @@ const handleSetConfig = async (
 
 const handleGetConfig = async (
     interaction: CommandInteraction<CacheType>,
-    guildConfig: GuildConfigType
+    guildConfig: GuildConfig
 ) => {
     const embed = await getConfigEmbed(
         guildConfig.moderator_role,
@@ -229,7 +229,7 @@ const handleGetConfig = async (
 
 const handleSetConfigAlreadyExist = async (
     interaction: CommandInteraction<CacheType>,
-    guildConfig: GuildConfigType,
+    guildConfig: GuildConfig,
     moderator_role: string,
     static_role: string
 ) => {
@@ -312,6 +312,14 @@ const getConfigEmbed = (
             {
                 name: `/${CommandNames.BESTINSLOT} ${SubCommandNames.DELETE} :${OptionNames.NAME}`,
                 value: `Lösche das gespeicherte Gearset`
+            },
+            {
+                name: `/${CommandNames.SETMAINBIS} :${OptionNames.NAME}`,
+                value: `Wähle aus welches deiner gespeicherten BiS Gears dein Main BiS ist.\nDieses wird für die Static Übersicht verwendet`
+            },
+            {
+                name: `/${CommandNames.STATICOVERVIEW}`,
+                value: `Zeigt die Gesamtübersicht der Static.`
             }
         ]
     };

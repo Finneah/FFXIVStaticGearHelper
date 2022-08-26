@@ -13,6 +13,8 @@
     "feet": "Füße",
     "setConfigCommand.description": "Speichere wer den Bot verwalten darf und wer sein Gear speichern darf.",
     "finger": "Finger",
+    "finger_l": "Finger L",
+    "finger_r": "Finger R",
     "bisCommand.link.description": "Der Etro Link",
     "bisCommand.name.description": "Der Name des Gearsets",
     "getBisCommand.description": "Lade ein gespeichertes Gearset",

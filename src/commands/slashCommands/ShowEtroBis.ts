@@ -11,7 +11,7 @@ import Logger from '../../logger';
 
 import {CommandNames, OptionNames, SubCommandNames} from '../../types';
 import {Command} from '../Command';
-import {getGearsetEmbedCommand} from '../handleGetGearsetEmbedCommand';
+import {getGearsetEmbedCommand} from '../getGearsetEmbedCommand';
 
 const logger = Logger.child({module: 'ShowEtroBis'});
 

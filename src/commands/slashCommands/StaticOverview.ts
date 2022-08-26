@@ -1,16 +1,11 @@
 import {
-    APIEmbed,
+    ActionRowBuilder,
     ApplicationCommandType,
-    ButtonInteraction,
-    CacheType,
+    ButtonBuilder,
     Client,
-    Colors,
-    CommandInteraction,
-    EmbedBuilder,
-    EmbedData,
-    EmbedField,
-    Role
+    CommandInteraction
 } from 'discord.js';
+import {setGuildMessageId} from '../../database';
 import {getGuildConfig} from '../../database/actions/guildConfig/getGuildConfig';
 import {GearTypes} from '../../database/types/DataType';
 
@@ -19,10 +14,13 @@ import {
     handleInteractionError
 } from '../../handler/errorHandler/errorHandler';
 import {strings} from '../../locale/i18n';
+
 import {CommandNames} from '../../types';
+import {getIconBySlotName} from '../../utils';
 import {checkPermission} from '../../utils/permissions';
 
 import {Command} from '../Command';
+import {getEmbedStaticOverview} from '../getEmbedStaticOverview';
 
 export const StaticOverview: Command = {
     name: CommandNames.STATICOVERVIEW,
@@ -62,97 +60,104 @@ export const StaticOverview: Command = {
                 );
                 return;
             }
-            const guild = await client.guilds.fetch(interaction.guildId);
-            const role = await interaction.guild?.roles.fetch(
-                guildConfig.static_role
-            );
-            const userIds = await guild.members
-                .fetch()
-                .then((fetchedMembers) => {
-                    const user_ids: any[] | PromiseLike<any[]> = [];
-                    const totalOnline = fetchedMembers.filter((member) => {
-                        const res = member.roles.cache.find(
-                            (r) => r.id === role?.id
-                        );
-                        return res ? true : false;
-                    });
-                    totalOnline.forEach((mem) => {
-                        user_ids.push(mem.user.id);
-                        console.log(mem.user.username);
-                    });
-                    return user_ids;
-                });
 
-            // interaction.guild.cache.roles.get('415665311828803584').members.map(m=>m.user.tag);
-            const embed = await getEmbedStaticOverview(interaction, userIds);
-            await interaction.followUp({
-                ephemeral: true,
-                content: 'Test',
+            const embed = await getEmbedStaticOverview(
+                client,
+                interaction,
+                guildConfig
+            );
+            const actionRows = getActionRows();
+            const message = await interaction.followUp({
+                ephemeral: false,
+                components: actionRows,
                 embeds: [embed]
             });
 
+            setGuildMessageId(message.id, guildConfig.guild_id);
+            return message;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (error: Error | any) {
-            errorHandler('Test', error);
+        } catch (error) {
+            errorHandler('StaticOverview', error);
         }
     }
 };
 
-export const getEmbedStaticOverview = async (
-    interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType>,
-    userIds: string[]
-): Promise<EmbedBuilder> => {
-    const avatar = await interaction.user.avatarURL();
+const getActionRows = (): ActionRowBuilder<ButtonBuilder>[] => {
+    const gearArray: {slotName: string}[] = [];
+    const geartypes = Object.values(GearTypes);
 
-    const memberFields = getMemberFields(userIds);
-    const embedData: EmbedData | APIEmbed = {
-        color: Colors.Gold,
-        title: 'Übersicht',
+    for (let i = 0; i < geartypes.length; i++) {
+        const gear = geartypes[i];
 
-        author: {
-            name: interaction.user.username,
-            icon_url: avatar ?? ''
-        },
-        // description: 'Some description here',
-        // thumbnail: jobIconPath
-        //     ? {
-        //           url: jobIconPath
-        //       }
-        //     : undefined,
+        gearArray.push({
+            slotName: gear
+        });
+    }
 
-        fields: [
-            {
-                name: '\u200b',
-                value: '\u200b',
-                inline: false
-            },
-            ...memberFields
-        ]
-        // footer: {
-        //     text: `${gearset.food.name}`,
-        //     icon_url: 'https://etro.gg/s/icons' + gearset.food.iconPath
-        // }
-    };
-    return new EmbedBuilder(embedData);
+    const actionRows = getActionRowWithButtons([], gearArray, 0);
+
+    return actionRows;
 };
 
-const getMemberFields = (userIds: string[]): EmbedField[] => {
-    const fields: EmbedField[] = [];
-    try {
-        for (const value in GearTypes) {
-            let userString = '';
-            userIds.forEach((userId) => {
-                // get mainBis name
-                // get bis
-                // check if value is true
-                userString = userString += `<@${userId}>\n`;
-            });
-            fields.push({name: value, value: userString, inline: true});
+/**
+ * @description tbd
+ * @param rows
+ * @param gearArray
+ * @param bis_name
+ * @param index
+ * @returns ActionRowBuilder<ButtonBuilder>[]
+ */
+const getActionRowWithButtons = (
+    rows: ActionRowBuilder<ButtonBuilder>[],
+    gearArray: {slotName: string}[],
+    index: number
+): ActionRowBuilder<ButtonBuilder>[] => {
+    if (index > gearArray.length) {
+        return rows;
+    }
+
+    // if initial or bottonCount %5 === 0 => createRow
+    if (index === 0 || index % 5 === 0) {
+        const row: ActionRowBuilder<ButtonBuilder> =
+            new ActionRowBuilder<ButtonBuilder>();
+        let buttonCount = row.components.length;
+        let i = index;
+        while (buttonCount < 5) {
+            addButtonComponent(gearArray[i], row);
+            i++;
+            buttonCount++;
         }
 
-        return fields;
-    } catch (error) {
-        errorHandler('getEquipmentFields', error);
-        return [];
+        rows.push(row);
+        index = i;
+    }
+
+    return getActionRowWithButtons(rows, gearArray, index++);
+};
+
+const addButtonComponent = (
+    gear: {slotName: string},
+    row: ActionRowBuilder<ButtonBuilder>
+): void => {
+    if (gear?.slotName) {
+        const isLeftRing =
+            gear.slotName.indexOf('_l') !== 0 &&
+            gear.slotName.indexOf('_l') !== -1;
+        const isRightRing =
+            gear.slotName.indexOf('_r') !== 0 &&
+            gear.slotName.indexOf('_r') !== -1;
+
+        const ringPrefix = isLeftRing ? '_l' : isRightRing ? '_r' : undefined;
+        const button = new ButtonBuilder()
+            .setCustomId(
+                CommandNames.STATICOVERVIEW +
+                    '_' +
+                    (ringPrefix ? gear.slotName + ringPrefix : gear.slotName)
+            )
+            .setLabel((ringPrefix && strings(ringPrefix)) ?? ' ')
+            .setStyle(2)
+            .setEmoji(getIconBySlotName(gear.slotName));
+
+        row.addComponents(button);
     }
 };

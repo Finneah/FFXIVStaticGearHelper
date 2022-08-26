@@ -3,6 +3,7 @@ import {ConfigCancel} from './buttonCommands/ConfigCancel';
 import {ConfigOverride} from './buttonCommands/ConfigOverride';
 import {DeleteBis} from './buttonCommands/DeleteBis';
 import {EditBis} from './buttonCommands/EditBis';
+import {EditBisOverview} from './buttonCommands/EditBisOverview';
 
 import {ButtonCommand, Command} from './Command';
 import {BestInSlot} from './slashCommands/BestInSlot';
@@ -28,5 +29,6 @@ export const ButtonCommands: ButtonCommand[] = [
     EditBis,
     DeleteBis,
     ConfigOverride,
-    ConfigCancel
+    ConfigCancel,
+    EditBisOverview
 ];

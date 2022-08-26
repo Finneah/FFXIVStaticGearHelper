@@ -7,6 +7,7 @@ import {
     CommandInteractionOption,
     Message
 } from 'discord.js';
+import {setBisMessageIdFromUser} from '../../database/actions/bestInSlot/editBisFromUser';
 import {
     getAllBisByUser,
     getBisByUserByName
@@ -14,7 +15,7 @@ import {
 import {setBisForUser} from '../../database/actions/bestInSlot/setBisForUser';
 import {getGuildConfig} from '../../database/actions/guildConfig/getGuildConfig';
 
-import {BisLinksType, GuildConfigType} from '../../database/types/DataType';
+import {BisLinksType} from '../../database/types/DataType';
 
 import {errorHandler, handleInteractionError} from '../../handler';
 import {strings} from '../../locale/i18n';
@@ -24,7 +25,7 @@ import {CommandNames, OptionNames, SubCommandNames} from '../../types';
 import {checkPermission} from '../../utils/permissions';
 
 import {Command} from '../Command';
-import {getGearsetEmbedCommand} from '../handleGetGearsetEmbedCommand';
+import {getGearsetEmbedCommand} from '../getGearsetEmbedCommand';
 
 const logger = Logger.child({module: 'BestInSlot'});
 
@@ -123,6 +124,7 @@ export const BestInSlot: Command = {
 
                 case SubCommandNames.GET:
                     handleGetBis(interaction, subCommand, hasPermissions);
+
                     break;
 
                 default:
@@ -208,7 +210,7 @@ const handleGetBis = async (
     interaction: CommandInteraction<CacheType>,
     subCommand: CommandInteractionOption<CacheType>,
     hasPermission: boolean
-): Promise<Message<boolean>> => {
+) => {
     try {
         const name = subCommand.options?.find(
             (opt) => opt.name === OptionNames.NAME
@@ -228,13 +230,30 @@ const handleGetBis = async (
         );
 
         if (bis?.bis_link) {
-            return getGearsetEmbedCommand(
+            if (bis?.bis_message_id) {
+                await interaction.channel?.messages
+                    .fetch(bis.bis_message_id)
+                    .then(async (message) => {
+                        if (message) {
+                            message.delete();
+                        }
+                    })
+                    .catch(console.error);
+            }
+            const message = await getGearsetEmbedCommand(
                 SubCommandNames.BY_LINK,
                 bis.bis_link,
                 interaction,
                 bis,
                 hasPermission
             );
+            setBisMessageIdFromUser(
+                name.toString(),
+                interaction.user.id,
+                message.id
+            );
+
+            return message;
         }
 
         return interaction.followUp({

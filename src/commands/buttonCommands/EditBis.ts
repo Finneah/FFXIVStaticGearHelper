@@ -8,7 +8,8 @@ import {strings} from '../../locale/i18n';
 import {ButtonCommandNames, SubCommandNames} from '../../types';
 import {checkPermission} from '../../utils/permissions';
 import {ButtonCommand} from '../Command';
-import {getActionRows} from '../handleGetGearsetEmbedCommand';
+import {getEmbedStaticOverview} from '../getEmbedStaticOverview';
+import {getActionRowsForEditBis} from '../getGearsetEmbedCommand';
 
 /**
  * @description Button Command EditBis,
@@ -75,11 +76,37 @@ export const EditBis: ButtonCommand = {
                             return;
                         }
 
-                        const actionRows = getActionRows(gearset, bis);
+                        const actionRows = getActionRowsForEditBis(
+                            gearset,
+                            bis
+                        );
 
-                        return await interaction.editReply({
+                        if (guildConfig) {
+                            if (guildConfig.bis_message_id) {
+                                await interaction.channel?.messages
+                                    .fetch(guildConfig.bis_message_id)
+                                    .then(async (message) => {
+                                        if (message) {
+                                            const staticoverviewEmbed =
+                                                await getEmbedStaticOverview(
+                                                    client,
+                                                    interaction,
+                                                    guildConfig
+                                                );
+
+                                            message.edit({
+                                                embeds: [staticoverviewEmbed]
+                                            });
+                                        }
+                                    })
+                                    .catch(console.error);
+                            }
+                        }
+                        const message = await interaction.editReply({
                             components: actionRows
                         });
+
+                        return message;
                     } else {
                         return handleInteractionError(
                             'EditBis',

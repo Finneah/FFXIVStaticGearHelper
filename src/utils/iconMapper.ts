@@ -15,3 +15,40 @@ export const getJobIconUrl = async (
     }
     return null;
 };
+
+/**
+ * @description tbd
+ * @param slotName
+ * @returns string
+ */
+export const getIconBySlotName = (slotName: string): string => {
+    switch (slotName) {
+        case 'weapon':
+            return '🗡️';
+        case 'offHand':
+            return '🛡️';
+        case 'head':
+            return '🪖';
+        case 'body':
+            return '🥼';
+        case 'hands':
+            return '🧤';
+        case 'legs':
+            return '👖';
+        case 'feet':
+            return '👟';
+        case 'ears':
+            return '👂';
+        case 'neck':
+            return '🧣';
+        case 'wrists':
+            return '⌚';
+        case 'finger':
+        case 'finger_l':
+        case 'finger_r':
+            return '💍';
+
+        default:
+            return '❔';
+    }
+};
