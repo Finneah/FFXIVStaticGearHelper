@@ -37,9 +37,12 @@ const dropTables = () => {
     const string = `DROP TABLE bis; DROP TABLE guilds;`;
     client.query(string, (err, res) => {
         if (err) logger.error(err);
-        for (const row of res?.rows) {
-            logger.info(JSON.stringify(row));
+        if (res) {
+            for (const row of res?.rows) {
+                logger.info(JSON.stringify(row));
+            }
         }
+
         client.end();
     });
 };
@@ -55,8 +58,10 @@ const createDBGuild = () => {
 );`;
     client.query(string, (err, res) => {
         if (err) logger.error(err);
-        for (const row of res.rows) {
-            logger.info(JSON.stringify(row));
+        if (res) {
+            for (const row of res?.rows) {
+                logger.info(JSON.stringify(row));
+            }
         }
         client.end();
     });
@@ -86,8 +91,10 @@ const createDBBis = () => {
     );`;
     client.query(string, (err, res) => {
         if (err) logger.error(err);
-        for (const row of res.rows) {
-            logger.info(JSON.stringify(row));
+        if (res) {
+            for (const row of res?.rows) {
+                logger.info(JSON.stringify(row));
+            }
         }
         client.end();
     });
