@@ -6,14 +6,10 @@ import {
     CommandInteraction,
     Interaction
 } from 'discord.js';
-import {ConfigCancel} from '../commands/buttonCommands/ConfigCancel';
-import {ConfigOverride} from '../commands/buttonCommands/ConfigOverride';
-import {DeleteBis} from '../commands/buttonCommands/DeleteBis';
-import {EditBis} from '../commands/buttonCommands/EditBis';
 
 import {ButtonCommand} from '../commands/Command';
-import {Commands} from '../commands/Commands';
-import {getBisByUser} from '../database/actions/bestInSlot/getBisFromUser';
+import {ButtonCommands, Commands} from '../commands/Commands';
+import {getAllBisByUser} from '../database/actions/bestInSlot/getBisFromUser';
 import Logger from '../logger';
 import {ButtonCommandNames, CommandNames} from '../types';
 const logger = Logger.child({module: 'interactionCreate'});
@@ -62,9 +58,12 @@ const handleAutocomplete = async (
     client: Client<boolean>,
     interaction: AutocompleteInteraction<CacheType>
 ) => {
-    if (interaction.commandName === CommandNames.BESTINSLOT) {
+    if (
+        interaction.commandName === CommandNames.BESTINSLOT ||
+        interaction.commandName === CommandNames.SETMAINBIS
+    ) {
         const focusedValue = interaction.options.getFocused();
-        const allSavedBis = await getBisByUser(interaction.user.id);
+        const allSavedBis = await getAllBisByUser(interaction.user.id);
 
         if (allSavedBis && allSavedBis.length > 0) {
             const filtered = allSavedBis.filter((savedBis) =>
@@ -85,19 +84,32 @@ const handleButtonCommand = async (
     interaction: ButtonInteraction<CacheType>
 ): Promise<void> => {
     let buttonCommand: ButtonCommand | undefined = undefined;
-    if (interaction.customId.startsWith('editbis_')) {
-        buttonCommand = EditBis;
+
+    if (interaction.customId.startsWith('static_overview_')) {
+        buttonCommand = ButtonCommands.find(
+            (c) => c.name === ButtonCommandNames.EDITBISOVERVIEW
+        );
+    } else if (interaction.customId.startsWith('editbis_')) {
+        buttonCommand = ButtonCommands.find(
+            (c) => c.name === ButtonCommandNames.EDITBIS
+        );
     } else if (
         interaction.customId.startsWith(ButtonCommandNames.DELETE_BIS + '_')
     ) {
-        buttonCommand = DeleteBis;
+        buttonCommand = ButtonCommands.find(
+            (c) => c.name === ButtonCommandNames.DELETE_BIS
+        );
     } else {
         switch (interaction.customId) {
             case ButtonCommandNames.CONFIG_OVERRIDE:
-                buttonCommand = ConfigOverride;
+                buttonCommand = ButtonCommands.find(
+                    (c) => c.name === ButtonCommandNames.CONFIG_OVERRIDE
+                );
                 break;
             case ButtonCommandNames.CONFIG_CANCEL:
-                buttonCommand = ConfigCancel;
+                buttonCommand = ButtonCommands.find(
+                    (c) => c.name === ButtonCommandNames.CONFIG_CANCEL
+                );
                 break;
 
             default:

@@ -47,3 +47,30 @@ export const editBisFromUser = async (
         return Promise.reject('editBisFromUser');
     }
 };
+
+/**
+ * @description update Bis from user, set gear is looted or not
+ * @param bis_name string
+ * @param user_Id string
+ * @param gearType GearTypes
+ * @returns  Promise<BisLinksType | null>
+ */
+export const setBisMessageIdFromUser = async (
+    bis_name: string,
+    user_Id: string,
+    bis_message_id: string
+): Promise<void> => {
+    try {
+        const query: QueryConfig = {
+            name: 'set-BisMessageIdFromUser',
+            text: `UPDATE bis SET bis_message_id=$1 WHERE bis_name=$2 AND user_id=$3;`,
+            values: [bis_message_id, bis_name, user_Id]
+        };
+
+        await runQuery(query);
+        logger.info(`set-BisMessageIdFromUser`);
+    } catch (error) {
+        errorHandler('set-BisMessageIdFromUser', error);
+        return Promise.reject('set-BisMessageIdFromUser');
+    }
+};

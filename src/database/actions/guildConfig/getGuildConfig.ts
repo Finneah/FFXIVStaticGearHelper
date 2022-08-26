@@ -3,7 +3,7 @@ import {QueryConfig} from 'pg';
 import Logger from '../../../logger';
 
 import {runQuery} from '../../database';
-import {GuildConfigType} from '../../types/DataType';
+import {GuildConfig} from '../../types/DataType';
 
 const logger = Logger.child({module: 'getGuildConfig'});
 
@@ -15,7 +15,7 @@ const logger = Logger.child({module: 'getGuildConfig'});
  */
 export const getGuildConfig = async (
     guild_id: string
-): Promise<GuildConfigType | null> => {
+): Promise<GuildConfig | null> => {
     try {
         const query: QueryConfig = {
             name: 'get-GuildConfig',

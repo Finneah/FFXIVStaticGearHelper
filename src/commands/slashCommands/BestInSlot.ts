@@ -7,14 +7,15 @@ import {
     CommandInteractionOption,
     Message
 } from 'discord.js';
+import {setBisMessageIdFromUser} from '../../database/actions/bestInSlot/editBisFromUser';
 import {
-    getBisByUser,
+    getAllBisByUser,
     getBisByUserByName
 } from '../../database/actions/bestInSlot/getBisFromUser';
 import {setBisForUser} from '../../database/actions/bestInSlot/setBisForUser';
 import {getGuildConfig} from '../../database/actions/guildConfig/getGuildConfig';
 
-import {BisLinksType, GuildConfigType} from '../../database/types/DataType';
+import {BisLinksType} from '../../database/types/DataType';
 
 import {errorHandler, handleInteractionError} from '../../handler';
 import {strings} from '../../locale/i18n';
@@ -24,7 +25,7 @@ import {CommandNames, OptionNames, SubCommandNames} from '../../types';
 import {checkPermission} from '../../utils/permissions';
 
 import {Command} from '../Command';
-import {getGearsetEmbedCommand} from '../handleGetGearsetEmbedCommand';
+import {getGearsetEmbedCommand} from '../getGearsetEmbedCommand';
 
 const logger = Logger.child({module: 'BestInSlot'});
 
@@ -88,9 +89,7 @@ export const BestInSlot: Command = {
                     option.name === SubCommandNames.GET
             );
 
-            const guildConfig: GuildConfigType | null = await getGuildConfig(
-                interaction.guildId
-            );
+            const guildConfig = await getGuildConfig(interaction.guildId);
 
             const hasPermissions = await checkPermission(
                 interaction,
@@ -106,15 +105,26 @@ export const BestInSlot: Command = {
                 );
                 return;
             }
-            const savedBis = await getBisByUser(interaction.user.id);
+            const allSavedBisFromUser = await getAllBisByUser(
+                interaction.user.id
+            );
+
             switch (subCommand?.name) {
                 case SubCommandNames.SET:
-                    handleSetBis(interaction, subCommand, savedBis);
+                    if (allSavedBisFromUser?.length === 2) {
+                        return interaction.followUp({
+                            ephemeral: true,
+                            content:
+                                'Es tut mir leid, du kannst nur 2 BiS Links speichern.'
+                        });
+                    }
+                    handleSetBis(interaction, subCommand, allSavedBisFromUser);
 
                     break;
 
                 case SubCommandNames.GET:
                     handleGetBis(interaction, subCommand, hasPermissions);
+
                     break;
 
                 default:
@@ -130,13 +140,13 @@ export const BestInSlot: Command = {
  * @description handle the set bis Command
  * @param interaction CommandInteraction<CacheType>
  * @param subCommand  CommandInteractionOption<CacheType>
- * @param savedBis BisLinksType[] | null
+ * @param allSavedBisFromUser BisLinksType[] | null
  * @returns : Promise<Message<boolean>>
  */
 const handleSetBis = async (
     interaction: CommandInteraction<CacheType>,
     subCommand: CommandInteractionOption<CacheType>,
-    savedBis: BisLinksType[] | null
+    allSavedBisFromUser: BisLinksType[] | null
 ): Promise<Message<boolean>> => {
     try {
         const link = subCommand.options?.find(
@@ -156,8 +166,8 @@ const handleSetBis = async (
         }
 
         const exist =
-            savedBis &&
-            savedBis.find(
+            allSavedBisFromUser &&
+            allSavedBisFromUser.find(
                 (saved) =>
                     saved.bis_name === name &&
                     saved.user_id === interaction.user.id
@@ -200,7 +210,7 @@ const handleGetBis = async (
     interaction: CommandInteraction<CacheType>,
     subCommand: CommandInteractionOption<CacheType>,
     hasPermission: boolean
-): Promise<Message<boolean>> => {
+) => {
     try {
         const name = subCommand.options?.find(
             (opt) => opt.name === OptionNames.NAME
@@ -220,13 +230,30 @@ const handleGetBis = async (
         );
 
         if (bis?.bis_link) {
-            return getGearsetEmbedCommand(
+            if (bis?.bis_message_id) {
+                await interaction.channel?.messages
+                    .fetch(bis.bis_message_id)
+                    .then(async (message) => {
+                        if (message) {
+                            message.delete();
+                        }
+                    })
+                    .catch(console.error);
+            }
+            const message = await getGearsetEmbedCommand(
                 SubCommandNames.BY_LINK,
                 bis.bis_link,
                 interaction,
                 bis,
                 hasPermission
             );
+            setBisMessageIdFromUser(
+                name.toString(),
+                interaction.user.id,
+                message.id
+            );
+
+            return message;
         }
 
         return interaction.followUp({

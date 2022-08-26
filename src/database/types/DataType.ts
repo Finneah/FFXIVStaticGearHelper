@@ -1,7 +1,8 @@
-export type GuildConfigType = {
+export type GuildConfig = {
     guild_id: string;
     static_role?: string;
     moderator_role?: string;
+    bis_message_id?: string;
 };
 
 export type BisLinksType = {
@@ -20,21 +21,22 @@ export type BisLinksType = {
     ears?: boolean;
     neck?: boolean;
     wrists?: boolean;
-    fingerL?: boolean;
-    fingerR?: boolean;
+    finger_l?: boolean;
+    finger_r?: boolean;
+    bis_message_id?: string;
 };
 
 export enum GearTypes {
     WEAPON = 'weapon',
+    OFFHAND = 'offHand',
     HEAD = 'head',
     BODY = 'body',
     HANDS = 'hands',
     LEGS = 'legs',
     FEET = 'feet',
-    OFFHAND = 'offHand',
     EARS = 'ears',
     NECK = 'neck',
     WRISTS = 'wrists',
-    FINGERL = 'fingerL',
-    FINGER = 'fingerR'
+    FINGER_L = 'finger_l',
+    FINGER_R = 'finger_r'
 }

@@ -22,7 +22,7 @@ import {
     MateriaType,
     SubCommandNames
 } from '../types';
-import {getJobIconUrl, getRoleColorByJob} from '../utils';
+import {getIconBySlotName, getJobIconUrl, getRoleColorByJob} from '../utils';
 
 /**
  * @description get the gearset embed content
@@ -44,7 +44,7 @@ export const getGearsetEmbedCommand = async (
         const gearset = await getGearset(by, value);
         if (!gearset) {
             return handleInteractionError(
-                'EditBis',
+                'getGearsetEmbedCommand',
                 interaction,
                 strings('error.coruptInteraction')
             );
@@ -53,7 +53,7 @@ export const getGearsetEmbedCommand = async (
         const embed = await getEmbedBis(gearset, interaction);
 
         if (bis && hasPermission && gearset) {
-            const actionRows = getActionRows(gearset, bis);
+            const actionRows = getActionRowsForEditBis(gearset, bis);
             return interaction.followUp({
                 ephemeral: false,
                 components: actionRows,
@@ -147,6 +147,7 @@ const getEquipmentFields = (gearset: Gearset): EmbedField[] => {
                 );
             }
         }
+
         if (
             gearset.head &&
             gearset.body &&
@@ -188,8 +189,8 @@ const getEquipmentFields = (gearset: Gearset): EmbedField[] => {
                     value: '\u200b',
                     inline: false
                 },
-                getFieldForEquip(gearset.fingerL, gearset.materia, true, 'L'),
-                getFieldForEquip(gearset.fingerR, gearset.materia, true, 'R'),
+                getFieldForEquip(gearset.fingerL, gearset.materia, true, '_l'),
+                getFieldForEquip(gearset.fingerR, gearset.materia, true, '_r'),
                 {
                     name: '\u200b',
                     value: '\u200b',
@@ -218,7 +219,7 @@ const getFieldForEquip = (
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     materia: any,
     inline = true,
-    ringPrefix?: 'L' | 'R'
+    ringPrefix?: '_l' | '_r'
 ): EmbedField => {
     const materiaString = getMateriaString(equip, materia, ringPrefix);
     const value = `${equip.name}`;
@@ -245,11 +246,13 @@ const getMateriaString = (
     equip: Equipment,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     materia: any,
-    ringPrefix?: 'L' | 'R'
+    ringPrefix?: '_l' | '_r'
 ): string => {
+    const prefix =
+        ringPrefix === '_l' ? 'L' : ringPrefix === '_r' ? 'R' : undefined;
     const equipMateria: MateriaType =
-        ringPrefix && materia[equip.id + ringPrefix]
-            ? materia[equip.id + ringPrefix]
+        prefix && materia[equip.id + prefix]
+            ? materia[equip.id + prefix]
             : materia[equip.id];
     let materiaString = '';
     if (equipMateria) {
@@ -263,41 +266,6 @@ const getMateriaString = (
 
 /**
  * @description tbd
- * @param slotName
- * @returns string
- */
-const getIconBySlotName = (slotName: string): string => {
-    switch (slotName) {
-        case 'weapon':
-            return '🗡️';
-        case 'offHand':
-            return '🛡️';
-        case 'head':
-            return '🪖';
-        case 'body':
-            return '🥼';
-        case 'hands':
-            return '🧤';
-        case 'legs':
-            return '👖';
-        case 'feet':
-            return '👟';
-        case 'ears':
-            return '👂';
-        case 'neck':
-            return '🧣';
-        case 'wrists':
-            return '⌚';
-        case 'finger':
-            return '💍';
-
-        default:
-            return '';
-    }
-};
-
-/**
- * @description tbd
  * @param gear
  * @param bis_name
  * @param row
@@ -307,7 +275,7 @@ const addButtonComponent = (
     gear: {slotName: string; looted: boolean},
     bis_name: string,
     row: ActionRowBuilder<ButtonBuilder>,
-    ringPrefix?: 'L' | 'R'
+    ringPrefix?: '_l' | '_r'
 ): void => {
     const label = gear?.looted ? '✔️' : '❌';
 
@@ -320,7 +288,7 @@ const addButtonComponent = (
                     '_' +
                     bis_name
             )
-            .setLabel((ringPrefix ?? ' ') + label)
+            .setLabel(((ringPrefix && strings(ringPrefix)) ?? ' ') + label)
             .setStyle(gear?.looted ? 3 : 2)
             .setEmoji(getIconBySlotName(gear.slotName));
 
@@ -334,7 +302,7 @@ const addButtonComponent = (
  * @param bis
  * @returns ActionRowBuilder<ButtonBuilder>[]
  */
-export const getActionRows = (
+export const getActionRowsForEditBis = (
     gearset: Gearset,
     bis: BisLinksType
 ): ActionRowBuilder<ButtonBuilder>[] => {
@@ -392,15 +360,16 @@ export const getActionRows = (
             slotName: gearset.wrists.slotName,
             looted: bis.wrists === true ? true : false
         });
+
     gearset.fingerL &&
         gearArray.push({
             slotName: gearset.fingerL.slotName,
-            looted: bis.fingerL === true ? true : false
+            looted: bis.finger_l === true ? true : false
         });
     gearset.fingerR &&
         gearArray.push({
             slotName: gearset.fingerR.slotName,
-            looted: bis.fingerR === true ? true : false
+            looted: bis.finger_r === true ? true : false
         });
 
     const actionRows = getActionRowWithButtons([], gearArray, bis.bis_name, 0);
@@ -450,9 +419,9 @@ const getActionRowWithButtons = (
                 bis_name,
                 row,
                 i == gearArray.length - 2
-                    ? 'L'
+                    ? '_l'
                     : i == gearArray.length - 1
-                    ? 'R'
+                    ? '_r'
                     : undefined
             );
             i++;

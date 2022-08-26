@@ -10,6 +10,7 @@ const options: ClientOptions = {
     intents: [
         'Guilds',
         'GuildMessages',
+        'GuildMembers',
         'MessageContent',
         'DirectMessages',
         'DirectMessageTyping',

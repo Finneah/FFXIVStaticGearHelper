@@ -8,7 +8,8 @@ import {strings} from '../../locale/i18n';
 import {ButtonCommandNames, SubCommandNames} from '../../types';
 import {checkPermission} from '../../utils/permissions';
 import {ButtonCommand} from '../Command';
-import {getActionRows} from '../handleGetGearsetEmbedCommand';
+import {getEmbedStaticOverview} from '../getEmbedStaticOverview';
+import {getActionRowsForEditBis} from '../getGearsetEmbedCommand';
 
 /**
  * @description Button Command EditBis,
@@ -45,11 +46,20 @@ export const EditBis: ButtonCommand = {
                         interaction.message.embeds[0].url
                     );
                     if (gearset) {
-                        const gearType = interaction.customId.split(
-                            '_'
-                        )[1] as GearTypes;
+                        let customId = interaction.customId;
+                        customId = customId.replace('editbis_', '');
 
-                        const bis_name = interaction.customId.split('_')[2];
+                        const gearType = customId.substring(
+                            0,
+                            customId.lastIndexOf('_')
+                        ) as GearTypes;
+
+                        const bis_name = customId
+                            .substring(
+                                customId.lastIndexOf('_'),
+                                customId.length
+                            )
+                            .replace('_', '');
 
                         const bis = await editBisFromUser(
                             bis_name,
@@ -66,11 +76,37 @@ export const EditBis: ButtonCommand = {
                             return;
                         }
 
-                        const actionRows = getActionRows(gearset, bis);
+                        const actionRows = getActionRowsForEditBis(
+                            gearset,
+                            bis
+                        );
 
-                        return await interaction.editReply({
+                        if (guildConfig) {
+                            if (guildConfig.bis_message_id) {
+                                await interaction.channel?.messages
+                                    .fetch(guildConfig.bis_message_id)
+                                    .then(async (message) => {
+                                        if (message) {
+                                            const staticoverviewEmbed =
+                                                await getEmbedStaticOverview(
+                                                    client,
+                                                    interaction,
+                                                    guildConfig
+                                                );
+
+                                            message.edit({
+                                                embeds: [staticoverviewEmbed]
+                                            });
+                                        }
+                                    })
+                                    .catch(console.error);
+                            }
+                        }
+                        const message = await interaction.editReply({
                             components: actionRows
                         });
+
+                        return message;
                     } else {
                         return handleInteractionError(
                             'EditBis',

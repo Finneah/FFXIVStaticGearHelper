@@ -1,4 +1,4 @@
-import {GuildConfigType} from '../../types/DataType';
+import {GuildConfig} from '../../types/DataType';
 
 import Logger from '../../../logger';
 import {errorHandler} from '../../../handler';
@@ -12,7 +12,7 @@ const logger = Logger.child({module: 'editGuildConfig'});
  * @param guildConfig GuildConfigType
  */
 export const editGuildConfig = async (
-    guildConfig: GuildConfigType
+    guildConfig: GuildConfig
 ): Promise<void> => {
     try {
         const query: QueryConfig = {

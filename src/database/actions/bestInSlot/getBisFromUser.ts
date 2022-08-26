@@ -13,18 +13,18 @@ const logger = Logger.child({module: 'getBis'});
  * @param interaction
  * @returns BisLinksType[]
  */
-export const getBisByUser = async (
+export const getAllBisByUser = async (
     userId: string
 ): Promise<BisLinksType[] | null> => {
     try {
         const query: QueryConfig = {
             name: 'get-BisByUser',
-            text: 'SELECT * FROM bis WHERE user_id=$1 ;',
+            text: 'SELECT * FROM bis WHERE user_id=$1;',
             values: [userId]
         };
 
         const res = await runQuery(query);
-        logger.info(`get-BisForUser ${JSON.stringify(res?.rows[0])}`);
+        logger.info(`get-BisForUser ${JSON.stringify(res?.rows)}`);
 
         return res?.rows ?? null;
     } catch (error) {
@@ -52,6 +52,39 @@ export const getBisByUserByName = async (
 
         const res = await runQuery(query);
         logger.info(`get-BisByUserByName ${JSON.stringify(res?.rows[0])}`);
+        return res?.rows[0] ?? null;
+    } catch (error) {
+        return Promise.reject(error);
+    }
+};
+
+export const getAllMainBis = async (): Promise<BisLinksType[] | null> => {
+    try {
+        const query: QueryConfig = {
+            name: 'get-AllMainBis',
+            text: 'SELECT * FROM bis WHERE is_main=true;'
+        };
+
+        const res = await runQuery(query);
+        logger.info(`get-AllMainBis ${JSON.stringify(res?.rows)}`);
+        return res?.rows ?? null;
+    } catch (error) {
+        return Promise.reject(error);
+    }
+};
+
+export const getMainBisFromUser = async (
+    userId: string
+): Promise<BisLinksType | null> => {
+    try {
+        const query: QueryConfig = {
+            name: 'get-MainBisFromUser',
+            text: 'SELECT * FROM bis  WHERE is_main=true AND user_id=$1',
+            values: [userId]
+        };
+
+        const res = await runQuery(query);
+        logger.info(`get-MainBisFromUser ${JSON.stringify(res?.rows[0])}`);
         return res?.rows[0] ?? null;
     } catch (error) {
         return Promise.reject(error);

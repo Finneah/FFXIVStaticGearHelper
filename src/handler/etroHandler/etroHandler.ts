@@ -1,4 +1,5 @@
 import axios from 'axios';
+import {SubCommandNames} from '../../types';
 
 import {ErrorType} from '../../types/ErrorTypes/ErrorType';
 
@@ -27,7 +28,7 @@ export const getEtroJobList = async () => {
 };
 
 export const getGearset = async (
-    option: string,
+    option: SubCommandNames.BY_ID | SubCommandNames.BY_LINK,
     idOrLink: string
 ): Promise<Gearset | undefined> => {
     try {
@@ -43,7 +44,10 @@ export const getGearset = async (
     // TODO Fehler beheben wenn link mitgegeben wird, response passt dann auch nicht
 };
 
-const getGearsetWithEquipment = async (option: string, idOrLink: string) => {
+export const getGearsetWithEquipment = async (
+    option: SubCommandNames.BY_ID | SubCommandNames.BY_LINK,
+    idOrLink: string
+) => {
     try {
         // https://etro.gg/api/gearsets/e78a29e3-1dcf-4e53-bbcf-234f33b2c831/
 
@@ -76,10 +80,14 @@ const getGearsetWithEquipment = async (option: string, idOrLink: string) => {
         return Promise.reject();
     }
 };
-const getEtroGearset = async (option: string, idOrLink: string) => {
+
+const getEtroGearset = async (
+    option: SubCommandNames.BY_ID | SubCommandNames.BY_LINK,
+    idOrLink: string
+) => {
     // https://etro.gg/gearset/38fe3778-f2c1-4300-99e4-b58a0445e969
     let id = idOrLink;
-    if (option === 'by_link') {
+    if (option === SubCommandNames.BY_LINK) {
         id = idOrLink.replace('https://etro.gg/gearset/', '');
     }
 
@@ -111,6 +119,7 @@ const getEtroFood = async (id: number) => {
             return Promise.reject();
         });
 };
+
 const getEtroSingleEquipment = async (id: number) => {
     return axios
         .get(ETRO_API + `/equipment/${id}/`)
