@@ -1,9 +1,4 @@
-import {
-    ApplicationCommandType,
-    Client,
-    CommandInteraction,
-    messageLink
-} from 'discord.js';
+import {ApplicationCommandType, Client, CommandInteraction} from 'discord.js';
 import {getGuildConfig} from '../../database/actions/guildConfig/getGuildConfig';
 
 import {
@@ -13,7 +8,6 @@ import {
 import {strings} from '../../locale/i18n';
 
 import {Command} from '../Command';
-import {getEmbedStaticOverview} from '../getEmbedStaticOverview';
 
 export const Test: Command = {
     name: 'test',
