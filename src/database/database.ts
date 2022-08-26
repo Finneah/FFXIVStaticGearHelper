@@ -27,24 +27,8 @@ export const getClient = () => {
 };
 
 export const initDB = async () => {
-    dropTables();
     createDBGuild();
     createDBBis();
-};
-
-const dropTables = () => {
-    const client = getClient();
-    const string = `DROP TABLE bis; DROP TABLE guilds;`;
-    client.query(string, (err, res) => {
-        if (err) logger.error(err);
-        if (res) {
-            for (const row of res?.rows) {
-                logger.info(JSON.stringify(row));
-            }
-        }
-
-        client.end();
-    });
 };
 
 const createDBGuild = () => {
