@@ -1,6 +1,6 @@
 {
     "name": "ffxiv-static-gear-helper",
-    "version": "1.2.42",
+    "version": "1.2.43",
     "main": "index.js",
     "repository": "https://github.com/Finneah/FFXIVStaticGearHelper.git",
     "author": "Finneah <finneah@icloud.com>",

@@ -219,6 +219,8 @@ const getAllFilteredMainBis = async (
     }[] = [];
 
     for (const filteredMainBis of allFilteredMainBis) {
+        if (filteredMainBis.bis_link) {
+        }
         const gearset = await getGearsetWithEquipment(
             SubCommandNames.BY_LINK,
             filteredMainBis.bis_link

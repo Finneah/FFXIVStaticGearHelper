@@ -29,6 +29,7 @@
     "override": "Überschreiben",
     "cancel": "Abbrechen",
     "offHand": "Nebenhand",
+    "error.noConfig": "Der Bot wurde noch nicht configuriert",
     "showBis.description": "Zeigt das Etro BiS Gear für den gewählten Link oder Id",
     "sqliteError.noSuchTable": "Die Tabelle konnte nicht gefunden werden",
     "staticRoleOption.description": "Benutzer mit der gewählten Rolle sind Teil der Static. Ihr Bis wird in der Übersicht angezeigt.",
