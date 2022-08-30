@@ -3,7 +3,8 @@ export enum CommandNames {
     SHOWETROBIS = 'show',
     CONFIGUREBOTFORGUILD = 'config',
     SETMAINBIS = 'set_mainbis',
-    STATICOVERVIEW = 'static_overview'
+    STATICOVERVIEW = 'static_overview',
+    DELETE_USER = 'delete_user'
 }
 export enum SubCommandNames {
     SET = 'set',

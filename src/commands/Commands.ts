@@ -8,6 +8,7 @@ import {EditBisOverview} from './buttonCommands/EditBisOverview';
 import {ButtonCommand, Command} from './Command';
 import {BestInSlot} from './slashCommands/BestInSlot';
 import {ConfigureBotForGuild} from './slashCommands/ConfigureBotForGuild';
+import {DeleteUser} from './slashCommands/DeleteUser';
 import {SetMainBis} from './slashCommands/SetMainBiS';
 
 import {ShowEtroBis} from './slashCommands/ShowEtroBis';
@@ -19,7 +20,8 @@ export const Commands: Command[] = [
     ConfigureBotForGuild,
     BestInSlot,
     SetMainBis,
-    StaticOverview
+    StaticOverview,
+    DeleteUser
 ];
 if (NODE_ENV !== 'production') {
     Commands.push(Test);
