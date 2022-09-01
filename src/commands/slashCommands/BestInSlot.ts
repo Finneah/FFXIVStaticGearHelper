@@ -7,6 +7,7 @@ import {
     CommandInteractionOption,
     Message
 } from 'discord.js';
+
 import {setBisMessageIdFromUser} from '../../database/actions/bestInSlot/editBisFromUser';
 import {
     getAllBisByUser,
@@ -21,7 +22,12 @@ import {errorHandler, handleInteractionError} from '../../handler';
 import {strings} from '../../locale/i18n';
 import Logger from '../../logger';
 
-import {CommandNames, OptionNames, SubCommandNames} from '../../types';
+import {
+    ButtonCommandNames,
+    CommandNames,
+    OptionNames,
+    SubCommandNames
+} from '../../types';
 import {checkPermission} from '../../utils/permissions';
 
 import {Command} from '../Command';
@@ -55,12 +61,32 @@ export const BestInSlot: Command = {
                     description: strings('bisCommand.name.description'),
                     required: true
                 }
+                // {
+                //     name: OptionNames.ISMAIN,
+                //     type: ApplicationCommandOptionType.String,
+                //     description: strings('bisCommand.ismain.description'),
+                //     required: false
+                // }
             ]
         },
         {
             name: SubCommandNames.GET,
             type: ApplicationCommandOptionType.Subcommand,
             description: strings('getBisCommand.description'),
+            options: [
+                {
+                    name: OptionNames.NAME,
+                    type: ApplicationCommandOptionType.String,
+                    description: strings('bisCommand.name.description'),
+                    required: true,
+                    autocomplete: true
+                }
+            ]
+        },
+        {
+            name: SubCommandNames.DELETE,
+            type: ApplicationCommandOptionType.Subcommand,
+            description: strings('deleteBisCommand.description'),
             options: [
                 {
                     name: OptionNames.NAME,
@@ -86,7 +112,8 @@ export const BestInSlot: Command = {
             const subCommand = interaction.options.data.find(
                 (option) =>
                     option.name === SubCommandNames.SET ||
-                    option.name === SubCommandNames.GET
+                    option.name === SubCommandNames.GET ||
+                    option.name === SubCommandNames.DELETE
             );
 
             const guildConfig = await getGuildConfig(interaction.guildId);
@@ -127,6 +154,10 @@ export const BestInSlot: Command = {
 
                     break;
 
+                case SubCommandNames.DELETE:
+                    handleDeleteBis(interaction, subCommand);
+
+                    break;
                 default:
                     break;
             }
@@ -155,6 +186,10 @@ const handleSetBis = async (
         const name = subCommand.options?.find(
             (opt) => opt.name === OptionNames.NAME
         )?.value;
+
+        // const isMain = subCommand.options?.find(
+        //     (opt) => opt.name === OptionNames.ISMAIN
+        // )?.value;
 
         if (!link || !name) {
             logger.warn('missingParameter', link, name);
@@ -268,4 +303,46 @@ const handleGetBis = async (
             content: errorHandler('handleSetBis', error)
         });
     }
+};
+
+const handleDeleteBis = async (
+    interaction: CommandInteraction<CacheType>,
+    subCommand: CommandInteractionOption<CacheType>
+) => {
+    const name = subCommand.options?.find(
+        (opt) => opt.name === OptionNames.NAME
+    )?.value;
+    if (!name) {
+        return interaction.followUp({
+            ephemeral: true,
+            content: strings('error.general', {
+                details: strings('error.missingParameter')
+            })
+        });
+    }
+    return interaction.followUp({
+        ephemeral: true,
+        content: `Willst du das Gearset ${name} wirklich löschen?`,
+        components: [
+            {
+                type: 1,
+                components: [
+                    {
+                        style: 4,
+                        label: `${strings('delete')}`,
+                        custom_id: ButtonCommandNames.DELETE_BIS + '_' + name,
+                        disabled: false,
+                        type: 2
+                    },
+                    {
+                        style: 2,
+                        label: `${strings('cancel')}`,
+                        custom_id: ButtonCommandNames.CANCEL,
+                        disabled: false,
+                        type: 2
+                    }
+                ]
+            }
+        ]
+    });
 };

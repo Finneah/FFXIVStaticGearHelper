@@ -15,7 +15,7 @@ import {
 } from '../../handler/errorHandler/errorHandler';
 import {strings} from '../../locale/i18n';
 
-import {CommandNames} from '../../types';
+import {ButtonCommandNames, CommandNames} from '../../types';
 import {getIconBySlotName} from '../../utils';
 import {checkPermission} from '../../utils/permissions';
 
@@ -95,7 +95,15 @@ const getActionRows = (): ActionRowBuilder<ButtonBuilder>[] => {
     }
 
     const actionRows = getActionRowWithButtons([], gearArray, 0);
+    const button = new ButtonBuilder()
+        .setCustomId(
+            CommandNames.STATICOVERVIEW + '_' + ButtonCommandNames.REFRESH
+        )
+        .setLabel(strings(ButtonCommandNames.REFRESH))
+        .setStyle(3);
+    // .setEmoji('🔃');
 
+    actionRows[actionRows.length - 1].addComponents(button);
     return actionRows;
 };
 

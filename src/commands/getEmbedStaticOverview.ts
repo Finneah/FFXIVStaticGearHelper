@@ -225,14 +225,17 @@ const getAllFilteredMainBis = async (
             SubCommandNames.BY_LINK,
             filteredMainBis.bis_link
         );
-        allFilteredMainBisWithGearSets.push({
-            filteredMainBis,
-            gearset
-        });
+        if (gearset) {
+            allFilteredMainBisWithGearSets.push({
+                filteredMainBis,
+                gearset
+            });
+        }
     }
 
     return allFilteredMainBisWithGearSets;
 };
+
 const addUserAndBisNameToFieldValue = (
     fields: EmbedField[],
     key: string,

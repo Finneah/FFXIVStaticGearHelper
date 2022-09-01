@@ -261,7 +261,7 @@ const handleSetConfigAlreadyExist = async (
                     {
                         style: 4,
                         label: `${strings('cancel')}`,
-                        custom_id: ButtonCommandNames.CONFIG_CANCEL,
+                        custom_id: ButtonCommandNames.CANCEL,
                         disabled: false,
                         type: 2
                     }
@@ -280,6 +280,7 @@ const getConfigEmbed = (
         (moderator_role = '<@&' + moderator_role + '>');
     static_role?.search('<@&') == -1 &&
         (static_role = '<@&' + static_role + '>');
+
     const embedData: EmbedData | APIEmbed = {
         title: `Static Gear Helper Config`,
         description: `Alle Mitglieder der Rolle ${moderator_role} dürfen die Konfiguration anpassen.\n
@@ -296,18 +297,22 @@ const getConfigEmbed = (
                 value: `${static_role}`,
                 inline: true
             },
-
             {
-                name: `Verfügbare Befehle`,
+                name: '\u200B',
+                value: '\u200B'
+            },
+            {
+                name: `Verfügbare Befehle für ${OptionNames.STATIC_ROLE}`,
                 value: '\u200B'
             },
             {
                 name: `/${CommandNames.BESTINSLOT} ${SubCommandNames.SET} :${OptionNames.LINK} :${OptionNames.NAME}`,
                 value: `speicher dieses Gearset`
             },
+
             {
                 name: `/${CommandNames.BESTINSLOT} ${SubCommandNames.GET} :${OptionNames.NAME}`,
-                value: `zeigt das gespeicherte Gearset`
+                value: `zeigt das gespeicherte Gearset.\nFührst du diesen Befehl ein weiteres Mal aus, so wird die alte Nachricht gelöscht. `
             },
             {
                 name: `/${CommandNames.BESTINSLOT} ${SubCommandNames.DELETE} :${OptionNames.NAME}`,
@@ -315,11 +320,39 @@ const getConfigEmbed = (
             },
             {
                 name: `/${CommandNames.SETMAINBIS} :${OptionNames.NAME}`,
-                value: `Wähle aus welches deiner gespeicherten BiS Gears dein Main BiS ist.\nDieses wird für die Static Übersicht verwendet`
+                value: `setzt das gewählte Gearset als Main Set. Dadurch wird es in der Übersicht angezeigt!\nEs kann immer nur ein Gearset als Main markiert werden.\nHast du ein zweites Set gespeichert, musst du nichts weiter tun. Das macht der Bot automatisch.`
             },
             {
                 name: `/${CommandNames.STATICOVERVIEW}`,
-                value: `Zeigt die Gesamtübersicht der Static.`
+                value: `Zeigt die Gesamtübersicht der Static.\nWird dieser Befehl ein weiteres Mal ausgeführt, so wird die vorherige Übersicht überschrieben.`
+            },
+            {
+                name: '\u200B',
+                value: '\u200B'
+            },
+            {
+                name: `Verfügbare Befehle für ${OptionNames.MODERATOR_ROLE}`,
+                value: '\u200B'
+            },
+            {
+                name: `/${CommandNames.CONFIGUREBOTFORGUILD} ${SubCommandNames.SET} :${OptionNames.MODERATOR_ROLE} :${OptionNames.STATIC_ROLE}`,
+                value: `Setze eine Rolle für die ${OptionNames.MODERATOR_ROLE} und ${OptionNames.STATIC_ROLE}.`
+            },
+            {
+                name: `/${CommandNames.CONFIGUREBOTFORGUILD} :${SubCommandNames.GET}`,
+                value: `Zeigt die Konfiguration an.`
+            },
+            {
+                name: '\u200B',
+                value: '\u200B'
+            },
+            {
+                name: `Verfügbare Befehle für Serverinhaber`,
+                value: '\u200B'
+            },
+            {
+                name: `/${CommandNames.DELETE_USER} :${OptionNames.ID}`,
+                value: `Löscht einen Benutzer anhand der ID.\n Du benotigst Modarator- oder Adminrechte für diesen Befehl!`
             }
         ]
     };

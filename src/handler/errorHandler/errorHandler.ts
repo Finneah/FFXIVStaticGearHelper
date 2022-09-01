@@ -12,19 +12,23 @@ import {ErrorType} from '../../types';
 export const errorHandler = (namespace: string, error: ErrorType): string => {
     const logger = Logger.child({module: namespace});
     logger.error(error);
-    let message = error.message;
-    if (message && message.search('AxiosError') !== -1) {
-        // TODO refactor auslagern
-        message = message.split('AxiosError')[1];
-        if (message.search('Request failed with status code 404') !== -1) {
-            message = strings('error.wrongRequest');
-        }
-    }
 
-    if (error.name && error.name === 'SequelizeDatabaseError') {
-        message = handleDBError(error);
+    if (error) {
+        let message = error?.message ?? error;
+        if (message && message.search('AxiosError') !== -1) {
+            // TODO refactor auslagern
+            message = message.split('AxiosError')[1];
+            if (message.search('Request failed with status code 404') !== -1) {
+                message = strings('error.wrongRequest');
+            }
+        }
+
+        if (error.name && error.name === 'SequelizeDatabaseError') {
+            message = handleDBError(error);
+        }
+        return message;
     }
-    return message;
+    return 'irgendwas';
 };
 
 const handleDBError = (error: ErrorType) => {

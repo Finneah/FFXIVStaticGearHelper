@@ -36,7 +36,7 @@ export const DeleteBis: ButtonCommand = {
                     guildConfig?.static_role
                 );
 
-                if (hasPermission && interaction.message.embeds[0].url) {
+                if (hasPermission) {
                     deleteBisFromUser(
                         interaction.customId.replace(
                             ButtonCommandNames.DELETE_BIS + '_',

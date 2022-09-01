@@ -106,9 +106,9 @@ const handleButtonCommand = async (
                     (c) => c.name === ButtonCommandNames.CONFIG_OVERRIDE
                 );
                 break;
-            case ButtonCommandNames.CONFIG_CANCEL:
+            case ButtonCommandNames.CANCEL:
                 buttonCommand = ButtonCommands.find(
-                    (c) => c.name === ButtonCommandNames.CONFIG_CANCEL
+                    (c) => c.name === ButtonCommandNames.CANCEL
                 );
                 break;
 

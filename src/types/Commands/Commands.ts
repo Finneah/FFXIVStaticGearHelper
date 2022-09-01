@@ -16,11 +16,12 @@ export enum SubCommandNames {
 
 export enum ButtonCommandNames {
     CONFIG_OVERRIDE = 'overrideConfig',
-    CONFIG_CANCEL = 'cancelConfig',
+    CANCEL = 'cancel',
     DELETE_BIS = 'deleteBis',
     SETTINGS = 'settings',
     EDITBIS = 'editbis',
-    EDITBISOVERVIEW = 'editbisOverview'
+    EDITBISOVERVIEW = 'editbisOverview',
+    REFRESH = 'refresh'
 }
 
 export enum OptionNames {

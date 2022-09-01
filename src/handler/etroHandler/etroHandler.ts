@@ -1,8 +1,6 @@
 import axios from 'axios';
 import {SubCommandNames} from '../../types';
 
-import {ErrorType} from '../../types/ErrorTypes/ErrorType';
-
 import {
     Equipment,
     EtroGearset,
@@ -21,7 +19,7 @@ export const getEtroJobList = async () => {
             return response.data;
         })
 
-        .catch((error: ErrorType) => {
+        .catch((error) => {
             errorHandler('getJobList', error);
             return {success: false, data: ''};
         });
@@ -32,14 +30,19 @@ export const getGearset = async (
     idOrLink: string
 ): Promise<Gearset | undefined> => {
     try {
-        let gearset: Gearset = await getGearsetWithEquipment(option, idOrLink);
+        let gearset: Gearset | undefined = await getGearsetWithEquipment(
+            option,
+            idOrLink
+        );
 
-        gearset = await getGearSetWithMateria(gearset);
+        if (gearset) {
+            gearset = await getGearSetWithMateria(gearset);
+        }
 
         return gearset;
-    } catch (error: ErrorType) {
+    } catch (error) {
         errorHandler('getGearset', error);
-        return Promise.reject();
+        return undefined;
     }
     // TODO Fehler beheben wenn link mitgegeben wird, response passt dann auch nicht
 };
@@ -47,37 +50,40 @@ export const getGearset = async (
 export const getGearsetWithEquipment = async (
     option: SubCommandNames.BY_ID | SubCommandNames.BY_LINK,
     idOrLink: string
-) => {
+): Promise<Gearset | undefined> => {
     try {
         // https://etro.gg/api/gearsets/e78a29e3-1dcf-4e53-bbcf-234f33b2c831/
 
         const etroGearset = await getEtroGearset(option, idOrLink);
-        const equipment = await getEquipmentAll(etroGearset);
-        const etroFood = await getEtroFood(etroGearset.food);
-        const gearset: Gearset = {
-            id: etroGearset.id,
-            jobAbbrev: etroGearset.jobAbbrev,
-            name: etroGearset.name,
-            weapon: equipment.find((e) => e.id === etroGearset.weapon),
-            head: equipment.find((e) => e.id === etroGearset.head),
-            body: equipment.find((e) => e.id === etroGearset.body),
-            hands: equipment.find((e) => e.id === etroGearset.hands),
-            legs: equipment.find((e) => e.id === etroGearset.legs),
-            feet: equipment.find((e) => e.id === etroGearset.feet),
-            offHand: equipment.find((e) => e.id === etroGearset.offHand),
-            ears: equipment.find((e) => e.id === etroGearset.ears),
-            neck: equipment.find((e) => e.id === etroGearset.neck),
-            wrists: equipment.find((e) => e.id === etroGearset.wrists),
-            fingerL: equipment.find((e) => e.id === etroGearset.fingerL),
-            fingerR: equipment.find((e) => e.id === etroGearset.fingerR),
-            food: etroFood,
-            materia: etroGearset.materia
-        };
+        if (etroGearset) {
+            const equipment = await getEquipmentAll(etroGearset);
+            const etroFood = await getEtroFood(etroGearset.food);
+            const gearset: Gearset = {
+                id: etroGearset.id,
+                jobAbbrev: etroGearset.jobAbbrev,
+                name: etroGearset.name,
+                weapon: equipment.find((e) => e.id === etroGearset.weapon),
+                head: equipment.find((e) => e.id === etroGearset.head),
+                body: equipment.find((e) => e.id === etroGearset.body),
+                hands: equipment.find((e) => e.id === etroGearset.hands),
+                legs: equipment.find((e) => e.id === etroGearset.legs),
+                feet: equipment.find((e) => e.id === etroGearset.feet),
+                offHand: equipment.find((e) => e.id === etroGearset.offHand),
+                ears: equipment.find((e) => e.id === etroGearset.ears),
+                neck: equipment.find((e) => e.id === etroGearset.neck),
+                wrists: equipment.find((e) => e.id === etroGearset.wrists),
+                fingerL: equipment.find((e) => e.id === etroGearset.fingerL),
+                fingerR: equipment.find((e) => e.id === etroGearset.fingerR),
+                food: etroFood,
+                materia: etroGearset.materia
+            };
+            return gearset;
+        }
 
-        return gearset;
-    } catch (error: ErrorType) {
+        return undefined;
+    } catch (error) {
         errorHandler('getGearsetWithEquipment', error);
-        return Promise.reject();
+        return undefined;
     }
 };
 
@@ -101,9 +107,9 @@ const getEtroGearset = async (
             }
         })
 
-        .catch((error: ErrorType) => {
+        .catch((error) => {
             errorHandler('getEtroGearset', error);
-            return Promise.reject();
+            return undefined;
         });
 };
 
@@ -114,9 +120,9 @@ const getEtroFood = async (id: number) => {
             return response.data;
         })
 
-        .catch((error: ErrorType) => {
+        .catch((error) => {
             errorHandler('getEtroFood', error);
-            return Promise.reject();
+            return undefined;
         });
 };
 
@@ -127,9 +133,9 @@ const getEtroSingleEquipment = async (id: number) => {
             return response.data;
         })
 
-        .catch((error: ErrorType) => {
+        .catch((error) => {
             errorHandler('getEtroSingleEquipment', error);
-            return Promise.reject();
+            return null;
         });
 };
 
@@ -140,9 +146,9 @@ const getEtroMateriaList = async () => {
             return response.data;
         })
 
-        .catch((error: ErrorType) => {
+        .catch((error) => {
             errorHandler('getEtroMateriaList', error);
-            return Promise.reject();
+            return null;
         });
 };
 
@@ -168,7 +174,9 @@ const getEquipmentAll = async (gearset: EtroGearset): Promise<Equipment[]> => {
     return equip;
 };
 
-const getGearSetWithMateria = async (gearset: Gearset): Promise<Gearset> => {
+const getGearSetWithMateria = async (
+    gearset: Gearset
+): Promise<Gearset | undefined> => {
     try {
         const materiaList = await getEtroMateriaList();
 
@@ -213,8 +221,8 @@ const getGearSetWithMateria = async (gearset: Gearset): Promise<Gearset> => {
         }
 
         return gearset;
-    } catch (error: ErrorType) {
+    } catch (error) {
         errorHandler('getGearSetWithMateria', error);
-        return Promise.reject();
+        return undefined;
     }
 };

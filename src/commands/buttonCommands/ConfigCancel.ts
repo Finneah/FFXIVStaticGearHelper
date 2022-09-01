@@ -11,7 +11,7 @@ import {ButtonCommand} from '../Command';
  * cancel interaction config already exist
  */
 export const ConfigCancel: ButtonCommand = {
-    name: ButtonCommandNames.CONFIG_CANCEL,
+    name: ButtonCommandNames.CANCEL,
     type: ApplicationCommandType.Message,
     run: async (client: Client, interaction: ButtonInteraction) => {
         try {

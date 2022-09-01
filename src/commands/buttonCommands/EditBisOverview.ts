@@ -46,6 +46,18 @@ export const EditBisOverview: ButtonCommand = {
 
                 customId = customId.replace('_l_l', '_l').replace('_r_r', '_r');
 
+                if (customId === ButtonCommandNames.REFRESH) {
+                    const embed = await getEmbedStaticOverview(
+                        client,
+                        interaction,
+                        guildConfig
+                    );
+                    // HERE GET EMBED AGAIN
+                    return interaction.editReply({
+                        embeds: [embed]
+                    });
+                }
+
                 await setMainBisGearByUser(interaction.user.id, customId);
 
                 const embed = await getEmbedStaticOverview(
@@ -65,6 +77,7 @@ export const EditBisOverview: ButtonCommand = {
                                     SubCommandNames.BY_LINK,
                                     bis.bis_link
                                 );
+
                                 if (gearset) {
                                     const actionRows = getActionRowsForEditBis(
                                         gearset,
@@ -79,7 +92,6 @@ export const EditBisOverview: ButtonCommand = {
                         })
                         .catch(console.error);
                 }
-
                 // HERE GET EMBED AGAIN
                 return interaction.editReply({
                     content: `*<@${interaction.user.id}>* hat den Status aktualisiert`,

@@ -42,6 +42,7 @@ export const getGearsetEmbedCommand = async (
 ): Promise<Message<boolean>> => {
     try {
         const gearset = await getGearset(by, value);
+
         if (!gearset) {
             return handleInteractionError(
                 'getGearsetEmbedCommand',
@@ -397,7 +398,7 @@ const getActionRowWithButtons = (
             // push settings
             const settingsButton = new ButtonBuilder()
                 .setCustomId(ButtonCommandNames.DELETE_BIS + '_' + bis_name)
-                .setLabel('Löschen')
+                .setLabel(strings('delete'))
                 .setStyle(4);
             // .setEmoji('⚙️');
             lastRow.push(settingsButton);
