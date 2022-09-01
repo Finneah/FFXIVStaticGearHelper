@@ -198,7 +198,7 @@ const getMemberFields = async (userIds: string[]): Promise<EmbedField[]> => {
         } else {
             logger.warn('no allMainBis');
         }
-
+        logger.info('HERE MAYBE' + JSON.stringify(fields));
         return fields;
     } catch (error) {
         errorHandler('getEquipmentFields', error);
