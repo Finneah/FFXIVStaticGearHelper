@@ -15,14 +15,16 @@ export const setGuildConfig = async (
     guildConfig: GuildConfig
 ): Promise<void> => {
     try {
+        const moderator_role = guildConfig.moderator_role
+            ?.replace('<@', '')
+            .replace('>', '');
+        const static_role = guildConfig.static_role
+            ?.replace('<@', '')
+            .replace('>', '');
         const query: QueryConfig = {
             name: 'set-GuildConfig',
             text: 'INSERT INTO guilds(guild_id, moderator_role,static_role) VALUES($1, $2, $3);',
-            values: [
-                guildConfig.guild_id,
-                guildConfig.moderator_role,
-                guildConfig.static_role
-            ]
+            values: [guildConfig.guild_id, moderator_role, static_role]
         };
 
         const res = await runQuery(query);

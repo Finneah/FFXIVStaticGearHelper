@@ -15,14 +15,16 @@ export const editGuildConfig = async (
     guildConfig: GuildConfig
 ): Promise<void> => {
     try {
+        const moderator_role = guildConfig.moderator_role
+            ?.replace('<@', '')
+            .replace('>', '');
+        const static_role = guildConfig.static_role
+            ?.replace('<@', '')
+            .replace('>', '');
         const query: QueryConfig = {
             name: 'edit-GuildConfig',
             text: 'UPDATE guilds SET moderator_role=$1, static_role=$2 WHERE guild_id=$3;',
-            values: [
-                guildConfig.moderator_role,
-                guildConfig.static_role,
-                guildConfig.guild_id
-            ]
+            values: [moderator_role, static_role, guildConfig.guild_id]
         };
 
         const res = await runQuery(query);

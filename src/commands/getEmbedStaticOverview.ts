@@ -126,6 +126,7 @@ const getMemberFields = async (userIds: string[]): Promise<EmbedField[]> => {
                             );
 
                             if (!fieldDoesExist) {
+                                logger.debug('HERE !fieldDoesExist');
                                 if (key === GearTypes.OFFHAND && withOffHand) {
                                     fields.push({
                                         name: strings(key),
@@ -142,6 +143,7 @@ const getMemberFields = async (userIds: string[]): Promise<EmbedField[]> => {
                             }
 
                             if (!filteredMainBis.filteredMainBis[key]) {
+                                logger.debug('HERE');
                                 // user doesnt have the weapon allready
                                 switch (key) {
                                     case GearTypes.FINGER_L:
@@ -179,7 +181,7 @@ const getMemberFields = async (userIds: string[]): Promise<EmbedField[]> => {
                                         break;
 
                                     default:
-                                        logger.info('HERE');
+                                        logger.debug('HERE');
                                         addUserAndBisNameToFieldValue(
                                             fields,
                                             key,
@@ -199,7 +201,7 @@ const getMemberFields = async (userIds: string[]): Promise<EmbedField[]> => {
         } else {
             logger.warn('no allMainBis');
         }
-        logger.info('HERE MAYBE' + JSON.stringify(fields));
+
         return fields;
     } catch (error) {
         errorHandler('getEquipmentFields', error);

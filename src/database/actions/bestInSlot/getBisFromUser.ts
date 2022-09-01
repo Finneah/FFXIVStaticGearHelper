@@ -66,7 +66,7 @@ export const getAllMainBis = async (): Promise<BisLinksType[] | null> => {
         };
 
         const res = await runQuery(query);
-        console.log(`HERE get-AllMainBis ${res.rows.length}`);
+
         logger.info(
             `get-AllMainBis ${res.rows.length} ${JSON.stringify(res?.rows)}`
         );

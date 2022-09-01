@@ -53,7 +53,7 @@ export const EditBisOverview: ButtonCommand = {
                         interaction,
                         guildConfig
                     );
-                    // HERE GET EMBED AGAIN
+
                     return interaction.editReply({
                         embeds: [embed]
                     });
@@ -95,7 +95,7 @@ export const EditBisOverview: ButtonCommand = {
                             logger.info('No message found' + error.message)
                         );
                 }
-                // HERE GET EMBED AGAIN
+
                 return interaction.editReply({
                     content: `*<@${interaction.user.id}>* hat den Status aktualisiert`,
                     embeds: [embed]
