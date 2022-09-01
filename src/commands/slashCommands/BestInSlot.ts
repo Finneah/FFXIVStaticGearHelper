@@ -273,7 +273,9 @@ const handleGetBis = async (
                             message.delete();
                         }
                     })
-                    .catch(console.error);
+                    .catch((error) =>
+                        logger.info('No message found' + error.message)
+                    );
             }
             const message = await getGearsetEmbedCommand(
                 SubCommandNames.BY_LINK,

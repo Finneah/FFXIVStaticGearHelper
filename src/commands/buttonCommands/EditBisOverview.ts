@@ -4,13 +4,14 @@ import {setMainBisGearByUser} from '../../database/actions/bestInSlot/setMainBis
 import {getGuildConfig} from '../../database/actions/guildConfig/getGuildConfig';
 import {errorHandler, getGearset, handleInteractionError} from '../../handler';
 import {strings} from '../../locale/i18n';
+import Logger from '../../logger';
 
 import {ButtonCommandNames, SubCommandNames} from '../../types';
 import {checkPermission} from '../../utils/permissions';
 import {ButtonCommand} from '../Command';
 import {getEmbedStaticOverview} from '../getEmbedStaticOverview';
 import {getActionRowsForEditBis} from '../getGearsetEmbedCommand';
-
+const logger = Logger.child({module: 'EditBisOverview'});
 /**
  * @description Button Command EditBis,
  * set gear type is looted or not
@@ -90,7 +91,9 @@ export const EditBisOverview: ButtonCommand = {
                                 }
                             }
                         })
-                        .catch(console.error);
+                        .catch((error) =>
+                            logger.info('No message found' + error.message)
+                        );
                 }
                 // HERE GET EMBED AGAIN
                 return interaction.editReply({

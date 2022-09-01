@@ -4,6 +4,7 @@ import {getGuildConfig} from '../../database/actions/guildConfig/getGuildConfig'
 import {GearTypes} from '../../database/types/DataType';
 import {getGearset, errorHandler, handleInteractionError} from '../../handler';
 import {strings} from '../../locale/i18n';
+import Logger from '../../logger';
 
 import {ButtonCommandNames, SubCommandNames} from '../../types';
 import {checkPermission} from '../../utils/permissions';
@@ -11,6 +12,7 @@ import {ButtonCommand} from '../Command';
 import {getEmbedStaticOverview} from '../getEmbedStaticOverview';
 import {getActionRowsForEditBis} from '../getGearsetEmbedCommand';
 
+const logger = Logger.child({module: 'EditBis'});
 /**
  * @description Button Command EditBis,
  * set gear type is looted or not
@@ -99,7 +101,12 @@ export const EditBis: ButtonCommand = {
                                             });
                                         }
                                     })
-                                    .catch(console.error);
+
+                                    .catch((error) =>
+                                        logger.info(
+                                            'No message found' + error.message
+                                        )
+                                    );
                             }
                         }
                         const message = await interaction.editReply({
