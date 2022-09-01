@@ -107,17 +107,9 @@ const getMemberFields = async (userIds: string[]): Promise<EmbedField[]> => {
     try {
         const allMainBis = await getAllMainBis();
         if (allMainBis) {
-            logger.info(
-                'HERE MAYBE allFilteredMainBis' + JSON.stringify(allMainBis)
-            );
-
             const allFilteredMainBis = await getAllFilteredMainBis(
                 allMainBis,
                 userIds
-            );
-            logger.info(
-                'HERE MAYBE allFilteredMainBis' +
-                    JSON.stringify(allFilteredMainBis)
             );
 
             if (allFilteredMainBis) {
@@ -187,6 +179,7 @@ const getMemberFields = async (userIds: string[]): Promise<EmbedField[]> => {
                                         break;
 
                                     default:
+                                        logger.info('HERE');
                                         addUserAndBisNameToFieldValue(
                                             fields,
                                             key,
