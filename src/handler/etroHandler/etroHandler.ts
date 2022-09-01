@@ -50,40 +50,36 @@ export const getGearset = async (
 export const getGearsetWithEquipment = async (
     option: SubCommandNames.BY_ID | SubCommandNames.BY_LINK,
     idOrLink: string
-): Promise<Gearset | undefined> => {
+): Promise<Gearset> => {
     try {
         // https://etro.gg/api/gearsets/e78a29e3-1dcf-4e53-bbcf-234f33b2c831/
 
         const etroGearset = await getEtroGearset(option, idOrLink);
-        if (etroGearset) {
-            const equipment = await getEquipmentAll(etroGearset);
-            const etroFood = await getEtroFood(etroGearset.food);
-            const gearset: Gearset = {
-                id: etroGearset.id,
-                jobAbbrev: etroGearset.jobAbbrev,
-                name: etroGearset.name,
-                weapon: equipment.find((e) => e.id === etroGearset.weapon),
-                head: equipment.find((e) => e.id === etroGearset.head),
-                body: equipment.find((e) => e.id === etroGearset.body),
-                hands: equipment.find((e) => e.id === etroGearset.hands),
-                legs: equipment.find((e) => e.id === etroGearset.legs),
-                feet: equipment.find((e) => e.id === etroGearset.feet),
-                offHand: equipment.find((e) => e.id === etroGearset.offHand),
-                ears: equipment.find((e) => e.id === etroGearset.ears),
-                neck: equipment.find((e) => e.id === etroGearset.neck),
-                wrists: equipment.find((e) => e.id === etroGearset.wrists),
-                fingerL: equipment.find((e) => e.id === etroGearset.fingerL),
-                fingerR: equipment.find((e) => e.id === etroGearset.fingerR),
-                food: etroFood,
-                materia: etroGearset.materia
-            };
-            return gearset;
-        }
-
-        return undefined;
+        const equipment = await getEquipmentAll(etroGearset);
+        const etroFood = await getEtroFood(etroGearset.food);
+        const gearset: Gearset = {
+            id: etroGearset.id,
+            jobAbbrev: etroGearset.jobAbbrev,
+            name: etroGearset.name,
+            weapon: equipment.find((e) => e.id === etroGearset.weapon),
+            head: equipment.find((e) => e.id === etroGearset.head),
+            body: equipment.find((e) => e.id === etroGearset.body),
+            hands: equipment.find((e) => e.id === etroGearset.hands),
+            legs: equipment.find((e) => e.id === etroGearset.legs),
+            feet: equipment.find((e) => e.id === etroGearset.feet),
+            offHand: equipment.find((e) => e.id === etroGearset.offHand),
+            ears: equipment.find((e) => e.id === etroGearset.ears),
+            neck: equipment.find((e) => e.id === etroGearset.neck),
+            wrists: equipment.find((e) => e.id === etroGearset.wrists),
+            fingerL: equipment.find((e) => e.id === etroGearset.fingerL),
+            fingerR: equipment.find((e) => e.id === etroGearset.fingerR),
+            food: etroFood,
+            materia: etroGearset.materia
+        };
+        return gearset;
     } catch (error) {
         errorHandler('getGearsetWithEquipment', error);
-        return undefined;
+        return Promise.reject();
     }
 };
 

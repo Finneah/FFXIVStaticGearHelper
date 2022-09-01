@@ -111,6 +111,10 @@ const getMemberFields = async (userIds: string[]): Promise<EmbedField[]> => {
                 allMainBis,
                 userIds
             );
+            logger.info(
+                'HERE MAYBE allFilteredMainBis' +
+                    JSON.stringify(allFilteredMainBis)
+            );
 
             if (allFilteredMainBis) {
                 allFilteredMainBis.forEach((filteredMainBis) => {
@@ -225,12 +229,11 @@ const getAllFilteredMainBis = async (
             SubCommandNames.BY_LINK,
             filteredMainBis.bis_link
         );
-        if (gearset) {
-            allFilteredMainBisWithGearSets.push({
-                filteredMainBis,
-                gearset
-            });
-        }
+
+        allFilteredMainBisWithGearSets.push({
+            filteredMainBis,
+            gearset
+        });
     }
 
     return allFilteredMainBisWithGearSets;
