@@ -16,10 +16,10 @@ export const setGuildConfig = async (
 ): Promise<void> => {
     try {
         const moderator_role = guildConfig.moderator_role
-            ?.replace('<@', '')
+            ?.replace('<@&', '')
             .replace('>', '');
         const static_role = guildConfig.static_role
-            ?.replace('<@', '')
+            ?.replace('<@&', '')
             .replace('>', '');
         const query: QueryConfig = {
             name: 'set-GuildConfig',
