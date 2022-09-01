@@ -66,7 +66,10 @@ export const getAllMainBis = async (): Promise<BisLinksType[] | null> => {
         };
 
         const res = await runQuery(query);
-        logger.info(`get-AllMainBis ${JSON.stringify(res?.rows)}`);
+        console.log(`HERE get-AllMainBis ${res.rows.length}`);
+        logger.info(
+            `get-AllMainBis ${res.rows.length} ${JSON.stringify(res?.rows)}`
+        );
         return res?.rows ?? null;
     } catch (error) {
         return Promise.reject(error);
