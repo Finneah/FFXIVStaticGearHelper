@@ -9,7 +9,8 @@ import {
     Colors,
     EmbedField
 } from 'discord.js';
-import {getAllMainBis} from '../database/actions/bestInSlot/getBisFromUser';
+import {getMainBisAll} from '../database/actions/bestInSlot/getBis';
+
 import {BisLinksType, GearTypes, GuildConfig} from '../database/types/DataType';
 import {
     errorHandler,
@@ -27,9 +28,25 @@ export const getEmbedStaticOverview = async (
 ): Promise<EmbedBuilder> => {
     const avatar = await interaction.user.avatarURL();
     const userIds = await getUserIds(client, interaction, guildConfig);
+    if (!interaction.guildId) {
+        const embedData: EmbedData | APIEmbed = {
+            color: Colors.Gold,
+            title: 'Übersicht',
+            description: 'TBD GuildId not found',
+            author: {
+                name: interaction.user.username,
+                icon_url: avatar ?? ''
+            }
+        };
+        return new EmbedBuilder(embedData);
+    }
 
     if (userIds) {
-        const memberFields = await getMemberFields(userIds);
+        const memberFields = await getMemberFields(
+            userIds,
+            interaction.guildId
+        );
+
         const embedData: EmbedData | APIEmbed = {
             color: Colors.Gold,
             title: 'Übersicht',
@@ -102,10 +119,13 @@ const getUserIds = async (
     return userIds;
 };
 
-const getMemberFields = async (userIds: string[]): Promise<EmbedField[]> => {
+const getMemberFields = async (
+    userIds: string[],
+    guild_id: string
+): Promise<EmbedField[]> => {
     const fields: EmbedField[] = [];
     try {
-        const allMainBis = await getAllMainBis();
+        const allMainBis = await getMainBisAll(guild_id);
         if (allMainBis) {
             const allFilteredMainBis = await getAllFilteredMainBis(
                 allMainBis,

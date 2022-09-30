@@ -56,6 +56,7 @@ const createDBBis = () => {
     const string = `CREATE TABLE IF NOT EXISTS bis (
         bis_id SERIAL PRIMARY KEY,
         user_id varchar(256) NOT NULL,
+        guild_id varchar(256) NOT NULL,
         bis_name varchar(256) NOT NULL,
         bis_link varchar(256) NOT NULL, 
         is_main BOOLEAN DEFAULT false,

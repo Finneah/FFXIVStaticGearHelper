@@ -1,6 +1,7 @@
 import {ApplicationCommandType, ButtonInteraction, Client} from 'discord.js';
-import {getMainBisFromUser} from '../../database/actions/bestInSlot/getBisFromUser';
-import {setMainBisGearByUser} from '../../database/actions/bestInSlot/setMainBis';
+import {getMainBisByUser} from '../../database/actions/bestInSlot/getBis';
+import {setMainBisGearByUser} from '../../database/actions/bestInSlot/setBis';
+
 import {getGuildConfig} from '../../database/actions/guildConfig/getGuildConfig';
 import {errorHandler, getGearset, handleInteractionError} from '../../handler';
 import {strings} from '../../locale/i18n';
@@ -59,7 +60,11 @@ export const EditBisOverview: ButtonCommand = {
                     });
                 }
 
-                await setMainBisGearByUser(interaction.user.id, customId);
+                await setMainBisGearByUser(
+                    interaction.user.id,
+                    customId,
+                    interaction.guildId
+                );
 
                 const embed = await getEmbedStaticOverview(
                     client,
@@ -67,7 +72,10 @@ export const EditBisOverview: ButtonCommand = {
                     guildConfig
                 );
 
-                const bis = await getMainBisFromUser(interaction.user.id);
+                const bis = await getMainBisByUser(
+                    interaction.user.id,
+                    interaction.guildId
+                );
 
                 if (bis?.bis_message_id) {
                     await interaction.channel?.messages

@@ -15,8 +15,8 @@ import {getGearsetEmbedCommand} from '../getGearsetEmbedCommand';
 
 const logger = Logger.child({module: 'ShowEtroBis'});
 
-export const ShowEtroBis: Command = {
-    name: CommandNames.SHOWETROBIS,
+export const EtroShow: Command = {
+    name: CommandNames.ETRO,
     description: strings('showBis.description'),
     type: ApplicationCommandType.ChatInput,
     options: [

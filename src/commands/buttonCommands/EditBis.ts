@@ -1,5 +1,5 @@
 import {ApplicationCommandType, ButtonInteraction, Client} from 'discord.js';
-import {editBisFromUser} from '../../database/actions/bestInSlot/editBisFromUser';
+import {editBisSingle} from '../../database/actions/bestInSlot/editBis';
 import {getGuildConfig} from '../../database/actions/guildConfig/getGuildConfig';
 import {GearTypes} from '../../database/types/DataType';
 import {getGearset, errorHandler, handleInteractionError} from '../../handler';
@@ -63,10 +63,11 @@ export const EditBis: ButtonCommand = {
                             )
                             .replace('_', '');
 
-                        const bis = await editBisFromUser(
+                        const bis = await editBisSingle(
                             bis_name,
                             interaction.user.id,
-                            gearType
+                            gearType,
+                            interaction.guildId
                         );
 
                         if (!bis) {
