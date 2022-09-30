@@ -1,5 +1,5 @@
 import {ApplicationCommandType, ButtonInteraction, Client} from 'discord.js';
-import {deleteBisFromUser} from '../../database/actions/bestInSlot/deleteBisFromUser';
+import {deleteBisSingle} from '../../database/actions/bestInSlot/deleteBis';
 import {getGuildConfig} from '../../database/actions/guildConfig/getGuildConfig';
 import {errorHandler, handleInteractionError} from '../../handler';
 import {strings} from '../../locale/i18n';
@@ -37,12 +37,13 @@ export const DeleteBis: ButtonCommand = {
                 );
 
                 if (hasPermission) {
-                    deleteBisFromUser(
+                    deleteBisSingle(
                         interaction.customId.replace(
                             ButtonCommandNames.DELETE_BIS + '_',
                             ''
                         ),
-                        interaction.user.id
+                        interaction.user.id,
+                        interaction.guildId
                     );
                     await interaction.deleteReply();
                 } else {

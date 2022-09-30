@@ -4,7 +4,8 @@ import {
     Client,
     CommandInteraction
 } from 'discord.js';
-import {setMainBis} from '../../database/actions/bestInSlot/setMainBis';
+import {setMainBis} from '../../database/actions/bestInSlot/setBis';
+
 import {getGuildConfig} from '../../database/actions/guildConfig/getGuildConfig';
 
 import {
@@ -68,7 +69,8 @@ export const SetMainBis: Command = {
 
             const message = await setMainBis(
                 idOption.value.toString(),
-                interaction.user.id
+                interaction.user.id,
+                interaction.guildId
             );
 
             return interaction.followUp({

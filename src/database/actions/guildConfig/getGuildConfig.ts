@@ -9,9 +9,8 @@ const logger = Logger.child({module: 'getGuildConfig'});
 
 /**
  * @description get the GuildConfig on slash command /config get
- * @param guild_id
- * @param interaction
- * @returns
+ * @param guild_id from which server should the config be returned
+ * @returns Promise<GuildConfig | null>
  */
 export const getGuildConfig = async (
     guild_id: string

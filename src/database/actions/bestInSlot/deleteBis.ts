@@ -6,15 +6,20 @@ const logger = Logger.child({module: 'deleteBisFromUser'});
 
 /**
  * @description delete bis from user
- * @param bis_name string
- * @param user_Id string
+ * @param {string} bis_name bis should be deleted
+ * @param {string} user_Id for which user should be deleted
+ * @param {string} guild_id from which server should be deleted
  */
-export const deleteBisFromUser = async (bis_name: string, user_Id: string) => {
+export const deleteBisSingle = async (
+    bis_name: string,
+    user_Id: string,
+    guild_id: string
+) => {
     try {
         const query: QueryConfig = {
             name: 'delete-BisFromUser',
-            text: 'DELETE FROM bis WHERE bis_name=$1 AND user_id=$2;',
-            values: [bis_name, user_Id]
+            text: 'DELETE FROM bis WHERE bis_name=$1 AND user_id=$2 AND guild_id=$2;',
+            values: [bis_name, user_Id, guild_id]
         };
 
         const res = await runQuery(query);

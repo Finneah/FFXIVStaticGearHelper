@@ -1,0 +1,64 @@
+{
+    "tags": {
+        "allowUnknownTags": true
+    },
+    "source": {
+        "include": [
+            "./src/commands/",
+            "./src/commands/buttonCommands/",
+            "./src/commands/slashCommands/",
+            "./src/database/actions/bestInSlot/",
+            "./src/database/actions/deleteUser/",
+            "./src/database/actions/guildConfig/",
+            "./src/database/types/",
+            "./src/handler/errorHandler/",
+            "./src/handler/etroHandler/",
+            "./src/listeners/",
+            "./src/types/",
+            "./src/utils/",
+            "./src/main.ts"
+        ],
+        "includePattern": ".+\\.ts(doc|x)?$",
+        "excludePattern": ".+\\.(test|spec).ts"
+    },
+    "opts": {
+        "template": "node_modules/better-docs",
+        "readme": "readme.md"
+    },
+
+    "plugins": [
+        "plugins/markdown",
+        "node_modules/jsdoc-babel",
+        "node_modules/better-docs/category",
+        "node_modules/better-docs/component"
+    ],
+    "babel": {
+        "extensions": ["ts", "tsx"],
+        "ignore": ["**/*.(test|spec).ts"],
+        "babelrc": false,
+        "presets": [
+            ["@babel/preset-env", {"targets": {"node": true}}],
+            "@babel/preset-typescript"
+        ],
+        "plugins": ["@babel/proposal-object-rest-spread"]
+    },
+
+    "templates": {
+        "cleverLinks": false,
+        "monospaceLinks": false,
+        "search": true,
+        "better-docs": {
+            "name": "FFXIVStaticGearHelper",
+            "title": "FFXIVStaticGearHelper",
+            "dateFormat": "Do MMMM YYYY, h:mm a",
+            "footer": "created by Jennifer Schnaible https://github.com/Finneah",
+            "hideGenerator": false,
+            "navLinks": [
+                {
+                    "label": "Github",
+                    "href": "https://github.com/Finneah/FFXIVStaticGearHelper"
+                }
+            ]
+        }
+    }
+}

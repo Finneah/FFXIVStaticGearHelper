@@ -1,11 +1,7 @@
 import axios from 'axios';
 import {SubCommandNames} from '../../types';
 
-import {
-    Equipment,
-    EtroGearset,
-    Gearset
-} from '../../types/GearsetType/GearsetType';
+import {Equipment, EtroGearset, Gearset} from '../../types/GearsetType';
 import {errorHandler} from '../errorHandler/errorHandler';
 
 export const ETRO_API = 'https://etro.gg/api';

@@ -13,6 +13,7 @@ export default (client: Client): void => {
         initDB();
         if (NODE_ENV !== 'production') {
             registerGuildCommands(LOCAL_GUILD_ID);
+            registerGuildCommands('1004408026922487838');
         } else {
             await client.application.commands.set(Commands);
         }

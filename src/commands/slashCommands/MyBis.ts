@@ -8,12 +8,15 @@ import {
     Message
 } from 'discord.js';
 
-import {setBisMessageIdFromUser} from '../../database/actions/bestInSlot/editBisFromUser';
 import {
-    getAllBisByUser,
+    getAllBisByUserByGuild,
     getBisByUserByName
-} from '../../database/actions/bestInSlot/getBisFromUser';
-import {setBisForUser} from '../../database/actions/bestInSlot/setBisForUser';
+} from '../../database/actions/bestInSlot/getBis';
+import {
+    setBisForUser,
+    setBisMessageIdByUser
+} from '../../database/actions/bestInSlot/setBis';
+
 import {getGuildConfig} from '../../database/actions/guildConfig/getGuildConfig';
 
 import {BisLinksType} from '../../database/types/DataType';
@@ -39,8 +42,8 @@ const logger = Logger.child({module: 'BestInSlot'});
  * @description Slot Command BestInSlot,
  * get or set the users BiS in DB
  */
-export const BestInSlot: Command = {
-    name: CommandNames.BESTINSLOT,
+export const MyBis: Command = {
+    name: CommandNames.MYBIS,
     description: 'bisCommand.description',
     type: ApplicationCommandType.ChatInput,
     options: [
@@ -132,8 +135,9 @@ export const BestInSlot: Command = {
                 );
                 return;
             }
-            const allSavedBisFromUser = await getAllBisByUser(
-                interaction.user.id
+            const allSavedBisFromUser = await getAllBisByUserByGuild(
+                interaction.user.id,
+                interaction.guildId ?? ''
             );
 
             switch (subCommand?.name) {
@@ -200,6 +204,14 @@ const handleSetBis = async (
             );
         }
 
+        if (!interaction.guildId) {
+            return await handleInteractionError(
+                'ConfigCancel',
+                interaction,
+                strings('error.coruptInteraction')
+            );
+        }
+
         const exist =
             allSavedBisFromUser &&
             allSavedBisFromUser.find(
@@ -216,11 +228,14 @@ const handleSetBis = async (
             );
         }
 
-        const message = await setBisForUser({
-            user_id: interaction.user.id,
-            bis_link: link.toString(),
-            bis_name: name.toString()
-        });
+        const message = await setBisForUser(
+            {
+                user_id: interaction.user.id,
+                bis_link: link.toString(),
+                bis_name: name.toString()
+            },
+            interaction.guildId
+        );
 
         return interaction.followUp({
             ephemeral: true,
@@ -258,10 +273,19 @@ const handleGetBis = async (
                 })
             });
         }
+        if (!interaction.guildId) {
+            handleInteractionError(
+                'ConfigCancel',
+                interaction,
+                strings('error.coruptInteraction')
+            );
+            return;
+        }
 
         const bis: BisLinksType | null = await getBisByUserByName(
             interaction.user.id,
-            name.toString()
+            name.toString(),
+            interaction.guildId
         );
 
         if (bis?.bis_link) {
@@ -284,10 +308,11 @@ const handleGetBis = async (
                 bis,
                 hasPermission
             );
-            setBisMessageIdFromUser(
+            setBisMessageIdByUser(
                 name.toString(),
                 interaction.user.id,
-                message.id
+                message.id,
+                interaction.guildId
             );
 
             return message;

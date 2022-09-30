@@ -5,7 +5,7 @@ import {
     CommandInteraction,
     PermissionsBitField
 } from 'discord.js';
-import {deleteUser} from '../../database/actions/deleteUser/deleteAllFromUser';
+import {deleteUser} from '../../database/actions/deleteUser/deleteUser';
 
 import {
     errorHandler,
@@ -60,7 +60,10 @@ export const DeleteUser: Command = {
                 );
 
             if (hasPermission) {
-                const deleted = await deleteUser(idOption.value.toString());
+                const deleted = await deleteUser(
+                    idOption.value.toString(),
+                    interaction.guildId
+                );
                 if (deleted > 0) {
                     return await interaction.followUp({
                         ephemeral: true,

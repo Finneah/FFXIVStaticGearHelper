@@ -7,7 +7,7 @@ import {strings} from '../../locale/i18n';
 import {ButtonCommandNames, OptionNames} from '../../types';
 import {checkPermission} from '../../utils/permissions';
 import {ButtonCommand} from '../Command';
-import {setConfig} from '../slashCommands/ConfigureBotForGuild';
+import {setConfig} from '../slashCommands/Config';
 
 /**
  * @todo bis-channel

@@ -32,8 +32,8 @@ import {checkPermission} from '../../utils/permissions';
 
 import {Command} from '../Command';
 
-export const ConfigureBotForGuild: Command = {
-    name: CommandNames.CONFIGUREBOTFORGUILD,
+export const Config: Command = {
+    name: CommandNames.CONFIG,
     description: 'configCommand.description',
     type: ApplicationCommandType.ChatInput,
     options: [
@@ -306,16 +306,16 @@ const getConfigEmbed = (
                 value: '\u200B'
             },
             {
-                name: `/${CommandNames.BESTINSLOT} ${SubCommandNames.SET} :${OptionNames.LINK} :${OptionNames.NAME}`,
+                name: `/${CommandNames.MYBIS} ${SubCommandNames.SET} :${OptionNames.LINK} :${OptionNames.NAME}`,
                 value: `speicher dieses Gearset`
             },
 
             {
-                name: `/${CommandNames.BESTINSLOT} ${SubCommandNames.GET} :${OptionNames.NAME}`,
+                name: `/${CommandNames.MYBIS} ${SubCommandNames.GET} :${OptionNames.NAME}`,
                 value: `zeigt das gespeicherte Gearset.\nFührst du diesen Befehl ein weiteres Mal aus, so wird die alte Nachricht gelöscht. `
             },
             {
-                name: `/${CommandNames.BESTINSLOT} ${SubCommandNames.DELETE} :${OptionNames.NAME}`,
+                name: `/${CommandNames.MYBIS} ${SubCommandNames.DELETE} :${OptionNames.NAME}`,
                 value: `Lösche das gespeicherte Gearset`
             },
             {
@@ -335,11 +335,11 @@ const getConfigEmbed = (
                 value: '\u200B'
             },
             {
-                name: `/${CommandNames.CONFIGUREBOTFORGUILD} ${SubCommandNames.SET} :${OptionNames.MODERATOR_ROLE} :${OptionNames.STATIC_ROLE}`,
+                name: `/${CommandNames.CONFIG} ${SubCommandNames.SET} :${OptionNames.MODERATOR_ROLE} :${OptionNames.STATIC_ROLE}`,
                 value: `Setze eine Rolle für die ${OptionNames.MODERATOR_ROLE} und ${OptionNames.STATIC_ROLE}.`
             },
             {
-                name: `/${CommandNames.CONFIGUREBOTFORGUILD} :${SubCommandNames.GET}`,
+                name: `/${CommandNames.CONFIG} :${SubCommandNames.GET}`,
                 value: `Zeigt die Konfiguration an.`
             },
             {

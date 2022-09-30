@@ -10,17 +10,17 @@ const logger = Logger.child({module: 'getBis'});
 /**
  * @description get all bis from User for Autofill /bis get
  * @param userId
- * @param interaction
  * @returns BisLinksType[]
  */
-export const getAllBisByUser = async (
-    userId: string
+export const getAllBisByUserByGuild = async (
+    userId: string,
+    guildId: string
 ): Promise<BisLinksType[] | null> => {
     try {
         const query: QueryConfig = {
             name: 'get-BisByUser',
-            text: 'SELECT * FROM bis WHERE user_id=$1;',
-            values: [userId]
+            text: 'SELECT * FROM bis WHERE user_id=$1 AND guild_id=$2;',
+            values: [userId, guildId]
         };
 
         const res = await runQuery(query);
@@ -35,19 +35,21 @@ export const getAllBisByUser = async (
 
 /**
  * @description get specific bis from User on slash command /bis get
- * @param userId
- * @param interaction
+ * @param userId string
+ * @param bis_name string
+ * @param guild_id string
  * @returns BisLinksType[]
  */
 export const getBisByUserByName = async (
     userId: string,
-    bis_name: string
+    bis_name: string,
+    guild_id: string
 ): Promise<BisLinksType | null> => {
     try {
         const query: QueryConfig = {
             name: 'get-BisByUserByName',
-            text: 'SELECT * FROM bis WHERE user_id=$1 AND bis_name=$2;',
-            values: [userId, bis_name]
+            text: 'SELECT * FROM bis WHERE user_id=$1 AND bis_name=$2 AND guild_id=$3;',
+            values: [userId, bis_name, guild_id]
         };
 
         const res = await runQuery(query);
@@ -58,11 +60,19 @@ export const getBisByUserByName = async (
     }
 };
 
-export const getAllMainBis = async (): Promise<BisLinksType[] | null> => {
+/**
+ * @description get all Main bis for guild
+ * @param guild_id string
+ * @returns Promise<BisLinksType[] | null>
+ */
+export const getMainBisAll = async (
+    guild_id: string
+): Promise<BisLinksType[] | null> => {
     try {
         const query: QueryConfig = {
             name: 'get-AllMainBis',
-            text: 'SELECT * FROM bis WHERE is_main=true;'
+            text: 'SELECT * FROM bis WHERE is_main=true AND guild_id=$1;',
+            values: [guild_id]
         };
 
         const res = await runQuery(query);
@@ -76,14 +86,21 @@ export const getAllMainBis = async (): Promise<BisLinksType[] | null> => {
     }
 };
 
-export const getMainBisFromUser = async (
-    userId: string
+/**
+ * @description get MainBis from User
+ * @param userId string
+ * @param guild_id string
+ * @returns Promise<BisLinksType | null>
+ */
+export const getMainBisByUser = async (
+    userId: string,
+    guild_id: string
 ): Promise<BisLinksType | null> => {
     try {
         const query: QueryConfig = {
             name: 'get-MainBisFromUser',
-            text: 'SELECT * FROM bis  WHERE is_main=true AND user_id=$1',
-            values: [userId]
+            text: 'SELECT * FROM bis  WHERE is_main=true AND user_id=$1 AND guild_id=$2',
+            values: [userId, guild_id]
         };
 
         const res = await runQuery(query);

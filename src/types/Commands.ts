@@ -1,7 +1,7 @@
 export enum CommandNames {
-    BESTINSLOT = 'mybis',
-    SHOWETROBIS = 'show',
-    CONFIGUREBOTFORGUILD = 'config',
+    MYBIS = 'mybis',
+    ETRO = 'etro_show',
+    CONFIG = 'config',
     SETMAINBIS = 'set_mainbis',
     STATICOVERVIEW = 'static_overview',
     DELETE_USER = 'delete_user'
