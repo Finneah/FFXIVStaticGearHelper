@@ -11,7 +11,7 @@ export class ApiHandler {
             const id = link.replace('https://etro.gg/gearset/', '');
 
             return axios
-                .get(API_URL + `/gearset/${id}/`)
+                .get(API_URL + `/getgearset/${id}/`)
                 .then((response) => {
                     if (response.status === 200) {
                         return response.data;
