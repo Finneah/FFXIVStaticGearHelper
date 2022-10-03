@@ -1,17 +1,16 @@
 import {ApplicationCommandType, ButtonInteraction, Client} from 'discord.js';
-import {getMainBisByUser} from '../../database/actions/bestInSlot/getBis';
-import {setMainBisGearByUser} from '../../database/actions/bestInSlot/setBis';
+import {getMainBisByUser} from '../../api/database/actions/bestInSlot/getBis';
+import {setMainBisGearByUser} from '../../api/database/actions/bestInSlot/setBis';
 
-import {getGuildConfig} from '../../database/actions/guildConfig/getGuildConfig';
-import {errorHandler, getGearset, handleInteractionError} from '../../handler';
+import {dbGetGuildById} from '../../api/database/actions/guildConfig/getGuildConfig';
+import {errorHandler, handleInteractionError} from '../../handler';
 import {strings} from '../../locale/i18n';
 import Logger from '../../logger';
 
-import {ButtonCommandNames, SubCommandNames} from '../../types';
+import {ButtonCommandNames} from '../../types';
 import {checkPermission} from '../../utils/permissions';
 import {ButtonCommand} from '../Command';
 import {getEmbedStaticOverview} from '../getEmbedStaticOverview';
-import {getActionRowsForEditBis} from '../getGearsetEmbedCommand';
 const logger = Logger.child({module: 'EditBisOverview'});
 /**
  * @description Button Command EditBis,
@@ -31,7 +30,7 @@ export const EditBisOverview: ButtonCommand = {
                 return;
             }
 
-            const guildConfig = await getGuildConfig(interaction.guildId);
+            const guildConfig = await dbGetGuildById(interaction.guildId);
             const hasPermission = await checkPermission(
                 interaction,
                 interaction.guildId,
@@ -82,21 +81,19 @@ export const EditBisOverview: ButtonCommand = {
                         .fetch(bis.bis_message_id)
                         .then(async (message) => {
                             if (message) {
-                                const gearset = await getGearset(
-                                    SubCommandNames.BY_LINK,
-                                    bis.bis_link
-                                );
-
-                                if (gearset) {
-                                    const actionRows = getActionRowsForEditBis(
-                                        gearset,
-                                        bis
-                                    );
-
-                                    message.edit({
-                                        components: actionRows
-                                    });
-                                }
+                                // const gearset = await getGearset(
+                                //     SubCommandNames.BY_LINK,
+                                //     bis.bis_link
+                                // );
+                                // if (gearset) {
+                                //     const actionRows = getActionRowsForEditBis(
+                                //         gearset,
+                                //         bis
+                                //     );
+                                //     message.edit({
+                                //         components: actionRows
+                                //     });
+                                // }
                             }
                         })
                         .catch((error) =>

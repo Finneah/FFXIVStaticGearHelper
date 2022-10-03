@@ -1,9 +1,9 @@
 import {QueryConfig} from 'pg';
-import {errorHandler} from '../../../handler';
-import Logger from '../../../logger';
+import {errorHandler} from '../../../../handler';
+import Logger from '../../../../logger';
 
 import {runQuery} from '../../database';
-import {BisLinksType} from '../../types/DataType';
+import {DBBis} from '../../types/DBTypes';
 
 const logger = Logger.child({module: 'getBis'});
 
@@ -15,7 +15,7 @@ const logger = Logger.child({module: 'getBis'});
 export const getAllBisByUserByGuild = async (
     userId: string,
     guildId: string
-): Promise<BisLinksType[] | null> => {
+): Promise<DBBis[] | null> => {
     try {
         const query: QueryConfig = {
             name: 'get-BisByUser',
@@ -44,7 +44,7 @@ export const getBisByUserByName = async (
     userId: string,
     bis_name: string,
     guild_id: string
-): Promise<BisLinksType | null> => {
+): Promise<DBBis | null> => {
     try {
         const query: QueryConfig = {
             name: 'get-BisByUserByName',
@@ -67,7 +67,7 @@ export const getBisByUserByName = async (
  */
 export const getMainBisAll = async (
     guild_id: string
-): Promise<BisLinksType[] | null> => {
+): Promise<DBBis[] | null> => {
     try {
         const query: QueryConfig = {
             name: 'get-AllMainBis',
@@ -95,7 +95,7 @@ export const getMainBisAll = async (
 export const getMainBisByUser = async (
     userId: string,
     guild_id: string
-): Promise<BisLinksType | null> => {
+): Promise<DBBis | null> => {
     try {
         const query: QueryConfig = {
             name: 'get-MainBisFromUser',

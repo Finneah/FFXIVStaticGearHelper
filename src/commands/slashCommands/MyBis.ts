@@ -8,22 +8,17 @@ import {
     Message
 } from 'discord.js';
 
-import {
-    getAllBisByUserByGuild,
-    getBisByUserByName
-} from '../../database/actions/bestInSlot/getBis';
-import {
-    setBisForUser,
-    setBisMessageIdByUser
-} from '../../database/actions/bestInSlot/setBis';
+import {getAllBisByUserByGuild} from '../../api/database/actions/bestInSlot/getBis';
 
-import {getGuildConfig} from '../../database/actions/guildConfig/getGuildConfig';
-
-import {BisLinksType} from '../../database/types/DataType';
+import {DBBis} from '../../api/database/types/DBTypes';
 
 import {errorHandler, handleInteractionError} from '../../handler';
+
 import {strings} from '../../locale/i18n';
 import Logger from '../../logger';
+import {guildsSelectors} from '../../redux/guilds/guilds.adapter';
+import {SGHGuild} from '../../redux/guilds/guilds.types';
+import {store} from '../../redux/store';
 
 import {
     ButtonCommandNames,
@@ -34,7 +29,6 @@ import {
 import {checkPermission} from '../../utils/permissions';
 
 import {Command} from '../Command';
-import {getGearsetEmbedCommand} from '../getGearsetEmbedCommand';
 
 const logger = Logger.child({module: 'BestInSlot'});
 
@@ -112,14 +106,16 @@ export const MyBis: Command = {
                 return;
             }
 
+            const state = store.getState();
+            const guildConfig: SGHGuild | undefined =
+                guildsSelectors.selectById(state, interaction.guildId)?.data;
+
             const subCommand = interaction.options.data.find(
                 (option) =>
                     option.name === SubCommandNames.SET ||
                     option.name === SubCommandNames.GET ||
                     option.name === SubCommandNames.DELETE
             );
-
-            const guildConfig = await getGuildConfig(interaction.guildId);
 
             const hasPermissions = await checkPermission(
                 interaction,
@@ -181,7 +177,7 @@ export const MyBis: Command = {
 const handleSetBis = async (
     interaction: CommandInteraction<CacheType>,
     subCommand: CommandInteractionOption<CacheType>,
-    allSavedBisFromUser: BisLinksType[] | null
+    allSavedBisFromUser: DBBis[] | null
 ): Promise<Message<boolean>> => {
     try {
         const link = subCommand.options?.find(
@@ -227,19 +223,19 @@ const handleSetBis = async (
                 })
             );
         }
-
-        const message = await setBisForUser(
-            {
-                user_id: interaction.user.id,
-                bis_link: link.toString(),
-                bis_name: name.toString()
-            },
-            interaction.guildId
-        );
+        // saveBis(link.toString(), name.toString());
+        // const message = await setBisForUser(
+        //     {
+        //         user_id: interaction.user.id,
+        //         bis_link: link.toString(),
+        //         bis_name: name.toString()
+        //     },
+        //     interaction.guildId
+        // );
 
         return interaction.followUp({
             ephemeral: true,
-            content: message
+            content: 'done'
         });
     } catch (error) {
         return interaction.followUp({
@@ -282,41 +278,40 @@ const handleGetBis = async (
             return;
         }
 
-        const bis: BisLinksType | null = await getBisByUserByName(
-            interaction.user.id,
-            name.toString(),
-            interaction.guildId
-        );
+        // const bis: SGHEquipment | null = await getBisByUserByName(
+        //     interaction.user.id,
+        //     name.toString(),
+        //     interaction.guildId
+        // );
+        // if (bis?.bisLink) {
+        //     if (bis?.bis_message_id) {
+        //         await interaction.channel?.messages
+        //             .fetch(bis.bis_message_id)
+        //             .then(async (message) => {
+        //                 if (message) {
+        //                     message.delete();
+        //                 }
+        //             })
+        //             .catch((error) =>
+        //                 logger.info('No message found' + error.message)
+        //             );
+        //     }
+        //     const message = await getGearsetEmbedCommand(
+        //         SubCommandNames.BY_LINK,
+        //         'bis.bis_link',
+        //         interaction,
+        //         bis,
+        //         hasPermission
+        //     );
+        //     setBisMessageIdByUser(
+        //         name.toString(),
+        //         interaction.user.id,
+        //         message.id,
+        //         interaction.guildId
+        //     );
 
-        if (bis?.bis_link) {
-            if (bis?.bis_message_id) {
-                await interaction.channel?.messages
-                    .fetch(bis.bis_message_id)
-                    .then(async (message) => {
-                        if (message) {
-                            message.delete();
-                        }
-                    })
-                    .catch((error) =>
-                        logger.info('No message found' + error.message)
-                    );
-            }
-            const message = await getGearsetEmbedCommand(
-                SubCommandNames.BY_LINK,
-                bis.bis_link,
-                interaction,
-                bis,
-                hasPermission
-            );
-            setBisMessageIdByUser(
-                name.toString(),
-                interaction.user.id,
-                message.id,
-                interaction.guildId
-            );
-
-            return message;
-        }
+        //     return message;
+        // }
 
         return interaction.followUp({
             ephemeral: true,

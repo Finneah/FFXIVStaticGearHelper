@@ -1,5 +1,4 @@
 import {ApplicationCommandType, Client, CommandInteraction} from 'discord.js';
-import {getGuildConfig} from '../../database/actions/guildConfig/getGuildConfig';
 
 import {
     errorHandler,
@@ -20,16 +19,6 @@ export const Test: Command = {
                     'SetMainBis',
                     interaction,
                     strings('error.coruptInteraction')
-                );
-                return;
-            }
-
-            const guildConfig = await getGuildConfig(interaction.guildId);
-            if (!guildConfig?.static_role) {
-                handleInteractionError(
-                    'SetMainBis',
-                    interaction,
-                    strings('error.noConfig')
                 );
                 return;
             }

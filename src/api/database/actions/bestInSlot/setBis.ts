@@ -1,11 +1,11 @@
 import {QueryConfig} from 'pg';
-import {errorHandler} from '../../../handler';
-import Logger from '../../../logger';
-import {CommandNames, SubCommandNames, OptionNames} from '../../../types';
+import {errorHandler} from '../../../../handler';
+import Logger from '../../../../logger';
+import {CommandNames, SubCommandNames, OptionNames} from '../../../../types';
 
 import {runQuery} from '../../database';
 
-import {BisLinksType} from '../../types/DataType';
+import {DBBis} from '../../types/DBTypes';
 
 const logger = Logger.child({module: 'setBisForUser'});
 
@@ -16,22 +16,22 @@ const logger = Logger.child({module: 'setBisForUser'});
  * @returns Promise<string>
  */
 export const setBisForUser = async (
-    bisLinkData: BisLinksType,
+    bisLinkData: DBBis,
     guild_id: string
 ): Promise<string> => {
     try {
-        const query: QueryConfig = {
+        const setBis: QueryConfig = {
             name: 'set-BisForUser',
-            text: 'INSERT INTO bis(user_id, bis_name,bis_link,guild_id) VALUES($1, $2, $3,$4);',
+            text: 'INSERT INTO bis(user_id, bis_name,guild_id) VALUES($1, $2, $3,$4);',
             values: [
                 bisLinkData.user_id,
                 bisLinkData.bis_name,
-                bisLinkData.bis_link,
+                // bisLinkData.bis_link,
                 guild_id
             ]
         };
 
-        const res = await runQuery(query);
+        const res = await runQuery(setBis);
         logger.info(`set-BisForUser ${JSON.stringify(res)}`);
         return `BiS ${bisLinkData.bis_name} Gespeichert. Schau es dir mit \`/${CommandNames.MYBIS} ${SubCommandNames.GET} :${OptionNames.NAME}\` gleich an`;
     } catch (error) {
@@ -90,7 +90,7 @@ export const setMainBisGearByUser = async (
     userId: string,
     gearType: string,
     guild_id: string
-): Promise<BisLinksType | null> => {
+): Promise<DBBis | null> => {
     try {
         const query: QueryConfig = {
             name: 'set-MainBisGearByUser',

@@ -1,22 +1,15 @@
-export type Materia = {
-    type: string;
-    name: string;
-    value: number;
-};
-export type MateriaType = {
-    '1': Materia;
-    '2': Materia;
-    '3'?: Materia;
-    '4'?: Materia;
-    '5'?: Materia;
-    '6'?: Materia;
-};
+import {BaseGearset} from '../model/Gearset';
+import {SGHMateria} from '../redux/guilds/guilds.types';
 
-export interface BaseGearset {
-    id: string;
-    jobAbbrev: string;
-    name: string;
-}
+export type MateriaType = {
+    '1': SGHMateria;
+    '2': SGHMateria;
+    '3'?: SGHMateria;
+    '4'?: SGHMateria;
+    '5'?: SGHMateria;
+    '6'?: SGHMateria;
+};
+export type EtroGearsetMateria = {[key: string]: number};
 export interface EtroGearset extends BaseGearset {
     weapon: number;
     offHand: number | null;
@@ -31,30 +24,46 @@ export interface EtroGearset extends BaseGearset {
     fingerL: number;
     fingerR: number;
     food: number;
-    materia: {[key: string]: number};
+    materia: EtroGearsetMateria;
 }
+
+export type EtroMateriaTier = {
+    [key: string]: {id: number; name: string}; //| string | number;
+};
+export interface EtroMateriaList {
+    id: number;
+    paramName: string;
+}
+
+export type EtroFood = {
+    id: number;
+    name: string;
+    iconPath: string;
+};
 
 export type Gearset = {
     id: string;
+    lastUpdate: string;
+    bisLink: string;
     jobAbbrev: string;
     name: string;
-    weapon?: Equipment;
-    head?: Equipment;
-    body?: Equipment;
-    hands?: Equipment;
-    legs?: Equipment;
-    feet?: Equipment;
-    offHand?: Equipment | null;
-    ears?: Equipment;
-    neck?: Equipment;
-    wrists?: Equipment;
-    fingerL?: Equipment;
-    fingerR?: Equipment;
+    weapon?: EtroEquipment;
+    head?: EtroEquipment;
+    body?: EtroEquipment;
+    hands?: EtroEquipment;
+    legs?: EtroEquipment;
+    feet?: EtroEquipment;
+    offHand?: EtroEquipment | null;
+    ears?: EtroEquipment;
+    neck?: EtroEquipment;
+    wrists?: EtroEquipment;
+    fingerL?: EtroEquipment;
+    fingerR?: EtroEquipment;
     food: {name: string; iconPath: string};
     materia: {[key: string]: MateriaType};
 };
 
-export type Equipment = {
+export type EtroEquipment = {
     id: number;
     name: string;
     materiaSlotCount: number;

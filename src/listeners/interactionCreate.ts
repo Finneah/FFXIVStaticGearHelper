@@ -9,7 +9,7 @@ import {
 
 import {ButtonCommand} from '../commands/Command';
 import {ButtonCommands, Commands} from '../commands/Commands';
-import {getAllBisByUserByGuild} from '../database/actions/bestInSlot/getBis';
+import {getAllBisByUserByGuild} from '../api/database/actions/bestInSlot/getBis';
 import Logger from '../logger';
 import {ButtonCommandNames, CommandNames} from '../types';
 const logger = Logger.child({module: 'interactionCreate'});

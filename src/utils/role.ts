@@ -30,3 +30,7 @@ export const getRoleColorByJob = (jobAbbrev: string) => {
             return '#808080';
     }
 };
+
+export const transformedRole = (role: string): string => {
+    return role?.replace('<@&', '').replace('>', '');
+};

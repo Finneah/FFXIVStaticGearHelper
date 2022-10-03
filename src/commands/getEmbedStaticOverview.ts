@@ -9,22 +9,18 @@ import {
     Colors,
     EmbedField
 } from 'discord.js';
-import {getMainBisAll} from '../database/actions/bestInSlot/getBis';
+import {getMainBisAll} from '../api/database/actions/bestInSlot/getBis';
 
-import {BisLinksType, GearTypes, GuildConfig} from '../database/types/DataType';
-import {
-    errorHandler,
-    getGearsetWithEquipment,
-    handleInteractionError
-} from '../handler';
+import {DBBis, SlotNames, DBGuild} from '../api/database/types/DBTypes';
+import {errorHandler, handleInteractionError} from '../handler';
 import {strings} from '../locale/i18n';
 import logger from '../logger';
-import {Gearset, SubCommandNames} from '../types';
+import {EtroGearset} from '../types';
 
 export const getEmbedStaticOverview = async (
     client: Client,
     interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType>,
-    guildConfig: GuildConfig
+    guildConfig: DBGuild
 ): Promise<EmbedBuilder> => {
     const avatar = await interaction.user.avatarURL();
     const userIds = await getUserIds(client, interaction, guildConfig);
@@ -82,7 +78,7 @@ export const getEmbedStaticOverview = async (
 const getUserIds = async (
     client: Client,
     interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType>,
-    guildConfig: GuildConfig
+    guildConfig: DBGuild
 ) => {
     if (!interaction.guild || !interaction.guildId) {
         handleInteractionError(
@@ -138,7 +134,7 @@ const getMemberFields = async (
                         filteredMainBis.gearset.offHand !== null;
 
                     if (filteredMainBis.gearset) {
-                        const keys = Object.values(GearTypes);
+                        const keys = Object.values(SlotNames);
                         for (let i = 0; i < keys.length; i++) {
                             const key = keys[i];
                             const fieldDoesExist = fields.find(
@@ -147,7 +143,7 @@ const getMemberFields = async (
 
                             if (!fieldDoesExist) {
                                 logger.debug('HERE !fieldDoesExist');
-                                if (key === GearTypes.OFFHAND && withOffHand) {
+                                if (key === SlotNames.OFFHAND && withOffHand) {
                                     fields.push({
                                         name: strings(key),
                                         value: '\u200b',
@@ -162,56 +158,56 @@ const getMemberFields = async (
                                 }
                             }
 
-                            if (!filteredMainBis.filteredMainBis[key]) {
-                                logger.debug('HERE');
-                                // user doesnt have the weapon allready
-                                switch (key) {
-                                    case GearTypes.FINGER_L:
-                                        addUserAndBisNameToFieldValue(
-                                            fields,
-                                            key,
-                                            filteredMainBis.filteredMainBis
-                                                .user_id,
-                                            filteredMainBis.gearset.fingerL
-                                                ?.name
-                                        );
-                                        break;
-                                    case GearTypes.FINGER_R:
-                                        addUserAndBisNameToFieldValue(
-                                            fields,
-                                            key,
-                                            filteredMainBis.filteredMainBis
-                                                .user_id,
-                                            filteredMainBis.gearset.fingerR
-                                                ?.name
-                                        );
-                                        break;
-                                    case GearTypes.OFFHAND:
-                                        if (withOffHand) {
-                                            addUserAndBisNameToFieldValue(
-                                                fields,
-                                                key,
-                                                filteredMainBis.filteredMainBis
-                                                    .user_id,
-                                                filteredMainBis.gearset.offHand
-                                                    ?.name
-                                            );
-                                        }
+                            // if (!filteredMainBis.filteredMainBis[key]) {
+                            //     logger.debug('HERE');
+                            //     // user doesnt have the weapon allready
+                            //     switch (key) {
+                            //         case SlotNames.FINGER_L:
+                            //             // addUserAndBisNameToFieldValue(
+                            //             //     fields,
+                            //             //     key,
+                            //             //     filteredMainBis.filteredMainBis
+                            //             //         .user_id,
+                            //             //     filteredMainBis.gearset.fingerL
+                            //             //         ?.name
+                            //             // );
+                            //             break;
+                            //         case SlotNames.FINGER_R:
+                            //             // addUserAndBisNameToFieldValue(
+                            //             //     fields,
+                            //             //     key,
+                            //             //     filteredMainBis.filteredMainBis
+                            //             //         .user_id,
+                            //             //     filteredMainBis.gearset.fingerR
+                            //             //         ?.name
+                            //             // );
+                            //             break;
+                            //         case SlotNames.OFFHAND:
+                            //             if (withOffHand) {
+                            //                 // addUserAndBisNameToFieldValue(
+                            //                 //     fields,
+                            //                 //     key,
+                            //                 //     filteredMainBis.filteredMainBis
+                            //                 //         .user_id,
+                            //                 //     filteredMainBis.gearset.offHand
+                            //                 //         ?.name
+                            //                 // );
+                            //             }
 
-                                        break;
+                            //             break;
 
-                                    default:
-                                        logger.debug('HERE');
-                                        addUserAndBisNameToFieldValue(
-                                            fields,
-                                            key,
-                                            filteredMainBis.filteredMainBis
-                                                .user_id,
-                                            filteredMainBis.gearset[key]?.name
-                                        );
-                                        break;
-                                }
-                            }
+                            //         default:
+
+                            //             // addUserAndBisNameToFieldValue(
+                            //             //     fields,
+                            //             //     key,
+                            //             //     filteredMainBis.filteredMainBis
+                            //             //         .user_id,
+                            //             //     filteredMainBis.gearset[key]?.name
+                            //             // );
+                            //             break;
+                            //     }
+                            // }
                         }
                     }
                 });
@@ -230,30 +226,29 @@ const getMemberFields = async (
 };
 
 const getAllFilteredMainBis = async (
-    allMainBis: BisLinksType[],
+    allMainBis: DBBis[],
     userIds: string[]
-): Promise<{filteredMainBis: BisLinksType; gearset: Gearset}[]> => {
+): Promise<{filteredMainBis: DBBis; gearset: EtroGearset}[]> => {
     const allFilteredMainBis = allMainBis.filter((mainBis) =>
         userIds.includes(mainBis.user_id)
     );
     const allFilteredMainBisWithGearSets: {
-        filteredMainBis: BisLinksType;
-        gearset: Gearset;
+        filteredMainBis: DBBis;
+        gearset: EtroGearset;
     }[] = [];
 
-    for (const filteredMainBis of allFilteredMainBis) {
-        if (filteredMainBis.bis_link) {
-        }
-        const gearset = await getGearsetWithEquipment(
-            SubCommandNames.BY_LINK,
-            filteredMainBis.bis_link
-        );
-
-        allFilteredMainBisWithGearSets.push({
-            filteredMainBis,
-            gearset
-        });
-    }
+    // for (const filteredMainBis of allFilteredMainBis) {
+    //     const gearset = await getGearsetWithEquipment(
+    //         SubCommandNames.BY_LINK,
+    //         filteredMainBis.bis_link
+    //     );
+    //     if (gearset) {
+    //         allFilteredMainBisWithGearSets.push({
+    //             filteredMainBis,
+    //             gearset
+    //         });
+    //     }
+    // }
 
     return allFilteredMainBisWithGearSets;
 };

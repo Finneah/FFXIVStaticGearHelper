@@ -1,6 +1,6 @@
 import {ApplicationCommandType, ButtonInteraction, Client} from 'discord.js';
-import {deleteBisSingle} from '../../database/actions/bestInSlot/deleteBis';
-import {getGuildConfig} from '../../database/actions/guildConfig/getGuildConfig';
+import {deleteBisSingle} from '../../api/database/actions/bestInSlot/deleteBis';
+import {dbGetGuildById} from '../../api/database/actions/guildConfig/getGuildConfig';
 import {errorHandler, handleInteractionError} from '../../handler';
 import {strings} from '../../locale/i18n';
 
@@ -29,7 +29,7 @@ export const DeleteBis: ButtonCommand = {
             if (
                 interaction.user.id === interaction.message.interaction?.user.id
             ) {
-                const guildConfig = await getGuildConfig(interaction.guildId);
+                const guildConfig = await dbGetGuildById(interaction.guildId);
                 const hasPermission = await checkPermission(
                     interaction,
                     interaction.guildId,

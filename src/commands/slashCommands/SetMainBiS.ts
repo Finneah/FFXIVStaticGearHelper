@@ -4,9 +4,9 @@ import {
     Client,
     CommandInteraction
 } from 'discord.js';
-import {setMainBis} from '../../database/actions/bestInSlot/setBis';
+import {setMainBis} from '../../api/database/actions/bestInSlot/setBis';
 
-import {getGuildConfig} from '../../database/actions/guildConfig/getGuildConfig';
+import {dbGetGuildById} from '../../api/database/actions/guildConfig/getGuildConfig';
 
 import {
     errorHandler,
@@ -50,7 +50,7 @@ export const SetMainBis: Command = {
                 return;
             }
 
-            const guildConfig = await getGuildConfig(interaction.guildId);
+            const guildConfig = await dbGetGuildById(interaction.guildId);
 
             const hasPermissions = await checkPermission(
                 interaction,

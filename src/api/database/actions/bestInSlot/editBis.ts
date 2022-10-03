@@ -1,9 +1,9 @@
-import {BisLinksType, GearTypes} from '../../types/DataType';
-import Logger from '../../../logger';
+import {DBBis, SlotNames} from '../../types/DBTypes';
+import Logger from '../../../../logger';
 import {getBisByUserByName} from './getBis';
 import {QueryConfig} from 'pg';
 import {runQuery} from '../../database';
-import {errorHandler} from '../../../handler';
+import {errorHandler} from '../../../../handler';
 
 const logger = Logger.child({module: 'editBisFromUser'});
 
@@ -18,14 +18,14 @@ const logger = Logger.child({module: 'editBisFromUser'});
 export const editBisSingle = async (
     bis_name: string,
     user_Id: string,
-    gearType: GearTypes,
+    gearType: SlotNames,
     guild_id: string
-): Promise<BisLinksType | null> => {
+): Promise<DBBis | null> => {
     try {
         const bis = await getBisByUserByName(user_Id, bis_name, guild_id);
 
         if (bis) {
-            const looted = bis[gearType] === true ? false : true;
+            const looted = true; // bis[gearType] === true ? false : true;
 
             const query: QueryConfig = {
                 name: 'edit-BisFromUser',

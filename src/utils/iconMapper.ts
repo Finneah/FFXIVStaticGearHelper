@@ -1,18 +1,25 @@
-import {getEtroJobList} from '../handler/etroHandler/etroHandler';
+import {store} from '../redux/store';
 
 export const getJobIconUrl = async (
     jobAbbrev: string
 ): Promise<string | null> => {
-    const jobs = await getEtroJobList();
+    const state = store.getState();
+    const jobs = state.jobs.data;
+
+    if (!jobs) {
+        return null;
+    }
     const url = 'https://xivapi.com/cj/1/';
     const job = jobs.find(
         (job: {abbrev: string; name: string}) => job.abbrev === jobAbbrev
     );
+
     if (job) {
         return (
             url + job.name.toString().replaceAll(' ', '').toLowerCase() + '.png'
         );
     }
+
     return null;
 };
 

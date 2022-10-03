@@ -5,9 +5,10 @@ import {
     Client,
     CommandInteraction
 } from 'discord.js';
-import {setGuildMessageId} from '../../database';
-import {getGuildConfig} from '../../database/actions/guildConfig/getGuildConfig';
-import {GearTypes} from '../../database/types/DataType';
+
+import {dbGetGuildById} from '../../api/database/actions/guildConfig/getGuildConfig';
+import {dbUpdateGuildMessageId} from '../../api/database/actions/guildConfig/updateGuildConfig';
+import {SlotNames} from '../../api/database/types/DBTypes';
 
 import {
     errorHandler,
@@ -37,7 +38,7 @@ export const StaticOverview: Command = {
                 return;
             }
 
-            const guildConfig = await getGuildConfig(interaction.guildId);
+            const guildConfig = await dbGetGuildById(interaction.guildId);
             if (!guildConfig?.static_role) {
                 handleInteractionError(
                     'SetMainBis',
@@ -73,7 +74,7 @@ export const StaticOverview: Command = {
                 embeds: [embed]
             });
 
-            setGuildMessageId(message.id, guildConfig.guild_id);
+            dbUpdateGuildMessageId(message.id, guildConfig.discord_guild_id);
             return message;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error) {
@@ -84,7 +85,7 @@ export const StaticOverview: Command = {
 
 const getActionRows = (): ActionRowBuilder<ButtonBuilder>[] => {
     const gearArray: {slotName: string}[] = [];
-    const geartypes = Object.values(GearTypes);
+    const geartypes = Object.values(SlotNames);
 
     for (let i = 0; i < geartypes.length; i++) {
         const gear = geartypes[i];

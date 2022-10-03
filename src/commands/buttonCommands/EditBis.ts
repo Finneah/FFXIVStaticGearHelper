@@ -1,16 +1,19 @@
 import {ApplicationCommandType, ButtonInteraction, Client} from 'discord.js';
-import {editBisSingle} from '../../database/actions/bestInSlot/editBis';
-import {getGuildConfig} from '../../database/actions/guildConfig/getGuildConfig';
-import {GearTypes} from '../../database/types/DataType';
-import {getGearset, errorHandler, handleInteractionError} from '../../handler';
+import {editBisSingle} from '../../api/database/actions/bestInSlot/editBis';
+import {dbGetGuildById} from '../../api/database/actions/guildConfig/getGuildConfig';
+import {SlotNames} from '../../api/database/types/DBTypes';
+import {ApiHandler} from '../../api/dataHandler';
+import {errorHandler, handleInteractionError} from '../../handler';
 import {strings} from '../../locale/i18n';
 import Logger from '../../logger';
 
-import {ButtonCommandNames, SubCommandNames} from '../../types';
+import {ButtonCommandNames} from '../../types';
 import {checkPermission} from '../../utils/permissions';
 import {ButtonCommand} from '../Command';
 import {getEmbedStaticOverview} from '../getEmbedStaticOverview';
 import {getActionRowsForEditBis} from '../getGearsetEmbedCommand';
+
+const apiHandler = new ApiHandler();
 
 const logger = Logger.child({module: 'EditBis'});
 /**
@@ -34,7 +37,7 @@ export const EditBis: ButtonCommand = {
             if (
                 interaction.user.id === interaction.message.interaction?.user.id
             ) {
-                const guildConfig = await getGuildConfig(interaction.guildId);
+                const guildConfig = await dbGetGuildById(interaction.guildId);
                 const hasPermission = await checkPermission(
                     interaction,
                     interaction.guildId,
@@ -43,8 +46,7 @@ export const EditBis: ButtonCommand = {
 
                 // if user = user embed
                 if (hasPermission && interaction.message.embeds[0].url) {
-                    const gearset = await getGearset(
-                        SubCommandNames.BY_LINK,
+                    const gearset = await apiHandler.getGearset(
                         interaction.message.embeds[0].url
                     );
                     if (gearset) {
@@ -54,7 +56,7 @@ export const EditBis: ButtonCommand = {
                         const gearType = customId.substring(
                             0,
                             customId.lastIndexOf('_')
-                        ) as GearTypes;
+                        ) as SlotNames;
 
                         const bis_name = customId
                             .substring(

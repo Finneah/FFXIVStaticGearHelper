@@ -1,5 +1,5 @@
 import {ApplicationCommandType, ButtonInteraction, Client} from 'discord.js';
-import {getGuildConfig} from '../../database/actions/guildConfig/getGuildConfig';
+import {dbGetGuildById} from '../../api/database/actions/guildConfig/getGuildConfig';
 
 import {errorHandler, handleInteractionError} from '../../handler';
 import {strings} from '../../locale/i18n';
@@ -27,7 +27,7 @@ export const ConfigOverride: ButtonCommand = {
                 );
                 return;
             }
-            const guildConfig = await getGuildConfig(interaction.guildId);
+            const guildConfig = await dbGetGuildById(interaction.guildId);
             const hasPermission = await checkPermission(
                 interaction,
                 interaction.guildId,

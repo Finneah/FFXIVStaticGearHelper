@@ -5,7 +5,7 @@ import {
     CommandInteraction,
     PermissionsBitField
 } from 'discord.js';
-import {deleteUser} from '../../database/actions/deleteUser/deleteUser';
+import {deleteUser} from '../../api/database/actions/deleteUser/deleteUser';
 
 import {
     errorHandler,

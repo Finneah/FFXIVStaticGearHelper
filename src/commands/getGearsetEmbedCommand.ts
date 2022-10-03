@@ -11,43 +11,30 @@ import {
     ButtonInteraction,
     Message
 } from 'discord.js';
-import {BisLinksType} from '../database/types/DataType';
-import {errorHandler, getGearset, handleInteractionError} from '../handler';
+import {DBBis} from '../api/database/types/DBTypes';
+import {ApiHandler} from '../api/dataHandler';
+import {errorHandler, handleInteractionError} from '../handler';
 import {strings} from '../locale/i18n';
+import {SGHEquipment, SGHGearset} from '../redux/guilds/guilds.types';
 
-import {
-    ButtonCommandNames,
-    Equipment,
-    Gearset,
-    MateriaType,
-    SubCommandNames
-} from '../types';
+import {ButtonCommandNames} from '../types';
 import {getIconBySlotName, getJobIconUrl, getRoleColorByJob} from '../utils';
+const api = new ApiHandler();
 
-/**
- * @description get the gearset embed content
- * @param by
- * @param value
- * @param interaction
- * @param bis
- * @param hasPermission
- * @returns Promise<Message<boolean>>
- */
 export const getGearsetEmbedCommand = async (
-    by: SubCommandNames.BY_LINK | SubCommandNames.BY_ID,
-    value: string,
+    link: string,
     interaction: CommandInteraction<CacheType>,
-    bis?: BisLinksType,
+    bis?: DBBis,
     hasPermission?: boolean
 ): Promise<Message<boolean>> => {
     try {
-        const gearset = await getGearset(by, value);
+        const gearset = await api.getGearset(link);
 
         if (!gearset) {
             return handleInteractionError(
                 'getGearsetEmbedCommand',
                 interaction,
-                strings('error.coruptInteraction')
+                'Ich habe das Gearset auf Etro nicht gefunden.'
             );
         }
 
@@ -81,7 +68,7 @@ export const getGearsetEmbedCommand = async (
  * @returns  Promise<EmbedBuilder>
  */
 export const getEmbedBis = async (
-    gearset: Gearset,
+    gearset: SGHGearset,
     interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType>
 ): Promise<EmbedBuilder> => {
     const avatar = await interaction.user.avatarURL();
@@ -109,12 +96,14 @@ export const getEmbedBis = async (
                 inline: false
             },
             ...equipmentFields
-        ],
-        footer: {
+        ]
+    };
+    if (gearset.food) {
+        embedData.footer = {
             text: `${gearset.food.name}`,
             icon_url: 'https://etro.gg/s/icons' + gearset.food.iconPath
-        }
-    };
+        };
+    }
     return new EmbedBuilder(embedData);
 };
 
@@ -123,14 +112,14 @@ export const getEmbedBis = async (
  * @param gearset
  * @returns EmbedField[]
  */
-const getEquipmentFields = (gearset: Gearset): EmbedField[] => {
+const getEquipmentFields = (gearset: SGHGearset): EmbedField[] => {
     const fields: EmbedField[] = [];
     try {
         if (gearset.weapon) {
             if (gearset.offHand && typeof gearset.offHand === 'object') {
                 fields.push(
-                    getFieldForEquip(gearset.weapon, gearset.materia),
-                    getFieldForEquip(gearset.offHand, gearset.materia),
+                    getFieldForEquip(gearset.weapon),
+                    getFieldForEquip(gearset.offHand),
                     {
                         name: '\u200b',
                         value: '\u200b',
@@ -138,14 +127,11 @@ const getEquipmentFields = (gearset: Gearset): EmbedField[] => {
                     }
                 );
             } else {
-                fields.push(
-                    getFieldForEquip(gearset.weapon, gearset.materia, false),
-                    {
-                        name: '\u200b',
-                        value: '\u200b',
-                        inline: false
-                    }
-                );
+                fields.push(getFieldForEquip(gearset.weapon, false), {
+                    name: '\u200b',
+                    value: '\u200b',
+                    inline: false
+                });
             }
         }
 
@@ -162,36 +148,36 @@ const getEquipmentFields = (gearset: Gearset): EmbedField[] => {
             gearset.fingerR
         ) {
             fields.push(
-                getFieldForEquip(gearset.head, gearset.materia),
-                getFieldForEquip(gearset.body, gearset.materia),
+                getFieldForEquip(gearset.head),
+                getFieldForEquip(gearset.body),
                 {
                     name: '\u200b',
                     value: '\u200b',
                     inline: false
                 },
-                getFieldForEquip(gearset.hands, gearset.materia),
-                getFieldForEquip(gearset.legs, gearset.materia),
+                getFieldForEquip(gearset.hands),
+                getFieldForEquip(gearset.legs),
                 {
                     name: '\u200b',
                     value: '\u200b',
                     inline: false
                 },
-                getFieldForEquip(gearset.feet, gearset.materia),
-                getFieldForEquip(gearset.ears, gearset.materia),
+                getFieldForEquip(gearset.feet),
+                getFieldForEquip(gearset.ears),
                 {
                     name: '\u200b',
                     value: '\u200b',
                     inline: false
                 },
-                getFieldForEquip(gearset.neck, gearset.materia),
-                getFieldForEquip(gearset.wrists, gearset.materia),
+                getFieldForEquip(gearset.neck),
+                getFieldForEquip(gearset.wrists),
                 {
                     name: '\u200b',
                     value: '\u200b',
                     inline: false
                 },
-                getFieldForEquip(gearset.fingerL, gearset.materia, true, '_l'),
-                getFieldForEquip(gearset.fingerR, gearset.materia, true, '_r'),
+                getFieldForEquip(gearset.fingerL, true),
+                getFieldForEquip(gearset.fingerR, true),
                 {
                     name: '\u200b',
                     value: '\u200b',
@@ -216,14 +202,12 @@ const getEquipmentFields = (gearset: Gearset): EmbedField[] => {
  * @returns EmbedField
  */
 const getFieldForEquip = (
-    equip: Equipment,
+    equip: SGHEquipment,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    materia: any,
-    inline = true,
-    ringPrefix?: '_l' | '_r'
+    inline = true
 ): EmbedField => {
-    const materiaString = getMateriaString(equip, materia, ringPrefix);
-    const value = `${equip.name}`;
+    const materiaString = getMateriaString(equip);
+    const value = `${equip.equipment_name}`;
 
     const field: EmbedField = {
         name: `${getIconBySlotName(equip.slotName)} ${strings(equip.slotName)}`,
@@ -236,30 +220,25 @@ const getFieldForEquip = (
     return field;
 };
 
-/**
- * @description tbd
- * @param equip
- * @param materia
- * @param ringPrefix
- * @returns string
- */
-const getMateriaString = (
-    equip: Equipment,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    materia: any,
-    ringPrefix?: '_l' | '_r'
-): string => {
-    const prefix =
-        ringPrefix === '_l' ? 'L' : ringPrefix === '_r' ? 'R' : undefined;
-    const equipMateria: MateriaType =
-        prefix && materia[equip.id + prefix]
-            ? materia[equip.id + prefix]
-            : materia[equip.id];
+const getMateriaString = (equip: SGHEquipment): string => {
     let materiaString = '';
-    if (equipMateria) {
-        Object.values(equipMateria).forEach((m) => {
-            materiaString += m.type + '+' + m.value + '\n';
-        });
+    if (equip.materia_1) {
+        materiaString +=
+            equip.materia_1.type + '+' + equip.materia_1.value + '\n';
+        if (equip.materia_2) {
+            materiaString +=
+                equip.materia_2.type + '+' + equip.materia_2.value + '\n';
+
+            if (equip.materia_3 && equip.materia_4 && equip.materia_5) {
+                materiaString +=
+                    equip.materia_3.type + '+' + equip.materia_3.value + '\n';
+
+                materiaString +=
+                    equip.materia_4.type + '+' + equip.materia_4.value + '\n';
+                materiaString +=
+                    equip.materia_5.type + '+' + equip.materia_5.value + '\n';
+            }
+        }
     }
 
     return materiaString;
@@ -304,8 +283,8 @@ const addButtonComponent = (
  * @returns ActionRowBuilder<ButtonBuilder>[]
  */
 export const getActionRowsForEditBis = (
-    gearset: Gearset,
-    bis: BisLinksType
+    gearset: SGHGearset,
+    bis: DBBis
 ): ActionRowBuilder<ButtonBuilder>[] => {
     const gearArray: {slotName: string; looted: boolean}[] = [];
 

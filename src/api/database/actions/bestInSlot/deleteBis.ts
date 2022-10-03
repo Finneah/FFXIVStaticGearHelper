@@ -1,6 +1,6 @@
 import {QueryConfig} from 'pg';
-import {errorHandler} from '../../../handler';
-import Logger from '../../../logger';
+import {errorHandler} from '../../../../handler';
+import Logger from '../../../../logger';
 import {runQuery} from '../../database';
 const logger = Logger.child({module: 'deleteBisFromUser'});
 

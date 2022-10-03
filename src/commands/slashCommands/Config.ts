@@ -11,11 +11,11 @@ import {
     EmbedBuilder,
     EmbedData
 } from 'discord.js';
-import {setGuildConfig} from '../../database';
-import {editGuildConfig} from '../../database/actions/guildConfig/editGuildConfig';
+import {dbAddGuild} from '../../api/database';
+import {dbUpdateGuild} from '../../api/database/actions/guildConfig/updateGuildConfig';
 
-import {getGuildConfig} from '../../database/actions/guildConfig/getGuildConfig';
-import {GuildConfig} from '../../database/types/DataType';
+import {dbGetGuildById} from '../../api/database/actions/guildConfig/getGuildConfig';
+import {DBGuild} from '../../api/database/types/DBTypes';
 
 import {errorHandler, handleInteractionError} from '../../handler';
 import {strings} from '../../locale/i18n';
@@ -28,6 +28,7 @@ import {
     OptionNames,
     SubCommandNames
 } from '../../types';
+import {transformedRole} from '../../utils';
 import {checkPermission} from '../../utils/permissions';
 
 import {Command} from '../Command';
@@ -80,7 +81,7 @@ export const Config: Command = {
                     option.name === SubCommandNames.GET
             );
 
-            const guildConfig = await getGuildConfig(interaction.guildId);
+            const guildConfig = await dbGetGuildById(interaction.guildId);
 
             const permissions = await checkPermission(
                 interaction,
@@ -135,15 +136,17 @@ export const setConfig = async (
     guild_idExist: boolean
 ) => {
     try {
-        const newConfig: GuildConfig = {
-            guild_id: interaction.guildId ?? '',
-            moderator_role: moderator_role,
-            static_role: static_role
+        const newConfig: DBGuild = {
+            guild_id: 0,
+            discord_guild_id: interaction.guildId ?? '',
+            moderator_role: transformedRole(moderator_role),
+            static_role: transformedRole(static_role)
         };
+
         if (guild_idExist) {
-            editGuildConfig(newConfig);
+            dbUpdateGuild(newConfig);
         } else {
-            setGuildConfig(newConfig);
+            dbAddGuild(newConfig);
         }
 
         const embed = await getConfigEmbed(
@@ -163,7 +166,7 @@ export const setConfig = async (
 const handleSetConfig = async (
     interaction: CommandInteraction<CacheType>,
     subCommand: CommandInteractionOption<CacheType>,
-    guildConfig: GuildConfig | null
+    guildConfig: DBGuild | null
 ) => {
     try {
         const moderator_roleOption =
@@ -213,7 +216,7 @@ const handleSetConfig = async (
 
 const handleGetConfig = async (
     interaction: CommandInteraction<CacheType>,
-    guildConfig: GuildConfig
+    guildConfig: DBGuild
 ) => {
     const embed = await getConfigEmbed(
         guildConfig.moderator_role,
@@ -229,7 +232,7 @@ const handleGetConfig = async (
 
 const handleSetConfigAlreadyExist = async (
     interaction: CommandInteraction<CacheType>,
-    guildConfig: GuildConfig,
+    guildConfig: DBGuild,
     moderator_role: string,
     static_role: string
 ) => {

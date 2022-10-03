@@ -20,6 +20,8 @@ const options: ClientOptions = {
     partials: [Partials.Channel]
 };
 
+// Redux store
+
 const client = new Client(options);
 
 client.on('debug', (m) => Logger.debug(m));

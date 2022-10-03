@@ -10,8 +10,8 @@ export enum SubCommandNames {
     SET = 'set',
     GET = 'get',
     DELETE = 'delete',
-    BY_LINK = 'by_link',
-    BY_ID = 'by_id'
+    BY_LINK = 'by_link'
+    // BY_ID = 'by_id'
 }
 
 export enum ButtonCommandNames {
