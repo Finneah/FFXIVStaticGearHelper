@@ -1,12 +1,8 @@
-import {createSlice} from '@reduxjs/toolkit';
-import {
-    baseSliceErrorReducer,
-    baseSliceFulfilledSplice,
-    baseSliceLoadingReducer
-} from '../base.reducers';
+import { createSlice } from '@reduxjs/toolkit';
 
-import {fetchJobs} from './jobs.actions';
-import {JobsSliceState} from './jobs.types';
+import { baseSliceErrorReducer, baseSliceFulfilledSplice, baseSliceLoadingReducer } from '../base.reducers';
+import { fetchJobs } from './jobs.actions';
+import { JobsSliceState } from './jobs.types';
 
 const initialState: JobsSliceState = {
     data: [],

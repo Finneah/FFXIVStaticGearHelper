@@ -1,10 +1,4 @@
-import {BaseSliceState} from '../base.types';
+import { Job } from '../../types';
+import { BaseSliceState } from '../base.types';
 
-export interface SGHJob {
-    id: number;
-    abbrev: string;
-    name: string;
-    iconPath: string;
-}
-
-export type JobsSliceState = BaseSliceState<SGHJob[]>;
+export type JobsSliceState = BaseSliceState<Job[]>;

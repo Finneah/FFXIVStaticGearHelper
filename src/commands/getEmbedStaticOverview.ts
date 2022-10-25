@@ -1,26 +1,15 @@
-import {
-    Client,
-    CommandInteraction,
-    CacheType,
-    ButtonInteraction,
-    EmbedBuilder,
-    EmbedData,
-    APIEmbed,
-    Colors,
-    EmbedField
-} from 'discord.js';
-import {getMainBisAll} from '../api/database/actions/bestInSlot/getBis';
+import { APIEmbed, ButtonInteraction, CacheType, Client, Colors, CommandInteraction, EmbedBuilder, EmbedData, EmbedField } from 'discord.js';
 
-import {DBBis, SlotNames, DBGuild} from '../api/database/types/DBTypes';
-import {errorHandler, handleInteractionError} from '../handler';
-import {strings} from '../locale/i18n';
+import { errorHandler, handleInteractionError } from '../handler';
+import { strings } from '../locale/i18n';
 import logger from '../logger';
-import {EtroGearset} from '../types';
+import { EtroGearset } from '../types';
+import { Guild } from '../types/guild';
 
 export const getEmbedStaticOverview = async (
     client: Client,
     interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType>,
-    guildConfig: DBGuild
+    guildConfig: Guild
 ): Promise<EmbedBuilder> => {
     const avatar = await interaction.user.avatarURL();
     const userIds = await getUserIds(client, interaction, guildConfig);
@@ -78,7 +67,7 @@ export const getEmbedStaticOverview = async (
 const getUserIds = async (
     client: Client,
     interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType>,
-    guildConfig: DBGuild
+    guildConfig: Guild
 ) => {
     if (!interaction.guild || !interaction.guildId) {
         handleInteractionError(
@@ -88,27 +77,27 @@ const getUserIds = async (
         );
         return;
     }
-    if (!guildConfig?.static_role) {
-        handleInteractionError(
-            'SetMainBis',
-            interaction,
-            strings('error.noConfig')
-        );
-        return;
-    }
+    // if (!guildConfig?.static_role) {
+    //     handleInteractionError(
+    //         'SetMainBis',
+    //         interaction,
+    //         strings('error.noConfig')
+    //     );
+    //     return;
+    // }
 
     const guild = await client.guilds.fetch(interaction.guildId);
-    const role = await interaction.guild?.roles.fetch(guildConfig.static_role);
+    // const role = await interaction.guild?.roles.fetch(guildConfig.static_role);
     const userIds = await guild.members.fetch().then((fetchedMembers) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const user_ids: any[] | PromiseLike<any[]> = [];
-        const staticRoleUser = fetchedMembers.filter((member) => {
-            const res = member.roles.cache.find((r) => r.id === role?.id);
-            return res ? true : false;
-        });
-        staticRoleUser.forEach((mem) => {
-            user_ids.push(mem.user.id);
-        });
+        // const staticRoleUser = fetchedMembers.filter((member) => {
+        //     // const res = member.roles.cache.find((r) => r.id === role?.id);
+        //     // return res ? true : false;
+        // });
+        // staticRoleUser.forEach((mem) => {
+        //     user_ids.push(mem.user.id);
+        // });
         return user_ids;
     });
 
@@ -121,102 +110,102 @@ const getMemberFields = async (
 ): Promise<EmbedField[]> => {
     const fields: EmbedField[] = [];
     try {
-        const allMainBis = await getMainBisAll(guild_id);
-        if (allMainBis) {
-            const allFilteredMainBis = await getAllFilteredMainBis(
-                allMainBis,
-                userIds
-            );
+        // const allMainBis = await getMainBisAll(guild_id);
+        // if (allMainBis) {
+        //     const allFilteredMainBis = await getAllFilteredMainBis(
+        //         allMainBis,
+        //         userIds
+        //     );
 
-            if (allFilteredMainBis) {
-                allFilteredMainBis.forEach((filteredMainBis) => {
-                    const withOffHand =
-                        filteredMainBis.gearset.offHand !== null;
+        //     if (allFilteredMainBis) {
+        //         allFilteredMainBis.forEach((filteredMainBis) => {
+        //             const withOffHand =
+        //                 filteredMainBis.gearset.offHand !== null;
 
-                    if (filteredMainBis.gearset) {
-                        const keys = Object.values(SlotNames);
-                        for (let i = 0; i < keys.length; i++) {
-                            const key = keys[i];
-                            const fieldDoesExist = fields.find(
-                                (field) => field.name === strings(key)
-                            );
+        //             if (filteredMainBis.gearset) {
+        //                 const keys = Object.values(SlotNames);
+        //                 for (let i = 0; i < keys.length; i++) {
+        //                     const key = keys[i];
+        //                     const fieldDoesExist = fields.find(
+        //                         (field) => field.name === strings(key)
+        //                     );
 
-                            if (!fieldDoesExist) {
-                                logger.debug('HERE !fieldDoesExist');
-                                if (key === SlotNames.OFFHAND && withOffHand) {
-                                    fields.push({
-                                        name: strings(key),
-                                        value: '\u200b',
-                                        inline: true
-                                    });
-                                } else {
-                                    fields.push({
-                                        name: strings(key),
-                                        value: '\u200b',
-                                        inline: true
-                                    });
-                                }
-                            }
+        //                     if (!fieldDoesExist) {
+        //                         logger.debug('HERE !fieldDoesExist');
+        //                         if (key === SlotNames.OFFHAND && withOffHand) {
+        //                             fields.push({
+        //                                 name: strings(key),
+        //                                 value: '\u200b',
+        //                                 inline: true
+        //                             });
+        //                         } else {
+        //                             fields.push({
+        //                                 name: strings(key),
+        //                                 value: '\u200b',
+        //                                 inline: true
+        //                             });
+        //                         }
+        //                     }
 
-                            // if (!filteredMainBis.filteredMainBis[key]) {
-                            //     logger.debug('HERE');
-                            //     // user doesnt have the weapon allready
-                            //     switch (key) {
-                            //         case SlotNames.FINGER_L:
-                            //             // addUserAndBisNameToFieldValue(
-                            //             //     fields,
-                            //             //     key,
-                            //             //     filteredMainBis.filteredMainBis
-                            //             //         .user_id,
-                            //             //     filteredMainBis.gearset.fingerL
-                            //             //         ?.name
-                            //             // );
-                            //             break;
-                            //         case SlotNames.FINGER_R:
-                            //             // addUserAndBisNameToFieldValue(
-                            //             //     fields,
-                            //             //     key,
-                            //             //     filteredMainBis.filteredMainBis
-                            //             //         .user_id,
-                            //             //     filteredMainBis.gearset.fingerR
-                            //             //         ?.name
-                            //             // );
-                            //             break;
-                            //         case SlotNames.OFFHAND:
-                            //             if (withOffHand) {
-                            //                 // addUserAndBisNameToFieldValue(
-                            //                 //     fields,
-                            //                 //     key,
-                            //                 //     filteredMainBis.filteredMainBis
-                            //                 //         .user_id,
-                            //                 //     filteredMainBis.gearset.offHand
-                            //                 //         ?.name
-                            //                 // );
-                            //             }
+        //                     // if (!filteredMainBis.filteredMainBis[key]) {
+        //                     //     logger.debug('HERE');
+        //                     //     // user doesnt have the weapon allready
+        //                     //     switch (key) {
+        //                     //         case SlotNames.FINGER_L:
+        //                     //             // addUserAndBisNameToFieldValue(
+        //                     //             //     fields,
+        //                     //             //     key,
+        //                     //             //     filteredMainBis.filteredMainBis
+        //                     //             //         .user_id,
+        //                     //             //     filteredMainBis.gearset.fingerL
+        //                     //             //         ?.name
+        //                     //             // );
+        //                     //             break;
+        //                     //         case SlotNames.FINGER_R:
+        //                     //             // addUserAndBisNameToFieldValue(
+        //                     //             //     fields,
+        //                     //             //     key,
+        //                     //             //     filteredMainBis.filteredMainBis
+        //                     //             //         .user_id,
+        //                     //             //     filteredMainBis.gearset.fingerR
+        //                     //             //         ?.name
+        //                     //             // );
+        //                     //             break;
+        //                     //         case SlotNames.OFFHAND:
+        //                     //             if (withOffHand) {
+        //                     //                 // addUserAndBisNameToFieldValue(
+        //                     //                 //     fields,
+        //                     //                 //     key,
+        //                     //                 //     filteredMainBis.filteredMainBis
+        //                     //                 //         .user_id,
+        //                     //                 //     filteredMainBis.gearset.offHand
+        //                     //                 //         ?.name
+        //                     //                 // );
+        //                     //             }
 
-                            //             break;
+        //                     //             break;
 
-                            //         default:
+        //                     //         default:
 
-                            //             // addUserAndBisNameToFieldValue(
-                            //             //     fields,
-                            //             //     key,
-                            //             //     filteredMainBis.filteredMainBis
-                            //             //         .user_id,
-                            //             //     filteredMainBis.gearset[key]?.name
-                            //             // );
-                            //             break;
-                            //     }
-                            // }
-                        }
-                    }
-                });
-            } else {
-                logger.warn('no allFilteredMainBis');
-            }
-        } else {
-            logger.warn('no allMainBis');
-        }
+        //                     //             // addUserAndBisNameToFieldValue(
+        //                     //             //     fields,
+        //                     //             //     key,
+        //                     //             //     filteredMainBis.filteredMainBis
+        //                     //             //         .user_id,
+        //                     //             //     filteredMainBis.gearset[key]?.name
+        //                     //             // );
+        //                     //             break;
+        //                     //     }
+        //                     // }
+        //                 }
+        //             }
+        //         });
+        //     } else {
+        //         logger.warn('no allFilteredMainBis');
+        //     }
+        // } else {
+        //     logger.warn('no allMainBis');
+        // }
 
         return fields;
     } catch (error) {
@@ -225,33 +214,33 @@ const getMemberFields = async (
     }
 };
 
-const getAllFilteredMainBis = async (
-    allMainBis: DBBis[],
-    userIds: string[]
-): Promise<{filteredMainBis: DBBis; gearset: EtroGearset}[]> => {
-    const allFilteredMainBis = allMainBis.filter((mainBis) =>
-        userIds.includes(mainBis.user_id)
-    );
-    const allFilteredMainBisWithGearSets: {
-        filteredMainBis: DBBis;
-        gearset: EtroGearset;
-    }[] = [];
+// const getAllFilteredMainBis = async (
+//     allMainBis: DBBis[],
+//     userIds: string[]
+// ): Promise<{filteredMainBis: DBBis; gearset: EtroGearset}[]> => {
+//     const allFilteredMainBis = allMainBis.filter((mainBis) =>
+//         userIds.includes(mainBis.user_id)
+//     );
+//     const allFilteredMainBisWithGearSets: {
+//         filteredMainBis: DBBis;
+//         gearset: EtroGearset;
+//     }[] = [];
 
-    // for (const filteredMainBis of allFilteredMainBis) {
-    //     const gearset = await getGearsetWithEquipment(
-    //         SubCommandNames.BY_LINK,
-    //         filteredMainBis.bis_link
-    //     );
-    //     if (gearset) {
-    //         allFilteredMainBisWithGearSets.push({
-    //             filteredMainBis,
-    //             gearset
-    //         });
-    //     }
-    // }
+//     // for (const filteredMainBis of allFilteredMainBis) {
+//     //     const gearset = await getGearsetWithEquipment(
+//     //         SubCommandNames.BY_LINK,
+//     //         filteredMainBis.bis_link
+//     //     );
+//     //     if (gearset) {
+//     //         allFilteredMainBisWithGearSets.push({
+//     //             filteredMainBis,
+//     //             gearset
+//     //         });
+//     //     }
+//     // }
 
-    return allFilteredMainBisWithGearSets;
-};
+//     return allFilteredMainBisWithGearSets;
+// };
 
 const addUserAndBisNameToFieldValue = (
     fields: EmbedField[],

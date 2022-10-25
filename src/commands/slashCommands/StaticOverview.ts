@@ -1,27 +1,10 @@
-import {
-    ActionRowBuilder,
-    ApplicationCommandType,
-    ButtonBuilder,
-    Client,
-    CommandInteraction
-} from 'discord.js';
+import { ActionRowBuilder, ApplicationCommandType, ButtonBuilder, Client, CommandInteraction } from 'discord.js';
 
-import {dbGetGuildById} from '../../api/database/actions/guildConfig/getGuildConfig';
-import {dbUpdateGuildMessageId} from '../../api/database/actions/guildConfig/updateGuildConfig';
-import {SlotNames} from '../../api/database/types/DBTypes';
-
-import {
-    errorHandler,
-    handleInteractionError
-} from '../../handler/errorHandler/errorHandler';
-import {strings} from '../../locale/i18n';
-
-import {ButtonCommandNames, CommandNames} from '../../types';
-import {getIconBySlotName} from '../../utils';
-import {checkPermission} from '../../utils/permissions';
-
-import {Command} from '../Command';
-import {getEmbedStaticOverview} from '../getEmbedStaticOverview';
+import { errorHandler, handleInteractionError } from '../../handler/errorHandler/errorHandler';
+import { strings } from '../../locale/i18n';
+import { ButtonCommandNames, CommandNames, SlotNames } from '../../types';
+import { getIconBySlotName } from '../../utils';
+import { Command } from '../Command';
 
 export const StaticOverview: Command = {
     name: CommandNames.STATICOVERVIEW,
@@ -38,44 +21,44 @@ export const StaticOverview: Command = {
                 return;
             }
 
-            const guildConfig = await dbGetGuildById(interaction.guildId);
-            if (!guildConfig?.static_role) {
-                handleInteractionError(
-                    'SetMainBis',
-                    interaction,
-                    strings('error.noConfig')
-                );
-                return;
-            }
-            const hasPermissions = await checkPermission(
-                interaction,
-                interaction.guildId,
-                guildConfig?.static_role
-            );
+            // const guildConfig = await dbGetGuildById(interaction.guildId);
+            // if (!guildConfig?.static_role) {
+            //     handleInteractionError(
+            //         'SetMainBis',
+            //         interaction,
+            //         strings('error.noConfig')
+            //     );
+            //     return;
+            // }
+            // const hasPermissions = await checkPermission(
+            //     interaction,
+            //     interaction.guildId,
+            //     guildConfig?.static_role
+            // );
 
-            if (!hasPermissions) {
-                handleInteractionError(
-                    'SetMainBis',
-                    interaction,
-                    strings('error.permissionDenied')
-                );
-                return;
-            }
+            // if (!hasPermissions) {
+            //     handleInteractionError(
+            //         'SetMainBis',
+            //         interaction,
+            //         strings('error.permissionDenied')
+            //     );
+            //     return;
+            // }
 
-            const embed = await getEmbedStaticOverview(
-                client,
-                interaction,
-                guildConfig
-            );
-            const actionRows = getActionRows();
-            const message = await interaction.followUp({
-                ephemeral: false,
-                components: actionRows,
-                embeds: [embed]
-            });
+            // const embed = await getEmbedStaticOverview(
+            //     client,
+            //     interaction,
+            //     guildConfig
+            // );
+            // const actionRows = getActionRows();
+            // const message = await interaction.followUp({
+            //     ephemeral: false,
+            //     components: actionRows,
+            //     embeds: [embed]
+            // });
 
-            dbUpdateGuildMessageId(message.id, guildConfig.discord_guild_id);
-            return message;
+            // dbUpdateGuildMessageId(message.id, guildConfig.discord_guild_id);
+            // return message;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error) {
             errorHandler('StaticOverview', error);
@@ -85,10 +68,10 @@ export const StaticOverview: Command = {
 
 const getActionRows = (): ActionRowBuilder<ButtonBuilder>[] => {
     const gearArray: {slotName: string}[] = [];
-    const geartypes = Object.values(SlotNames);
+    const geartypes: string[] = Object.values(SlotNames);
 
     for (let i = 0; i < geartypes.length; i++) {
-        const gear = geartypes[i];
+        const gear: string = geartypes[i];
 
         gearArray.push({
             slotName: gear

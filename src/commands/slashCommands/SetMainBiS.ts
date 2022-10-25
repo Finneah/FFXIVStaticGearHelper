@@ -1,29 +1,17 @@
-import {
-    ApplicationCommandOptionType,
-    ApplicationCommandType,
-    Client,
-    CommandInteraction
-} from 'discord.js';
-import {setMainBis} from '../../api/database/actions/bestInSlot/setBis';
+import { ApplicationCommandOptionType, ApplicationCommandType, Client, CommandInteraction } from 'discord.js';
 
-import {dbGetGuildById} from '../../api/database/actions/guildConfig/getGuildConfig';
-
-import {
-    errorHandler,
-    handleInteractionError
-} from '../../handler/errorHandler/errorHandler';
-import {strings} from '../../locale/i18n';
+import { errorHandler, handleInteractionError } from '../../handler/errorHandler/errorHandler';
+import { strings } from '../../locale/i18n';
 import Logger from '../../logger';
-import {CommandNames, OptionNames} from '../../types';
-import {checkPermission} from '../../utils/permissions';
-
-import {Command} from '../Command';
+import { CommandNames, OptionNames } from '../../types';
+import { checkPermission } from '../../utils/permissions';
+import { Command } from '../Command';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const logger = Logger.child({module: 'SetMainBis'});
 
 export const SetMainBis: Command = {
-    name: CommandNames.SETMAINBIS,
+    name: CommandNames.SETSTATICGEAR,
     description: strings('setMainBis.description'),
     type: ApplicationCommandType.ChatInput,
     options: [
@@ -50,32 +38,32 @@ export const SetMainBis: Command = {
                 return;
             }
 
-            const guildConfig = await dbGetGuildById(interaction.guildId);
+            // const guildConfig = await dbGetGuildById(interaction.guildId);
 
-            const hasPermissions = await checkPermission(
-                interaction,
-                interaction.guildId,
-                guildConfig?.static_role
-            );
+            // const hasPermissions = await checkPermission(
+            //     interaction,
+            //     interaction.guildId,
+            //     guildConfig?.static_role
+            // );
 
-            if (!hasPermissions) {
-                handleInteractionError(
-                    'SetMainBis',
-                    interaction,
-                    strings('error.permissionDenied')
-                );
-                return;
-            }
+            // if (!hasPermissions) {
+            //     handleInteractionError(
+            //         'SetMainBis',
+            //         interaction,
+            //         strings('error.permissionDenied')
+            //     );
+            //     return;
+            // }
 
-            const message = await setMainBis(
-                idOption.value.toString(),
-                interaction.user.id,
-                interaction.guildId
-            );
+            // const message = await setMainBis(
+            //     idOption.value.toString(),
+            //     interaction.user.id,
+            //     interaction.guildId
+            // );
 
             return interaction.followUp({
                 ephemeral: false,
-                content: message
+                content: 'message'
             });
         } catch (error) {
             errorHandler('Test', error);

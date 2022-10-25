@@ -1,55 +1,81 @@
 import {
-    CommandInteraction,
-    CacheType,
-    EmbedData,
-    APIEmbed,
-    resolveColor,
-    EmbedBuilder,
-    EmbedField,
-    ButtonBuilder,
     ActionRowBuilder,
+    APIEmbed,
+    ButtonBuilder,
     ButtonInteraction,
-    Message
+    CacheType,
+    CommandInteraction,
+    EmbedBuilder,
+    EmbedData,
+    EmbedField,
+    Message,
+    resolveColor,
 } from 'discord.js';
-import {DBBis} from '../api/database/types/DBTypes';
-import {ApiHandler} from '../api/dataHandler';
-import {errorHandler, handleInteractionError} from '../handler';
-import {strings} from '../locale/i18n';
-import {SGHEquipment, SGHGearset} from '../redux/guilds/guilds.types';
 
-import {ButtonCommandNames} from '../types';
-import {getIconBySlotName, getJobIconUrl, getRoleColorByJob} from '../utils';
-const api = new ApiHandler();
+import { errorHandler, handleInteractionError } from '../handler';
+import { strings } from '../locale/i18n';
+import { ButtonCommandNames, Equipment, Gearset } from '../types';
+import { getIconBySlotName, getJobIconUrl, getRoleColorByJob } from '../utils';
+
+type EtroGearResult = {
+    embed: EmbedBuilder;
+    actionRows: ActionRowBuilder<ButtonBuilder>[];
+};
+export const getEtroGearEmbedCommand = async (
+    interaction: CommandInteraction<CacheType>,
+    gearset: Gearset | undefined
+): Promise<EtroGearResult | null> => {
+    try {
+        if (!gearset) {
+            handleInteractionError(
+                'getGearsetEmbedCommand',
+                interaction,
+                'Ich habe das Gearset nicht gefunden.'
+            );
+            return null;
+        }
+
+        const embed = await getEmbedGearset(gearset, interaction);
+        const actionRows = getMateriaListActionRow(gearset);
+        if (embed) {
+            return {embed, actionRows};
+        }
+        return null;
+    } catch (error) {
+        interaction.followUp({
+            ephemeral: true,
+            content: errorHandler('handleGetGearsetEmbedCommand', error)
+        });
+        return null;
+    }
+};
 
 export const getGearsetEmbedCommand = async (
-    link: string,
     interaction: CommandInteraction<CacheType>,
-    bis?: DBBis,
+    gearset: Gearset | undefined,
+    bis?: Gearset,
     hasPermission?: boolean
 ): Promise<Message<boolean>> => {
     try {
-        const gearset = await api.getGearset(link);
-
         if (!gearset) {
             return handleInteractionError(
                 'getGearsetEmbedCommand',
                 interaction,
-                'Ich habe das Gearset auf Etro nicht gefunden.'
+                'Ich habe das Gearset nicht gefunden.'
             );
         }
 
-        const embed = await getEmbedBis(gearset, interaction);
+        const embed = await getEmbedGearset(gearset, interaction);
 
         if (bis && hasPermission && gearset) {
             const actionRows = getActionRowsForEditBis(gearset, bis);
-            return interaction.followUp({
-                ephemeral: false,
+            return interaction.user.send({
                 components: actionRows,
                 embeds: embed ? [embed] : undefined
             });
         } else {
-            return interaction.followUp({
-                ephemeral: false,
+            interaction.deleteReply();
+            return interaction.user.send({
                 embeds: embed ? [embed] : undefined
             });
         }
@@ -67,8 +93,8 @@ export const getGearsetEmbedCommand = async (
  * @param interaction
  * @returns  Promise<EmbedBuilder>
  */
-export const getEmbedBis = async (
-    gearset: SGHGearset,
+export const getEmbedGearset = async (
+    gearset: Gearset,
     interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType>
 ): Promise<EmbedBuilder> => {
     const avatar = await interaction.user.avatarURL();
@@ -112,7 +138,7 @@ export const getEmbedBis = async (
  * @param gearset
  * @returns EmbedField[]
  */
-const getEquipmentFields = (gearset: SGHGearset): EmbedField[] => {
+const getEquipmentFields = (gearset: Gearset): EmbedField[] => {
     const fields: EmbedField[] = [];
     try {
         if (gearset.weapon) {
@@ -202,7 +228,7 @@ const getEquipmentFields = (gearset: SGHGearset): EmbedField[] => {
  * @returns EmbedField
  */
 const getFieldForEquip = (
-    equip: SGHEquipment,
+    equip: Equipment,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     inline = true
 ): EmbedField => {
@@ -220,7 +246,7 @@ const getFieldForEquip = (
     return field;
 };
 
-const getMateriaString = (equip: SGHEquipment): string => {
+const getMateriaString = (equip: Equipment): string => {
     let materiaString = '';
     if (equip.materia_1) {
         materiaString +=
@@ -283,8 +309,8 @@ const addButtonComponent = (
  * @returns ActionRowBuilder<ButtonBuilder>[]
  */
 export const getActionRowsForEditBis = (
-    gearset: SGHGearset,
-    bis: DBBis
+    gearset: Gearset,
+    bis: any
 ): ActionRowBuilder<ButtonBuilder>[] => {
     const gearArray: {slotName: string; looted: boolean}[] = [];
 
@@ -413,4 +439,26 @@ const getActionRowWithButtons = (
     }
 
     return getActionRowWithButtons(rows, gearArray, bis_name, index++);
+};
+
+export const getMateriaListActionRow = (
+    gearset: Gearset
+): ActionRowBuilder<ButtonBuilder>[] => {
+    const row: ActionRowBuilder<ButtonBuilder> =
+        new ActionRowBuilder<ButtonBuilder>();
+
+    const materiaListButton = new ButtonBuilder()
+        .setCustomId(ButtonCommandNames.MATERIALIST)
+        .setLabel(strings('materiaList'))
+        .setStyle(2);
+
+    row.addComponents(materiaListButton);
+    // const settingsButton = new ButtonBuilder()
+    // .setCustomId(ButtonCommandNames.REFRESH)
+    // .setLabel(strings('refresh'))
+    // .setStyle(4);
+
+    const actionRows = [row];
+
+    return actionRows;
 };

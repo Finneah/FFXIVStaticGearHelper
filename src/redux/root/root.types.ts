@@ -1,5 +1,5 @@
-import {GuildsSliceState} from '../guilds/guilds.types';
-import {JobsSliceState} from '../jobs/jobs.types';
+import { GuildsSliceState } from '../guilds/guilds.types';
+import { JobsSliceState } from '../jobs/jobs.types';
 
 export type RootState = {
     guilds: GuildsSliceState;

@@ -1,9 +1,10 @@
-import {createAsyncThunk} from '@reduxjs/toolkit';
-import {dbAddGuild} from '../../api/database';
-import {dbUpdateGuild} from '../../api/database/actions/guildConfig/updateGuildConfig';
-import {dbGetAllGuilds} from '../../api/database/actions/guildConfig/getGuildConfig';
-import {DBGuild} from '../../api/database/types/DBTypes';
-import {SGHGuild} from './guilds.types';
+import axios from 'axios';
+
+import { createAsyncThunk } from '@reduxjs/toolkit';
+
+import { Guild } from '../../types/guild';
+import { buildUrl } from '../../utils/buildUrl';
+import { GetGuildResponse, GetGuildsResponse } from './guilds.types';
 
 // export const fetchGuild = createAsyncThunk(
 //     'projectTasks/fetch/singleAction',
@@ -22,25 +23,45 @@ import {SGHGuild} from './guilds.types';
 
 export const fetchGuilds = createAsyncThunk(
     'guilds/fetch',
-    async (): Promise<DBGuild[] | null> => {
-        const guilds = await dbGetAllGuilds();
-
-        return guilds;
+    async (): Promise<GetGuildsResponse> => {
+        return axios.get<Guild[]>(buildUrl('guilds')).then((response) => {
+            if (response.status !== 200) {
+                return {success: false, data: response.data};
+            } else {
+                return {success: false};
+            }
+        });
     }
 );
 
 export const addGuild = createAsyncThunk(
     'guild/add',
-    async (guild: SGHGuild): Promise<SGHGuild> => {
-        await dbAddGuild(guild);
-        return guild;
+    async (discord_guild_id, moderator_role): Promise<GetGuildResponse> => {
+        return axios
+            .get<Guild>(
+                buildUrl('addguild', {discord_guild_id, moderator_role})
+            )
+            .then((response) => {
+                if (response.status !== 200) {
+                    return {success: false, data: response.data};
+                } else {
+                    return {success: false};
+                }
+            });
     }
 );
 
 export const updateGuild = createAsyncThunk(
     'guild/update',
-    async (guild: SGHGuild): Promise<SGHGuild> => {
-        await dbUpdateGuild(guild);
-        return guild;
+    async (guild_id, params): Promise<GetGuildResponse> => {
+        return axios
+            .get<Guild>(buildUrl('editguild', {guild_id, ...params}))
+            .then((response) => {
+                if (response.status !== 200) {
+                    return {success: false, data: response.data};
+                } else {
+                    return {success: false};
+                }
+            });
     }
 );

@@ -1,6 +1,7 @@
-import {combineReducers} from '@reduxjs/toolkit';
-import {guildsSlice} from '../guilds/guildsSlice';
-import {jobsSlice} from '../jobs/jobs.slice';
+import { combineReducers } from '@reduxjs/toolkit';
+
+import { guildsSlice } from '../guilds/guilds.slice';
+import { jobsSlice } from '../jobs/jobs.slice';
 
 /* ------------- Assemble The Reducers ------------- */
 export const rootReducer = combineReducers({

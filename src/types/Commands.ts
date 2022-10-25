@@ -1,8 +1,9 @@
 export enum CommandNames {
+    PATREON = 'become_patreon',
     MYBIS = 'mybis',
-    ETRO = 'etro_show',
+    ETRO = 'etro_gear',
     CONFIG = 'config',
-    SETMAINBIS = 'set_mainbis',
+    SETSTATICGEAR = 'set_staticgear',
     STATICOVERVIEW = 'static_overview',
     DELETE_USER = 'delete_user'
 }
@@ -21,14 +22,17 @@ export enum ButtonCommandNames {
     SETTINGS = 'settings',
     EDITBIS = 'editbis',
     EDITBISOVERVIEW = 'editbisOverview',
-    REFRESH = 'refresh'
+    REFRESH = 'refresh',
+    MATERIALIST = 'materia_list'
 }
 
 export enum OptionNames {
     MODERATOR_ROLE = 'moderator_role',
-    STATIC_ROLE = 'static_role',
+    STATIC_NAME = 'static_name',
     LINK = 'link',
     NAME = 'name',
     ID = 'id',
-    ISMAIN = 'is_main'
+    ISMAIN = 'is_main',
+    CHANNEL = 'channel',
+    COPY_TO_CHANNEL = 'copy_to_channel'
 }

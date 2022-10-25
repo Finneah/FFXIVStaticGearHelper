@@ -1,17 +1,10 @@
-import {
-    AutocompleteInteraction,
-    ButtonInteraction,
-    CacheType,
-    Client,
-    CommandInteraction,
-    Interaction
-} from 'discord.js';
+import { AutocompleteInteraction, ButtonInteraction, CacheType, Client, CommandInteraction, Interaction } from 'discord.js';
 
-import {ButtonCommand} from '../commands/Command';
-import {ButtonCommands, Commands} from '../commands/Commands';
-import {getAllBisByUserByGuild} from '../api/database/actions/bestInSlot/getBis';
+import { ButtonCommand } from '../commands/Command';
+import { ButtonCommands, SlashCommands } from '../commands/Commands';
 import Logger from '../logger';
-import {ButtonCommandNames, CommandNames} from '../types';
+import { ButtonCommandNames, CommandNames } from '../types';
+
 const logger = Logger.child({module: 'interactionCreate'});
 
 export default (client: Client): void => {
@@ -33,7 +26,7 @@ const handleSlashCommand = async (
     client: Client,
     interaction: CommandInteraction
 ): Promise<void> => {
-    const slashCommand = Commands.find(
+    const slashCommand = SlashCommands.find(
         (c) => c.name === interaction.commandName
     );
 
@@ -60,25 +53,25 @@ const handleAutocomplete = async (
 ) => {
     if (
         interaction.commandName === CommandNames.MYBIS ||
-        interaction.commandName === CommandNames.SETMAINBIS
+        interaction.commandName === CommandNames.SETSTATICGEAR
     ) {
         const focusedValue = interaction.options.getFocused();
-        const allSavedBis = await getAllBisByUserByGuild(
-            interaction.user.id,
-            interaction.guildId ?? ''
-        );
+        // const allSavedBis = await getAllBisByUserByGuild(
+        //     interaction.user.id,
+        //     interaction.guildId ?? ''
+        // );
 
-        if (allSavedBis && allSavedBis.length > 0) {
-            const filtered = allSavedBis.filter((savedBis) =>
-                savedBis.bis_name.startsWith(focusedValue)
-            );
-            await interaction.respond(
-                filtered.map((savedBis) => ({
-                    name: savedBis.bis_name,
-                    value: savedBis.bis_name
-                }))
-            );
-        }
+        // if (allSavedBis && allSavedBis.length > 0) {
+        //     const filtered = allSavedBis.filter((savedBis) =>
+        //         savedBis.bis_name.startsWith(focusedValue)
+        //     );
+        //     await interaction.respond(
+        //         filtered.map((savedBis) => ({
+        //             name: savedBis.bis_name,
+        //             value: savedBis.bis_name
+        //         }))
+        //     );
+        // }
     }
 };
 
@@ -87,12 +80,14 @@ const handleButtonCommand = async (
     interaction: ButtonInteraction<CacheType>
 ): Promise<void> => {
     let buttonCommand: ButtonCommand | undefined = undefined;
-
+    console.log(interaction.customId + ' implemented?');
     if (interaction.customId.startsWith('static_overview_')) {
         buttonCommand = ButtonCommands.find(
             (c) => c.name === ButtonCommandNames.EDITBISOVERVIEW
         );
-    } else if (interaction.customId.startsWith('editbis_')) {
+    } else if (
+        interaction.customId.startsWith(ButtonCommandNames.EDITBIS + '_')
+    ) {
         buttonCommand = ButtonCommands.find(
             (c) => c.name === ButtonCommandNames.EDITBIS
         );
@@ -114,8 +109,13 @@ const handleButtonCommand = async (
                     (c) => c.name === ButtonCommandNames.CANCEL
                 );
                 break;
-
+            case ButtonCommandNames.MATERIALIST:
+                buttonCommand = ButtonCommands.find(
+                    (c) => c.name === ButtonCommandNames.MATERIALIST
+                );
+                break;
             default:
+                console.log(interaction.customId + ' not implemented');
                 break;
         }
     }

@@ -1,4 +1,4 @@
-import {SlotNames} from '../api/database/types/DBTypes';
+import { SlotNames } from '../types';
 
 export const linkIsValid = (link: string | number | true): boolean => {
     if (typeof link === 'string') {

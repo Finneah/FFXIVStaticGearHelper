@@ -1,12 +1,10 @@
-import {ApplicationCommandType, ButtonInteraction, Client} from 'discord.js';
-import {deleteBisSingle} from '../../api/database/actions/bestInSlot/deleteBis';
-import {dbGetGuildById} from '../../api/database/actions/guildConfig/getGuildConfig';
-import {errorHandler, handleInteractionError} from '../../handler';
-import {strings} from '../../locale/i18n';
+import { ApplicationCommandType, ButtonInteraction, Client } from 'discord.js';
 
-import {ButtonCommandNames} from '../../types';
-import {checkPermission} from '../../utils/permissions';
-import {ButtonCommand} from '../Command';
+import { errorHandler, handleInteractionError } from '../../handler';
+import { strings } from '../../locale/i18n';
+import { ButtonCommandNames } from '../../types';
+import { checkPermission } from '../../utils/permissions';
+import { ButtonCommand } from '../Command';
 
 /**
  * @todo Dont delete instantly, ask if sure before
@@ -26,42 +24,42 @@ export const DeleteBis: ButtonCommand = {
                 return;
             }
 
-            if (
-                interaction.user.id === interaction.message.interaction?.user.id
-            ) {
-                const guildConfig = await dbGetGuildById(interaction.guildId);
-                const hasPermission = await checkPermission(
-                    interaction,
-                    interaction.guildId,
-                    guildConfig?.static_role
-                );
+            // if (
+            //     interaction.user.id === interaction.message.interaction?.user.id
+            // ) {
+            //     const guildConfig = await dbGetGuildById(interaction.guildId);
+            //     const hasPermission = await checkPermission(
+            //         interaction,
+            //         interaction.guildId,
+            //         guildConfig?.static_role
+            //     );
 
-                if (hasPermission) {
-                    deleteBisSingle(
-                        interaction.customId.replace(
-                            ButtonCommandNames.DELETE_BIS + '_',
-                            ''
-                        ),
-                        interaction.user.id,
-                        interaction.guildId
-                    );
-                    await interaction.deleteReply();
-                } else {
-                    handleInteractionError(
-                        'DeleteBis',
-                        interaction,
-                        strings('error.permissionDenied')
-                    );
-                    return;
-                }
-            } else {
-                handleInteractionError(
-                    'DeleteBis',
-                    interaction,
-                    strings('error.permissionDenied')
-                );
-                return;
-            }
+            //     if (hasPermission) {
+            //         deleteBisSingle(
+            //             interaction.customId.replace(
+            //                 ButtonCommandNames.DELETE_BIS + '_',
+            //                 ''
+            //             ),
+            //             interaction.user.id,
+            //             interaction.guildId
+            //         );
+            //         await interaction.deleteReply();
+            //     } else {
+            //         handleInteractionError(
+            //             'DeleteBis',
+            //             interaction,
+            //             strings('error.permissionDenied')
+            //         );
+            //         return;
+            //     }
+            // } else {
+            //     handleInteractionError(
+            //         'DeleteBis',
+            //         interaction,
+            //         strings('error.permissionDenied')
+            //     );
+            //     return;
+            // }
         } catch (error) {
             errorHandler('DeleteBis', error);
         }

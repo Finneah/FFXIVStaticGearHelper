@@ -9,29 +9,18 @@ import {
     CommandInteraction,
     CommandInteractionOption,
     EmbedBuilder,
-    EmbedData
+    EmbedData,
 } from 'discord.js';
-import {dbAddGuild} from '../../api/database';
-import {dbUpdateGuild} from '../../api/database/actions/guildConfig/updateGuildConfig';
 
-import {dbGetGuildById} from '../../api/database/actions/guildConfig/getGuildConfig';
-import {DBGuild} from '../../api/database/types/DBTypes';
-
-import {errorHandler, handleInteractionError} from '../../handler';
-import {strings} from '../../locale/i18n';
-
-import {
-    ButtonCommandNames,
-    CommandNames,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    ErrorType,
-    OptionNames,
-    SubCommandNames
-} from '../../types';
-import {transformedRole} from '../../utils';
-import {checkPermission} from '../../utils/permissions';
-
-import {Command} from '../Command';
+import { errorHandler, handleInteractionError } from '../../handler';
+import { strings } from '../../locale/i18n';
+import { guildsSelectors } from '../../redux/guilds/guilds.adapter';
+import { store } from '../../redux/store';
+import { ButtonCommandNames, CommandNames, OptionNames, SubCommandNames } from '../../types';
+import { Guild } from '../../types/guild';
+import { transformedRole } from '../../utils';
+import { checkPermission } from '../../utils/permissions';
+import { Command } from '../Command';
 
 export const Config: Command = {
     name: CommandNames.CONFIG,
@@ -48,12 +37,6 @@ export const Config: Command = {
                     type: ApplicationCommandOptionType.Role,
                     description: strings('moderatorRoleOption.description'),
                     required: true
-                },
-                {
-                    name: OptionNames.STATIC_ROLE,
-                    type: ApplicationCommandOptionType.Role,
-                    description: strings('staticRoleOption.description'),
-                    required: true
                 }
             ]
         },
@@ -68,7 +51,7 @@ export const Config: Command = {
         try {
             if (!interaction.guildId) {
                 handleInteractionError(
-                    'ConfigureBotForGuild',
+                    CommandNames.CONFIG,
                     interaction,
                     strings('error.coruptInteraction')
                 );
@@ -81,12 +64,16 @@ export const Config: Command = {
                     option.name === SubCommandNames.GET
             );
 
-            const guildConfig = await dbGetGuildById(interaction.guildId);
+            const state = store.getState();
+            const guild: Guild | undefined = guildsSelectors.selectById(
+                state,
+                interaction.guildId
+            )?.data;
 
             const permissions = await checkPermission(
                 interaction,
                 interaction.guildId,
-                guildConfig?.moderator_role
+                guild?.moderator_role
             );
             if (!permissions) {
                 handleInteractionError(
@@ -99,31 +86,32 @@ export const Config: Command = {
 
             switch (subCommand?.name) {
                 case SubCommandNames.SET:
-                    handleSetConfig(interaction, subCommand, guildConfig);
+                    handleSetConfig(interaction, subCommand, guild);
                     break;
 
-                case SubCommandNames.GET:
-                    if (
-                        guildConfig &&
-                        guildConfig.moderator_role &&
-                        guildConfig.static_role
-                        // && guildConfig.bis_channle
-                    ) {
-                        handleGetConfig(interaction, guildConfig);
-                    } else {
-                        return interaction.followUp({
-                            ephemeral: true,
-                            content:
-                                'Es wurde noch keine Konfiguration gespeichert. Wenn du eine Konfiguration speichern willst, gib `/config set` ein.'
-                        });
-                    }
+                // case SubCommandNames.GET:
+                //     if (
+                //         guild &&
+                //         guild.moderator_role &&
+                //         guild.static_role
+                //         // && guild.bis_channle
+                //     ) {
+                //         handleGetConfig(interaction, guild);
+                //     } else {
+                //         return interaction.followUp({
+                //             ephemeral: true,
+                //             content:
+                //                 'Es wurde noch keine Konfiguration gespeichert. Wenn du eine Konfiguration speichern willst, gib `/config set` ein.'
+                //         });
+                //     }
 
-                    break;
+                //     break;
 
                 default:
                     break;
             }
-        } catch (error: ErrorType) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
             errorHandler('ConfigureBotForGuild', error);
         }
     }
@@ -132,26 +120,21 @@ export const Config: Command = {
 export const setConfig = async (
     interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType>,
     moderator_role: string,
-    static_role: string,
     guild_idExist: boolean
 ) => {
     try {
-        const newConfig: DBGuild = {
+        const newConfig: Guild = {
             guild_id: 0,
             discord_guild_id: interaction.guildId ?? '',
-            moderator_role: transformedRole(moderator_role),
-            static_role: transformedRole(static_role)
+            moderator_role: transformedRole(moderator_role)
         };
-
-        if (guild_idExist) {
-            dbUpdateGuild(newConfig);
-        } else {
-            dbAddGuild(newConfig);
-        }
-
+        // if (guild_idExist) {
+        //     dbUpdateGuild(newConfig);
+        // } else {
+        //     dbAddGuild(newConfig);
+        // }
         const embed = await getConfigEmbed(
             newConfig.moderator_role,
-            newConfig.static_role,
             Colors.Red
         );
         return interaction.followUp({
@@ -166,7 +149,7 @@ export const setConfig = async (
 const handleSetConfig = async (
     interaction: CommandInteraction<CacheType>,
     subCommand: CommandInteractionOption<CacheType>,
-    guildConfig: DBGuild | null
+    guild?: Guild
 ) => {
     try {
         const moderator_roleOption =
@@ -174,31 +157,19 @@ const handleSetConfig = async (
             subCommand.options.find(
                 (option) => option.name === OptionNames.MODERATOR_ROLE
             );
-        const static_roleOption =
-            subCommand.options &&
-            subCommand.options.find(
-                (option) => option.name === OptionNames.STATIC_ROLE
-            );
 
-        if (
-            moderator_roleOption &&
-            moderator_roleOption.value &&
-            static_roleOption &&
-            static_roleOption.value
-        ) {
-            if (guildConfig?.moderator_role && guildConfig?.static_role) {
+        if (moderator_roleOption && moderator_roleOption.value) {
+            if (guild?.moderator_role) {
                 await handleSetConfigAlreadyExist(
                     interaction,
-                    guildConfig,
-                    moderator_roleOption.value.toString(),
-                    static_roleOption.value.toString()
+                    guild,
+                    moderator_roleOption.value.toString()
                 );
             } else {
                 await setConfig(
                     interaction,
                     moderator_roleOption.value.toString(),
-                    static_roleOption.value.toString(),
-                    guildConfig?.guild_id ? true : false
+                    guild?.guild_id ? true : false
                 );
             }
         } else {
@@ -209,44 +180,38 @@ const handleSetConfig = async (
                 })
             });
         }
-    } catch (error: ErrorType) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
         errorHandler('handleSetConfig', error);
     }
 };
 
 const handleGetConfig = async (
     interaction: CommandInteraction<CacheType>,
-    guildConfig: DBGuild
+    guild: Guild
 ) => {
-    const embed = await getConfigEmbed(
-        guildConfig.moderator_role,
-        guildConfig.static_role,
-        Colors.Green
-    );
-
-    return interaction.followUp({
-        ephemeral: true,
-        embeds: embed ? [embed] : undefined
-    });
+    // const embed = await getConfigEmbed(
+    //     guild.moderator_role,
+    //     guild.static_role,
+    //     Colors.Green
+    // );
+    // return interaction.followUp({
+    //     ephemeral: true,
+    //     embeds: embed ? [embed] : undefined
+    // });
 };
 
 const handleSetConfigAlreadyExist = async (
     interaction: CommandInteraction<CacheType>,
-    guildConfig: DBGuild,
-    moderator_role: string,
-    static_role: string
+    guild: Guild,
+    moderator_role: string
 ) => {
     const embed = await getConfigEmbed(
-        guildConfig.moderator_role,
-        guildConfig.static_role,
+        guild.moderator_role,
+
         Colors.Blue
     );
-
-    const alreadyExistEmbed = await getConfigAlreadyExistEmbed(
-        moderator_role,
-        static_role
-    );
-
+    const alreadyExistEmbed = await getConfigAlreadyExistEmbed(moderator_role);
     return interaction.followUp({
         ephemeral: false,
         embeds: embed ? [alreadyExistEmbed] : undefined,
@@ -276,18 +241,18 @@ const handleSetConfigAlreadyExist = async (
 
 const getConfigEmbed = (
     moderator_role: string | undefined,
-    static_role: string | undefined,
+
     color: number
 ) => {
-    moderator_role?.search('<@&') == -1 &&
-        (moderator_role = '<@&' + moderator_role + '>');
-    static_role?.search('<@&') == -1 &&
-        (static_role = '<@&' + static_role + '>');
-
+    const moderatorRole =
+        moderator_role?.search('<@&') == -1
+            ? '<@&' + moderator_role + '>'
+            : moderator_role;
+    const guildStaticLevel = 1;
     const embedData: EmbedData | APIEmbed = {
-        title: `Static Gear Helper Config`,
-        description: `Alle Mitglieder der Rolle ${moderator_role} dürfen die Konfiguration anpassen.\n
-        Alle Mitglieder der Rolle ${static_role} dürfen nun ihr BiS Gear speichern. `,
+        title: `FFXIV Gear Helper Config`,
+        description: `Alle Mitglieder der Rolle ${moderatorRole} dürfen die Konfiguration anpassen.\n
+        Sie dürfen außerdem ${guildStaticLevel} Static Gruppe(n) anlegen.`,
         color: color,
         fields: [
             {
@@ -296,33 +261,28 @@ const getConfigEmbed = (
                 inline: true
             },
             {
-                name: OptionNames.STATIC_ROLE,
-                value: `${static_role}`,
-                inline: true
-            },
-            {
                 name: '\u200B',
                 value: '\u200B'
             },
             {
-                name: `Verfügbare Befehle für ${OptionNames.STATIC_ROLE}`,
+                name: `Verfügbare Befehle für Static Mitglieder`,
                 value: '\u200B'
             },
             {
-                name: `/${CommandNames.MYBIS} ${SubCommandNames.SET} :${OptionNames.LINK} :${OptionNames.NAME}`,
-                value: `speicher dieses Gearset`
+                name: `/${CommandNames.MYBIS} ${SubCommandNames.SET} :${OptionNames.LINK} :${OptionNames.NAME} :${OptionNames.STATIC_NAME}`,
+                value: `Speicher dieses Gearset um deinen Lott zu markieren und damit es in der Static Übersicht erscheint.`
             },
 
             {
                 name: `/${CommandNames.MYBIS} ${SubCommandNames.GET} :${OptionNames.NAME}`,
-                value: `zeigt das gespeicherte Gearset.\nFührst du diesen Befehl ein weiteres Mal aus, so wird die alte Nachricht gelöscht. `
+                value: `Zeigt das gespeicherte Gearset.\nTipp: Dieser Befehl geht auch als DM.`
             },
             {
                 name: `/${CommandNames.MYBIS} ${SubCommandNames.DELETE} :${OptionNames.NAME}`,
                 value: `Lösche das gespeicherte Gearset`
             },
             {
-                name: `/${CommandNames.SETMAINBIS} :${OptionNames.NAME}`,
+                name: `/${CommandNames.SETSTATICGEAR} :${OptionNames.NAME}`,
                 value: `setzt das gewählte Gearset als Main Set. Dadurch wird es in der Übersicht angezeigt!\nEs kann immer nur ein Gearset als Main markiert werden.\nHast du ein zweites Set gespeichert, musst du nichts weiter tun. Das macht der Bot automatisch.`
             },
             {
@@ -338,8 +298,8 @@ const getConfigEmbed = (
                 value: '\u200B'
             },
             {
-                name: `/${CommandNames.CONFIG} ${SubCommandNames.SET} :${OptionNames.MODERATOR_ROLE} :${OptionNames.STATIC_ROLE}`,
-                value: `Setze eine Rolle für die ${OptionNames.MODERATOR_ROLE} und ${OptionNames.STATIC_ROLE}.`
+                name: `/${CommandNames.CONFIG} ${SubCommandNames.SET} :${OptionNames.MODERATOR_ROLE}`,
+                value: `Setze eine Rolle für die ${OptionNames.MODERATOR_ROLE}.`
             },
             {
                 name: `/${CommandNames.CONFIG} :${SubCommandNames.GET}`,
@@ -363,15 +323,11 @@ const getConfigEmbed = (
     return new EmbedBuilder(embedData);
 };
 
-const getConfigAlreadyExistEmbed = (
-    moderator_role: string | undefined,
-    static_role: string | undefined
-) => {
-    moderator_role?.search('<@&') == -1 &&
-        (moderator_role = '<@&' + moderator_role + '>');
-    static_role?.search('<@&') == -1 &&
-        (static_role = '<@&' + static_role + '>');
-
+const getConfigAlreadyExistEmbed = (moderator_role: string | undefined) => {
+    const moderatorRole =
+        moderator_role?.search('<@&') == -1
+            ? '<@&' + moderator_role + '>'
+            : moderator_role;
     const embedData: EmbedData | APIEmbed = {
         title: strings('configSetCommand.alreadyExistTitle'),
         description: strings('configSetCommand.alreadyExistDescription'),
@@ -384,12 +340,7 @@ const getConfigAlreadyExistEmbed = (
             },
             {
                 name: `${OptionNames.MODERATOR_ROLE}`,
-                value: `${moderator_role}`,
-                inline: true
-            },
-            {
-                name: `${OptionNames.STATIC_ROLE}`,
-                value: `${static_role}`,
+                value: `${moderatorRole}`,
                 inline: true
             }
         ]

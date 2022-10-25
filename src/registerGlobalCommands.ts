@@ -1,22 +1,23 @@
 import { Routes } from 'discord-api-types/rest/v10';
 import { REST } from 'discord.js';
 
-import { GuildCommands } from './commands/Commands';
-import { APP_ID, TOKEN } from './config';
+import { GlobalCommands } from './commands/Commands';
+import { TOKEN } from './config';
 
-export const registerGuildCommands = async (guildId: string) => {
+export const registerGlobalCommands = async (clientId: string) => {
     try {
+        // TODO Take GuildId from onGuildCreate
+
         try {
             console.log(
-                `Started refreshing ${GuildCommands.length} guild (/) commands.`
+                `Started refreshing ${GlobalCommands.length} application (/) commands.`
             );
 
             const rest = new REST({version: '10'}).setToken(TOKEN);
-
             const data: any = await rest.put(
-                Routes.applicationGuildCommands(APP_ID, guildId),
+                Routes.applicationCommands(clientId),
                 {
-                    body: GuildCommands
+                    body: GlobalCommands
                 }
             );
             let addedCommands = '';
@@ -24,7 +25,7 @@ export const registerGuildCommands = async (guildId: string) => {
                 addedCommands += d.name + ' ';
             });
             console.log(
-                `Successfully reloaded ${addedCommands} guild (/) commands.`
+                `Successfully reloaded ${addedCommands} application (/) commands.`
             );
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any

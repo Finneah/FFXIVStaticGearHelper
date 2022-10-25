@@ -1,20 +1,9 @@
-import {
-    ApplicationCommandOptionType,
-    ApplicationCommandType,
-    Client,
-    CommandInteraction,
-    PermissionsBitField
-} from 'discord.js';
-import {deleteUser} from '../../api/database/actions/deleteUser/deleteUser';
+import { ApplicationCommandOptionType, ApplicationCommandType, Client, CommandInteraction, PermissionsBitField } from 'discord.js';
 
-import {
-    errorHandler,
-    handleInteractionError
-} from '../../handler/errorHandler/errorHandler';
-import {strings} from '../../locale/i18n';
-import {CommandNames, OptionNames} from '../../types';
-
-import {Command} from '../Command';
+import { errorHandler, handleInteractionError } from '../../handler/errorHandler/errorHandler';
+import { strings } from '../../locale/i18n';
+import { CommandNames, OptionNames } from '../../types';
+import { Command } from '../Command';
 
 export const DeleteUser: Command = {
     name: CommandNames.DELETE_USER,
@@ -60,21 +49,21 @@ export const DeleteUser: Command = {
                 );
 
             if (hasPermission) {
-                const deleted = await deleteUser(
-                    idOption.value.toString(),
-                    interaction.guildId
-                );
-                if (deleted > 0) {
-                    return await interaction.followUp({
-                        ephemeral: true,
-                        content: `User <${idOption.value}> gelöscht`
-                    });
-                } else {
-                    return await interaction.followUp({
-                        ephemeral: true,
-                        content: `User <${idOption.value}> nicht vorhanden`
-                    });
-                }
+                // const deleted = await deleteUser(
+                //     idOption.value.toString(),
+                //     interaction.guildId
+                // );
+                // if (deleted > 0) {
+                //     return await interaction.followUp({
+                //         ephemeral: true,
+                //         content: `User <${idOption.value}> gelöscht`
+                //     });
+                // } else {
+                //     return await interaction.followUp({
+                //         ephemeral: true,
+                //         content: `User <${idOption.value}> nicht vorhanden`
+                //     });
+                // }
             } else {
                 handleInteractionError(
                     'DeleteUser',

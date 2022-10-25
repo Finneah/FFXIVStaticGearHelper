@@ -1,4 +1,3 @@
-export * from './GearsetType';
-export * from './JobType';
-export * from './ErrorType';
+export * from './job';
+export * from './gearset';
 export * from './Commands';

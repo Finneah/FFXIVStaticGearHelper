@@ -1,15 +1,10 @@
-import {
-    ButtonInteraction,
-    CacheType,
-    CommandInteraction,
-    Message
-} from 'discord.js';
+import { ButtonInteraction, CacheType, CommandInteraction, Message } from 'discord.js';
 
-import {strings} from '../../locale/i18n';
+import { strings } from '../../locale/i18n';
 import Logger from '../../logger';
-import {ErrorType} from '../../types';
 
-export const errorHandler = (namespace: string, error: ErrorType): string => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const errorHandler = (namespace: string, error: any): string => {
     const logger = Logger.child({module: namespace});
     logger.error(error);
 
@@ -31,7 +26,8 @@ export const errorHandler = (namespace: string, error: ErrorType): string => {
     return 'irgendwas';
 };
 
-const handleDBError = (error: ErrorType) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const handleDBError = (error: any) => {
     let message = error.code;
     switch (error.code) {
         case 'SQLITE_ERROR':

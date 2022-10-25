@@ -1,34 +1,13 @@
-import {
-    ApplicationCommandOptionType,
-    ApplicationCommandType,
-    CacheType,
-    Client,
-    CommandInteraction,
-    CommandInteractionOption,
-    Message
-} from 'discord.js';
+import { ApplicationCommandOptionType, ApplicationCommandType, CacheType, Client, CommandInteraction, CommandInteractionOption, Message } from 'discord.js';
 
-import {getAllBisByUserByGuild} from '../../api/database/actions/bestInSlot/getBis';
-
-import {DBBis} from '../../api/database/types/DBTypes';
-
-import {errorHandler, handleInteractionError} from '../../handler';
-
-import {strings} from '../../locale/i18n';
+import { errorHandler, handleInteractionError } from '../../handler';
+import { strings } from '../../locale/i18n';
 import Logger from '../../logger';
-import {guildsSelectors} from '../../redux/guilds/guilds.adapter';
-import {SGHGuild} from '../../redux/guilds/guilds.types';
-import {store} from '../../redux/store';
-
-import {
-    ButtonCommandNames,
-    CommandNames,
-    OptionNames,
-    SubCommandNames
-} from '../../types';
-import {checkPermission} from '../../utils/permissions';
-
-import {Command} from '../Command';
+import { guildsSelectors } from '../../redux/guilds/guilds.adapter';
+import { store } from '../../redux/store';
+import { ButtonCommandNames, CommandNames, OptionNames, SubCommandNames } from '../../types';
+import { checkPermission } from '../../utils/permissions';
+import { Command } from '../Command';
 
 const logger = Logger.child({module: 'BestInSlot'});
 
@@ -106,61 +85,61 @@ export const MyBis: Command = {
                 return;
             }
 
-            const state = store.getState();
-            const guildConfig: SGHGuild | undefined =
-                guildsSelectors.selectById(state, interaction.guildId)?.data;
+            // const state = store.getState();
+            // const guildConfig: SGHGuild | undefined =
+            //     guildsSelectors.selectById(state, interaction.guildId)?.data;
 
-            const subCommand = interaction.options.data.find(
-                (option) =>
-                    option.name === SubCommandNames.SET ||
-                    option.name === SubCommandNames.GET ||
-                    option.name === SubCommandNames.DELETE
-            );
+            // const subCommand = interaction.options.data.find(
+            //     (option) =>
+            //         option.name === SubCommandNames.SET ||
+            //         option.name === SubCommandNames.GET ||
+            //         option.name === SubCommandNames.DELETE
+            // );
 
-            const hasPermissions = await checkPermission(
-                interaction,
-                interaction.guildId,
-                guildConfig?.static_role
-            );
+            // const hasPermissions = await checkPermission(
+            //     interaction,
+            //     interaction.guildId,
+            //     guildConfig?.static_role
+            // );
 
-            if (!hasPermissions) {
-                handleInteractionError(
-                    'BestInSlot',
-                    interaction,
-                    strings('error.permissionDenied')
-                );
-                return;
-            }
-            const allSavedBisFromUser = await getAllBisByUserByGuild(
-                interaction.user.id,
-                interaction.guildId ?? ''
-            );
+            // if (!hasPermissions) {
+            //     handleInteractionError(
+            //         'BestInSlot',
+            //         interaction,
+            //         strings('error.permissionDenied')
+            //     );
+            //     return;
+            // }
+            // const allSavedBisFromUser = await getAllBisByUserByGuild(
+            //     interaction.user.id,
+            //     interaction.guildId ?? ''
+            // );
 
-            switch (subCommand?.name) {
-                case SubCommandNames.SET:
-                    if (allSavedBisFromUser?.length === 2) {
-                        return interaction.followUp({
-                            ephemeral: true,
-                            content:
-                                'Es tut mir leid, du kannst nur 2 BiS Links speichern.'
-                        });
-                    }
-                    handleSetBis(interaction, subCommand, allSavedBisFromUser);
+            // switch (subCommand?.name) {
+            //     case SubCommandNames.SET:
+            //         if (allSavedBisFromUser?.length === 2) {
+            //             return interaction.followUp({
+            //                 ephemeral: true,
+            //                 content:
+            //                     'Es tut mir leid, du kannst nur 2 BiS Links speichern.'
+            //             });
+            //         }
+            //         handleSetBis(interaction, subCommand, allSavedBisFromUser);
 
-                    break;
+            //         break;
 
-                case SubCommandNames.GET:
-                    handleGetBis(interaction, subCommand, hasPermissions);
+            //     case SubCommandNames.GET:
+            //         handleGetBis(interaction, subCommand, hasPermissions);
 
-                    break;
+            //         break;
 
-                case SubCommandNames.DELETE:
-                    handleDeleteBis(interaction, subCommand);
+            //     case SubCommandNames.DELETE:
+            //         handleDeleteBis(interaction, subCommand);
 
-                    break;
-                default:
-                    break;
-            }
+            //         break;
+            //     default:
+            //         break;
+            // }
         } catch (error) {
             errorHandler('BestInSlot', error);
         }
@@ -174,76 +153,76 @@ export const MyBis: Command = {
  * @param allSavedBisFromUser BisLinksType[] | null
  * @returns : Promise<Message<boolean>>
  */
-const handleSetBis = async (
-    interaction: CommandInteraction<CacheType>,
-    subCommand: CommandInteractionOption<CacheType>,
-    allSavedBisFromUser: DBBis[] | null
-): Promise<Message<boolean>> => {
-    try {
-        const link = subCommand.options?.find(
-            (opt) => opt.name === OptionNames.LINK
-        )?.value;
-        const name = subCommand.options?.find(
-            (opt) => opt.name === OptionNames.NAME
-        )?.value;
+// const handleSetBis = async (
+//     interaction: CommandInteraction<CacheType>,
+//     subCommand: CommandInteractionOption<CacheType>,
+//     allSavedBisFromUser: DBBis[] | null
+// ): Promise<Message<boolean>> => {
+//     try {
+//         const link = subCommand.options?.find(
+//             (opt) => opt.name === OptionNames.LINK
+//         )?.value;
+//         const name = subCommand.options?.find(
+//             (opt) => opt.name === OptionNames.NAME
+//         )?.value;
 
-        // const isMain = subCommand.options?.find(
-        //     (opt) => opt.name === OptionNames.ISMAIN
-        // )?.value;
+//         // const isMain = subCommand.options?.find(
+//         //     (opt) => opt.name === OptionNames.ISMAIN
+//         // )?.value;
 
-        if (!link || !name) {
-            logger.warn('missingParameter', link, name);
-            return interaction.followUp(
-                strings('error.general', {
-                    details: strings('error.missingParameter')
-                })
-            );
-        }
+//         if (!link || !name) {
+//             logger.warn('missingParameter', link, name);
+//             return interaction.followUp(
+//                 strings('error.general', {
+//                     details: strings('error.missingParameter')
+//                 })
+//             );
+//         }
 
-        if (!interaction.guildId) {
-            return await handleInteractionError(
-                'ConfigCancel',
-                interaction,
-                strings('error.coruptInteraction')
-            );
-        }
+//         if (!interaction.guildId) {
+//             return await handleInteractionError(
+//                 'ConfigCancel',
+//                 interaction,
+//                 strings('error.coruptInteraction')
+//             );
+//         }
 
-        const exist =
-            allSavedBisFromUser &&
-            allSavedBisFromUser.find(
-                (saved) =>
-                    saved.bis_name === name &&
-                    saved.user_id === interaction.user.id
-            );
-        if (exist) {
-            logger.warn('bisNameExist', link, name);
-            return interaction.followUp(
-                strings('error.general', {
-                    details: strings('error.bisNameExist')
-                })
-            );
-        }
-        // saveBis(link.toString(), name.toString());
-        // const message = await setBisForUser(
-        //     {
-        //         user_id: interaction.user.id,
-        //         bis_link: link.toString(),
-        //         bis_name: name.toString()
-        //     },
-        //     interaction.guildId
-        // );
+//         const exist =
+//             allSavedBisFromUser &&
+//             allSavedBisFromUser.find(
+//                 (saved) =>
+//                     saved.bis_name === name &&
+//                     saved.user_id === interaction.user.id
+//             );
+//         if (exist) {
+//             logger.warn('bisNameExist', link, name);
+//             return interaction.followUp(
+//                 strings('error.general', {
+//                     details: strings('error.bisNameExist')
+//                 })
+//             );
+//         }
+//         // saveBis(link.toString(), name.toString());
+//         // const message = await setBisForUser(
+//         //     {
+//         //         user_id: interaction.user.id,
+//         //         bis_link: link.toString(),
+//         //         bis_name: name.toString()
+//         //     },
+//         //     interaction.guildId
+//         // );
 
-        return interaction.followUp({
-            ephemeral: true,
-            content: 'done'
-        });
-    } catch (error) {
-        return interaction.followUp({
-            ephemeral: true,
-            content: errorHandler('handleSetBis', error)
-        });
-    }
-};
+//         return interaction.followUp({
+//             ephemeral: true,
+//             content: 'done'
+//         });
+//     } catch (error) {
+//         return interaction.followUp({
+//             ephemeral: true,
+//             content: errorHandler('handleSetBis', error)
+//         });
+//     }
+// };
 
 /**
  *
@@ -252,119 +231,119 @@ const handleSetBis = async (
  * @param hasPermission
  * @returns  Promise<Message<boolean>>
  */
-const handleGetBis = async (
-    interaction: CommandInteraction<CacheType>,
-    subCommand: CommandInteractionOption<CacheType>,
-    hasPermission: boolean
-) => {
-    try {
-        const name = subCommand.options?.find(
-            (opt) => opt.name === OptionNames.NAME
-        )?.value;
-        if (!name) {
-            return interaction.followUp({
-                ephemeral: true,
-                content: strings('error.general', {
-                    details: strings('error.missingParameter')
-                })
-            });
-        }
-        if (!interaction.guildId) {
-            handleInteractionError(
-                'ConfigCancel',
-                interaction,
-                strings('error.coruptInteraction')
-            );
-            return;
-        }
+// const handleGetBis = async (
+//     interaction: CommandInteraction<CacheType>,
+//     subCommand: CommandInteractionOption<CacheType>,
+//     hasPermission: boolean
+// ) => {
+//     try {
+//         const name = subCommand.options?.find(
+//             (opt) => opt.name === OptionNames.NAME
+//         )?.value;
+//         if (!name) {
+//             return interaction.followUp({
+//                 ephemeral: true,
+//                 content: strings('error.general', {
+//                     details: strings('error.missingParameter')
+//                 })
+//             });
+//         }
+//         if (!interaction.guildId) {
+//             handleInteractionError(
+//                 'ConfigCancel',
+//                 interaction,
+//                 strings('error.coruptInteraction')
+//             );
+//             return;
+//         }
 
-        // const bis: SGHEquipment | null = await getBisByUserByName(
-        //     interaction.user.id,
-        //     name.toString(),
-        //     interaction.guildId
-        // );
-        // if (bis?.bisLink) {
-        //     if (bis?.bis_message_id) {
-        //         await interaction.channel?.messages
-        //             .fetch(bis.bis_message_id)
-        //             .then(async (message) => {
-        //                 if (message) {
-        //                     message.delete();
-        //                 }
-        //             })
-        //             .catch((error) =>
-        //                 logger.info('No message found' + error.message)
-        //             );
-        //     }
-        //     const message = await getGearsetEmbedCommand(
-        //         SubCommandNames.BY_LINK,
-        //         'bis.bis_link',
-        //         interaction,
-        //         bis,
-        //         hasPermission
-        //     );
-        //     setBisMessageIdByUser(
-        //         name.toString(),
-        //         interaction.user.id,
-        //         message.id,
-        //         interaction.guildId
-        //     );
+//         // const bis: SGHEquipment | null = await getBisByUserByName(
+//         //     interaction.user.id,
+//         //     name.toString(),
+//         //     interaction.guildId
+//         // );
+//         // if (bis?.bisLink) {
+//         //     if (bis?.bis_message_id) {
+//         //         await interaction.channel?.messages
+//         //             .fetch(bis.bis_message_id)
+//         //             .then(async (message) => {
+//         //                 if (message) {
+//         //                     message.delete();
+//         //                 }
+//         //             })
+//         //             .catch((error) =>
+//         //                 logger.info('No message found' + error.message)
+//         //             );
+//         //     }
+//         //     const message = await getGearsetEmbedCommand(
+//         //         SubCommandNames.BY_LINK,
+//         //         'bis.bis_link',
+//         //         interaction,
+//         //         bis,
+//         //         hasPermission
+//         //     );
+//         //     setBisMessageIdByUser(
+//         //         name.toString(),
+//         //         interaction.user.id,
+//         //         message.id,
+//         //         interaction.guildId
+//         //     );
 
-        //     return message;
-        // }
+//         //     return message;
+//         // }
 
-        return interaction.followUp({
-            ephemeral: true,
-            content: strings('error.general', {
-                details: strings('error.noSavedBis')
-            })
-        });
-    } catch (error) {
-        return interaction.followUp({
-            ephemeral: true,
-            content: errorHandler('handleSetBis', error)
-        });
-    }
-};
+//         return interaction.followUp({
+//             ephemeral: true,
+//             content: strings('error.general', {
+//                 details: strings('error.noSavedBis')
+//             })
+//         });
+//     } catch (error) {
+//         return interaction.followUp({
+//             ephemeral: true,
+//             content: errorHandler('handleSetBis', error)
+//         });
+//     }
+// };
 
-const handleDeleteBis = async (
-    interaction: CommandInteraction<CacheType>,
-    subCommand: CommandInteractionOption<CacheType>
-) => {
-    const name = subCommand.options?.find(
-        (opt) => opt.name === OptionNames.NAME
-    )?.value;
-    if (!name) {
-        return interaction.followUp({
-            ephemeral: true,
-            content: strings('error.general', {
-                details: strings('error.missingParameter')
-            })
-        });
-    }
-    return interaction.followUp({
-        ephemeral: true,
-        content: `Willst du das Gearset ${name} wirklich löschen?`,
-        components: [
-            {
-                type: 1,
-                components: [
-                    {
-                        style: 4,
-                        label: `${strings('delete')}`,
-                        custom_id: ButtonCommandNames.DELETE_BIS + '_' + name,
-                        disabled: false,
-                        type: 2
-                    },
-                    {
-                        style: 2,
-                        label: `${strings('cancel')}`,
-                        custom_id: ButtonCommandNames.CANCEL,
-                        disabled: false,
-                        type: 2
-                    }
-                ]
-            }
-        ]
-    });
-};
+// const handleDeleteBis = async (
+//     interaction: CommandInteraction<CacheType>,
+//     subCommand: CommandInteractionOption<CacheType>
+// ) => {
+//     const name = subCommand.options?.find(
+//         (opt) => opt.name === OptionNames.NAME
+//     )?.value;
+//     if (!name) {
+//         return interaction.followUp({
+//             ephemeral: true,
+//             content: strings('error.general', {
+//                 details: strings('error.missingParameter')
+//             })
+//         });
+//     }
+//     return interaction.followUp({
+//         ephemeral: true,
+//         content: `Willst du das Gearset ${name} wirklich löschen?`,
+//         components: [
+//             {
+//                 type: 1,
+//                 components: [
+//                     {
+//                         style: 4,
+//                         label: `${strings('delete')}`,
+//                         custom_id: ButtonCommandNames.DELETE_BIS + '_' + name,
+//                         disabled: false,
+//                         type: 2
+//                     },
+//                     {
+//                         style: 2,
+//                         label: `${strings('cancel')}`,
+//                         custom_id: ButtonCommandNames.CANCEL,
+//                         disabled: false,
+//                         type: 2
+//                     }
+//                 ]
+//             }
+//         ]
+//     });
+// };
